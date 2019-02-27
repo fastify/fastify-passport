@@ -1,0 +1,44 @@
+{
+  "name": "fastify-passport",
+  "version": "0.4.0",
+  "description": "Simple, unobtrusive authentication for Node.js.",
+  "main": "./lib",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fastify/fastify-passport.git"
+  },
+  "keywords": [
+    "fastify",
+    "auth",
+    "authentication"
+  ],
+  "contributors": [
+    "Maksim Sinik <maksim@sinik.it>",
+    "Jared Hanson <jaredhanson@gmail.com> (http://www.jaredhanson.net/)"
+  ],
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/fastify/fastify-passport/issues"
+  },
+  "homepage": "http://passportjs.org/",
+  "engines": {
+    "node": ">= 6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "~11.9.5",
+    "fastify": "~2.0.0",
+    "prettier": "~1.16.4",
+    "tslint": "~5.13.0",
+    "tslint-config-prettier": "~1.18.0",
+    "typescript": "~3.3.3333"
+  }
+}

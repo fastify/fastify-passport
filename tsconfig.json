@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "declaration": true,
+    "target": "es2016",
+    "module": "commonjs",
+    "outDir": "lib",
+    "rootDir": "src",
+    "pretty": true,
+    "noEmitOnError": true,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "lib": [
+      "es2018"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types/",
+  ]
+  },
+  "formatCodeOptions": {
+    "identSize": 2,
+    "tabSize": 2
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__*__"
+  ],
+  "include": [
+    "./src/**/*.ts"
+  ]
+}
