@@ -1,21 +1,32 @@
 {
-  "extends": ["tslint-config-prettier"],
+  "extends": [
+    "tslint-config-prettier"
+  ],
   "rules": {
     "adjacent-overload-signatures": true,
     "curly": true,
     "eofline": false,
     "class-name": true,
     "no-angle-bracket-type-assertion": true,
-    "max-file-line-count": [true, 750],
+    "max-file-line-count": [
+      true,
+      750
+    ],
     "no-debugger": true,
     "prefer-const": true,
     "no-empty-interface": true,
     "no-string-throw": true,
     "unified-signatures": true,
     "prefer-method-signature": true,
-    "arrow-return-shorthand": [true, "multiline"],
+    "arrow-return-shorthand": [
+      true,
+      "multiline"
+    ],
     "no-duplicate-variable": true,
-    "no-inferrable-types": [true, "ignore-params"],
+    "no-inferrable-types": [
+      true,
+      "ignore-params"
+    ],
     "no-var-keyword": true,
     "variable-name": [
       true,
@@ -30,6 +41,9 @@
     "triple-equals": true,
     "no-use-before-declare": true,
     "jsdoc-format": true,
-    "semicolon": [false, "always"]
+    "semicolon": [
+      false,
+      "always"
+    ]
   }
 }
