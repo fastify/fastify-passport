@@ -1,6 +1,6 @@
-import { Strategy } from '.'
+import { Strategy } from '../strategies'
 import Authenticator from '../authenticator'
-import { FastifyRequest } from 'fastify'
+import { Request } from '../authenticator'
 
 class SessionStrategy extends Strategy {
   _deserializeUser: Function
@@ -34,7 +34,7 @@ class SessionStrategy extends Strategy {
    * @param {Object} options
    * @api protected
    */
-  authenticate(req: FastifyRequest, options?: { pauseStream?: boolean }) {
+  authenticate(req: Request, options?: { pauseStream?: boolean }) {
     if (!req._passport) {
       return this.error!(new Error('passport.initialize() middleware not in use'))
     }

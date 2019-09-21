@@ -2,26 +2,41 @@ import SessionStrategy from './strategies/session'
 import SessionManager from './session-manager'
 import { Strategy } from './strategies'
 import { FastifyRequest } from 'fastify'
+import authenticateFactory, { AuthenticateFactoryOptions } from './handlers/authenticate'
+import initializeFactory from './handlers/initialize'
+import fastifyPlugin = require('fastify-plugin')
+import { DoneCallback } from './decorators/login'
 
 type DoneFunction = (err: null | Error | 'pass', user?: any) => void
 
 // (request: FastifyRequest, user: any, done: DoneFunction): void
 
+export interface Request extends FastifyRequest {
+  _passport: {
+    instance: Authenticator
+    session: any
+  }
+  flash(key: string, message: string)
+  logIn<T = unknown>(this: Request, user: T, done: DoneCallback): void
+  logIn<T = unknown>(this: Request, user: T, options: { session?: boolean }, done?: DoneCallback): void
+  logIn<T = unknown>(this: Request, user: T, options: { session?: boolean } | DoneCallback, done?: DoneCallback)
+  authInfo: any
+  isAuthenticated(this: Request)
+}
+
 export class Authenticator {
-  _key = 'passport'
-  _strategies: { [k: string]: Strategy } = {}
-  _serializers: Function[] = []
-  _deserializers: Function[] = []
-  _infoTransformers: Function[] = []
-  _framework: any
-  _userProperty = 'user'
-  _sm: SessionManager
+  private _strategies: { [k: string]: Strategy } = {}
+  private _serializers: Function[] = []
+  private _deserializers: Function[] = []
+  private _infoTransformers: Function[] = []
+  private _framework: any
+  public _key = 'passport'
+  public _userProperty = 'user'
+  public _sessionManager: SessionManager
 
   constructor() {
-    // TODO: remove this call since this._framework will be always a fastify's plugin
-    // this.framework(connect())
     this.use(new SessionStrategy(this.deserializeUser.bind(this)))
-    this._sm = new SessionManager({ key: this._key }, this.serializeUser.bind(this))
+    this._sessionManager = new SessionManager({ key: this._key }, this.serializeUser.bind(this))
   }
 
   /**
@@ -78,55 +93,8 @@ export class Authenticator {
     return this
   }
 
-  /**
-   * Setup Passport to be used under framework.
-   *
-   * By default, Passport exposes middleware that operate using Connect-style
-   * middleware using a `fn(req, res, next)` signature.  Other popular frameworks
-   * have different expectations, and this function allows Passport to be adapted
-   * to operate within such environments.
-   *
-   * If you are using a Connect-compatible framework, including Express, there is
-   * no need to invoke this function.
-   *
-   * Examples:
-   *
-   *     passport.framework(require('hapi-passport')());
-   *
-   * @param {Object} name
-   * @return {Authenticator} for chaining
-   * @api public
-   */
-  framework(fw: any): this {
-    this._framework = fw
-    return this
-  }
-
-  /**
-   * Passport's primary initialization middleware.
-   *
-   * This middleware must be in use by the Connect/Express application for
-   * Passport to operate.
-   *
-   * Options:
-   *   - `userProperty`  Property to set on `req` upon login, defaults to _user_
-   *
-   * Examples:
-   *
-   *     app.use(passport.initialize());
-   *
-   *     app.use(passport.initialize({ userProperty: 'currentUser' }));
-   *
-   * @param {Object} options
-   * @return {Function} middleware
-   * @api public
-   */
   initialize(options?: { userProperty?: string }) {
-    options = options || {}
-    this._userProperty = options.userProperty || 'user'
-
-    // TODO: _framework.initialize must return fastify plugin in order to be registered with fastify.register
-    return this._framework.initialize(this, options)
+    return initializeFactory(this, options)
   }
 
   /**
@@ -150,16 +118,9 @@ export class Authenticator {
    *     app.get('/auth/twitter/callback', passport.authenticate('twitter'), function(req, res) {
    *       res.json(req.user);
    *     });
-   *
-   * @param {String} strategy
-   * @param {Object} options
-   * @param {Function} callback
-   * @return {Function} middleware
-   * @api public
    */
-  authenticate(strategy: string, options?: Function | any, callback?: Function) {
-    // TODO: _framework.authenticate must return fastify pre-handler in order to authenticate the incoming request
-    return this._framework.authenticate(this, strategy, options, callback)
+  public authenticate(strategy: string, options?: AuthenticateFactoryOptions, callback?) {
+    return authenticateFactory(this, strategy, options, callback) as any
   }
 
   /**
@@ -223,12 +184,14 @@ export class Authenticator {
    *                        request body is configured after passport and the
    *                        deserializeUser method is asynchronous.
    *
-   * @param {Object} options
    * @return {Function} middleware
-   * @api public
    */
-  session(options?: { pauseStream?: boolean }) {
-    return this.authenticate('session', options)
+  public session(options?: AuthenticateFactoryOptions) {
+    const authenticate = authenticateFactory(this, 'session', options)
+    return fastifyPlugin(function session(fastify, opts, next) {
+      fastify.addHook('preValidation', authenticate)
+      next()
+    })
   }
 
   /**

@@ -2,8 +2,8 @@ import http, { ServerResponse } from 'http'
 import AuthenticationError from '../errors'
 import Authenticator from '../authenticator'
 import BasicStrategy from '../strategies'
-import { logIn } from '../decorators/login'
-import { FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { Request } from '../authenticator'
 
 /**
  * Authenticates requests.
@@ -60,11 +60,6 @@ import { FastifyRequest, FastifyReply } from 'fastify'
  *
  *     passport.authenticate('twitter');
  *
- * @param {String|Array} name
- * @param {Object} options
- * @param {Function} callback
- * @return {Function}
- * @api public
  */
 
 type FlashObject = { type?: string; message?: string }
@@ -74,7 +69,7 @@ type FailureObject = {
   type?: string
 }
 
-interface AuthenticateFactoryOptions {
+export interface AuthenticateFactoryOptions {
   scope?: string
   failureFlash?: boolean | string | FlashObject
   failureMessage?: boolean | string
@@ -100,7 +95,7 @@ export default function authenticateFactory(
   passport: Authenticator,
   name: string | string[],
   options?: AuthenticateFactoryOptions | AuthenticateFactoryCallback,
-  callback?: AuthenticateFactoryCallback,
+  callback?: AuthenticateFactoryCallback
 ) {
   if (typeof options === 'function') {
     callback = options
@@ -125,18 +120,11 @@ export default function authenticateFactory(
     multi = false
   }
 
-  return function authenticate(
-    request: FastifyRequest,
+  function authenticate(
+    request: Request,
     reply: FastifyReply<ServerResponse>,
-    next: any,
+    next: any
   ) {
-    if (
-      (http.IncomingMessage.prototype as any).logIn &&
-      (http.IncomingMessage.prototype as any).logIn !== logIn
-    ) {
-      require('../framework/connect').__monkeypatchNode()
-    }
-
     // accumulator for failures from each strategy in the chain
     const failures: FailureObject[] = []
 
@@ -157,9 +145,9 @@ export default function authenticateFactory(
 
       // Strategies are ordered by priority.  For the purpose of flashing a
       // message, the first failure will be displayed.
-      let failure = failures[0] || {},
-        challenge = failure.challenge || {},
-        msg
+      let failure = failures[0] || {}
+      let challenge = failure.challenge || {}
+      let msg
       const authenticateOptions = options as AuthenticateFactoryOptions
 
       if (authenticateOptions.failureFlash) {
@@ -218,7 +206,7 @@ export default function authenticateFactory(
       }
       if (authenticateOptions.failWithError) {
         return next(
-          new AuthenticationError(http.STATUS_CODES[reply.res.statusCode]!, rstatus as number),
+          new AuthenticationError(http.STATUS_CODES[reply.res.statusCode]!, rstatus as number)
         )
       }
       reply.send(http.STATUS_CODES[reply.res.statusCode])
@@ -257,10 +245,6 @@ export default function authenticateFactory(
        * optional argument containing additional user information.  This is
        * useful for third-party authentication strategies to pass profile
        * details.
-       *
-       * @param {Object} user
-       * @param {Object} info
-       * @api public
        */
       strategy.success = function(user: object, info: { type: string; message: string }) {
         if (callback) {
@@ -342,10 +326,6 @@ export default function authenticateFactory(
        * to 401.
        *
        * Strategies should call this function to fail an authentication attempt.
-       *
-       * @param {String} challenge
-       * @param {Number} status
-       * @api public
        */
       strategy.fail = function(challenge: string | number | undefined, status?: number) {
         if (typeof challenge === 'number') {
@@ -364,27 +344,10 @@ export default function authenticateFactory(
        *
        * Strategies should call this function to redirect the user (via their
        * user agent) to a third-party website for authentication.
-       *
-       * @param {String} url
-       * @param {Number} status
-       * @api public
        */
-      strategy.redirect = function(url: string, status: number) {
-        // NOTE: Do not use `res.redirect` from Express, because it can't decide
-        //       what it wants.
-        //
-        //       Express 2.x: res.redirect(url, status)
-        //       Express 3.x: res.redirect(status, url) -OR- res.redirect(url, status)
-        //         - as of 3.14.0, deprecated warnings are issued if res.redirect(url, status)
-        //           is used
-        //       Express 4.x: res.redirect(status, url)
-        //         - all versions (as of 4.8.7) continue to accept res.redirect(url, status)
-        //           but issue deprecated versions
-
-        reply.code(status || 302)
-        reply.header('Location', url)
-        reply.header('Content-Length', '0')
-        reply.send()
+      strategy.redirect = function(url: string, status: number): void {
+        reply.status(status || 302)
+        reply.redirect(url)
       }
 
       /**
@@ -393,8 +356,6 @@ export default function authenticateFactory(
        * Under most circumstances, Strategies should not need to call this
        * function.  It exists primarily to allow previous authentication state
        * to be restored, for example from an HTTP session.
-       *
-       * @api public
        */
       strategy.pass = function() {
         next()
@@ -406,9 +367,6 @@ export default function authenticateFactory(
        * Strategies should call this function when an internal error occurs
        * during the process of performing authentication; for example, if the
        * user directory is not available.
-       *
-       * @param {Error} err
-       * @api public
        */
       strategy.error = function(err: Error) {
         if (callback) {
@@ -423,4 +381,9 @@ export default function authenticateFactory(
       strategy.authenticate(request, options)
     })(0) // attempt
   }
+  return authenticate as (
+    request: FastifyRequest,
+    reply: FastifyReply<ServerResponse>,
+    next: any
+  ) => {}
 }
