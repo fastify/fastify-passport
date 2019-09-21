@@ -15,7 +15,8 @@
     "test": "TS_NODE_PROJECT=./test/tsconfig.json tap --no-ts --node-arg=--require=ts-node/register test/**/*.ts",
     "test:watch": "chokidar \"src/**/*.ts\" \"test/**/*.ts\" -c \"npm run test\" --initial",
     "test:report": "npm run test | tee out.tap",
-    "test:reporter": "tap-mocha-reporter xunit < out.tap > junit-testresults.xml"
+    "test:reporter": "tap-mocha-reporter xunit < out.tap > junit-testresults.xml",
+    "test:html-report": "npm test && tap --coverage-report=lcov"
   },
   "repository": {
     "type": "git",
@@ -47,8 +48,11 @@
     "@types/node": "~12.6.8",
     "chokidar-cli": "~1.2.2",
     "fastify": "~2.6.0",
+    "fastify-cookie": "^3.1.0",
+    "fastify-session": "^3.0.0",
     "husky": "~3.0.1",
     "prettier": "~1.18.2",
+    "request": "^2.88.0",
     "rimraf": "~2.6.3",
     "tap": "~14.4.3",
     "tap-mocha-reporter": "~4.0.1",

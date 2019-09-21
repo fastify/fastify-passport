@@ -1,6 +1,6 @@
-import { FastifyRequest } from 'fastify'
+import { Request } from '../authenticator'
 
-type DoneCallback = (err?: Error) => void
+export type DoneCallback = (err?: Error) => void
 /**
  * Initiate a login session for `user`.
  *
@@ -21,15 +21,15 @@ type DoneCallback = (err?: Error) => void
  * @param {Function} done
  * @api public
  */
-export function logIn<T = unknown>(this: FastifyRequest, user: T, done: DoneCallback): void
+export function logIn<T = unknown>(this: Request, user: T, done: DoneCallback): void
 export function logIn<T = unknown>(
-  this: FastifyRequest,
+  this: Request,
   user: T,
   options: { session?: boolean },
   done?: DoneCallback,
 ): void
 export function logIn<T = unknown>(
-  this: FastifyRequest,
+  this: Request,
   user: T,
   options: { session?: boolean } | DoneCallback,
   done?: DoneCallback,
@@ -56,7 +56,7 @@ export function logIn<T = unknown>(
     }
 
     const self = this
-    this._passport.instance._sm.logIn(this, user, function(err?: Error) {
+    this._passport.instance._sessionManager.logIn(this, user, function(err?: Error) {
       if (err) {
         self[property] = null
         return done!(err)

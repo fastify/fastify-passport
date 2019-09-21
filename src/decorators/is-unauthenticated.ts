@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import { Request } from '../authenticator'
 
 /**
  * Test if request is unauthenticated.
@@ -6,6 +6,6 @@ import { FastifyRequest } from 'fastify'
  * @return {Boolean}
  * @api public
  */
-export function isUnauthenticated(this: FastifyRequest): boolean {
+export function isUnauthenticated(this: Request): boolean {
   return !this.isAuthenticated()
 }
