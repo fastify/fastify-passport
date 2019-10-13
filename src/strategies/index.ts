@@ -72,7 +72,7 @@ export interface AugmentedStrategy {
    * @param {Number} status
    * @api public
    */
-  fail(challenge: any, status: number): void
+  fail(challenge?: any, status?: number): void
   fail(status: number): void
 
   /**

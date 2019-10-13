@@ -95,7 +95,7 @@ export default function authenticateFactory(
   passport: Authenticator,
   name: string | string[],
   options?: AuthenticateFactoryOptions | AuthenticateFactoryCallback,
-  callback?: AuthenticateFactoryCallback
+  callback?: AuthenticateFactoryCallback,
 ) {
   if (typeof options === 'function') {
     callback = options
@@ -120,11 +120,7 @@ export default function authenticateFactory(
     multi = false
   }
 
-  function authenticate(
-    request: Request,
-    reply: FastifyReply<ServerResponse>,
-    next: any
-  ) {
+  function authenticate(request: Request, reply: FastifyReply<ServerResponse>, next: any) {
     // accumulator for failures from each strategy in the chain
     const failures: FailureObject[] = []
 
@@ -206,7 +202,7 @@ export default function authenticateFactory(
       }
       if (authenticateOptions.failWithError) {
         return next(
-          new AuthenticationError(http.STATUS_CODES[reply.res.statusCode]!, rstatus as number)
+          new AuthenticationError(http.STATUS_CODES[reply.res.statusCode]!, rstatus as number),
         )
       }
       reply.send(http.STATUS_CODES[reply.res.statusCode])
@@ -327,7 +323,7 @@ export default function authenticateFactory(
        *
        * Strategies should call this function to fail an authentication attempt.
        */
-      strategy.fail = function(challenge: string | number | undefined, status?: number) {
+      strategy.fail = function(challenge?: string | number | undefined, status?: number) {
         if (typeof challenge === 'number') {
           status = challenge
           challenge = undefined
@@ -384,6 +380,6 @@ export default function authenticateFactory(
   return authenticate as (
     request: FastifyRequest,
     reply: FastifyReply<ServerResponse>,
-    next: any
+    next: any,
   ) => {}
 }
