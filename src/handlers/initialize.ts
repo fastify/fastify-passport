@@ -3,12 +3,14 @@ import { logIn, logOut, isAuthenticated, isUnauthenticated } from '../decorators
 import Authenticator, { Request } from '../authenticator'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { ServerResponse } from 'http'
+import flash from 'fastify-flash'
 
-export default function initializeFactory (
+export default function initializeFactory(
   passport: Authenticator,
-  options: {userProperty?: string} = {}
+  options: { userProperty?: string } = {},
 ) {
-  return fp(function initialize (fastify, opts, next) {
+  return fp(function initialize(fastify, opts, next) {
+    fastify.register(flash)
     fastify.decorateRequest('_passport', { instance: passport })
     fastify.addHook('preValidation', preValidation())
     fastify.decorateRequest('logIn', logIn)
@@ -22,14 +24,14 @@ export default function initializeFactory (
   })
 }
 
-function preValidation(): (request: FastifyRequest, reply: FastifyReply<ServerResponse>, done: any) => void {
+function preValidation(): (
+  request: FastifyRequest,
+  reply: FastifyReply<ServerResponse>,
+  done: any,
+) => void {
   return function passport(request: Request, reply: FastifyReply<ServerResponse>, done: any) {
     const sessionKey = request._passport.instance._key
     request._passport.session = request.session[sessionKey]
     done()
-  } as (
-    request: FastifyRequest,
-    reply: FastifyReply<ServerResponse>,
-    next: any
-  ) => {}
+  } as (request: FastifyRequest, reply: FastifyReply<ServerResponse>, next: any) => {}
 }

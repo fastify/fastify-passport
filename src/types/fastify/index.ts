@@ -12,13 +12,11 @@ declare module 'fastify' {
     logOut: typeof logOut
     isAuthenticated: typeof isAuthenticated
     isUnauthenticated: typeof isUnauthenticated
-    session: any
     _passport: {
       instance: any
       session?: any
     }
     user: any
     authInfo: any
-    flash(key: string, message: string): void
   }
 }

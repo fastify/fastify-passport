@@ -18,10 +18,21 @@ export interface Request extends FastifyRequest {
   }
   flash(key: string, message: string)
   logIn<T = unknown>(this: Request, user: T, done: DoneCallback): void
-  logIn<T = unknown>(this: Request, user: T, options: { session?: boolean }, done?: DoneCallback): void
-  logIn<T = unknown>(this: Request, user: T, options: { session?: boolean } | DoneCallback, done?: DoneCallback)
+  logIn<T = unknown>(
+    this: Request,
+    user: T,
+    options: { session?: boolean },
+    done?: DoneCallback,
+  ): void
+  logIn<T = unknown>(
+    this: Request,
+    user: T,
+    options: { session?: boolean } | DoneCallback,
+    done?: DoneCallback,
+  )
   authInfo: any
   isAuthenticated(this: Request)
+  session: any
 }
 
 export class Authenticator {
@@ -187,7 +198,7 @@ export class Authenticator {
    * @return {Function} middleware
    */
   public session(options?: AuthenticateFactoryOptions) {
-    const authenticate = authenticateFactory(this, 'session', options)
+    const authenticate: any = authenticateFactory(this, 'session', options)
     return fastifyPlugin(function session(fastify, opts, next) {
       fastify.addHook('preValidation', authenticate)
       next()
