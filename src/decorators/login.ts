@@ -1,4 +1,4 @@
-import { Request } from '../authenticator'
+import { FastifyRequest } from 'fastify'
 
 export type DoneCallback = (err?: Error) => void
 /**
@@ -21,15 +21,15 @@ export type DoneCallback = (err?: Error) => void
  * @param {Function} done
  * @api public
  */
-export function logIn<T = unknown>(this: Request, user: T, done: DoneCallback): void
+export function logIn<T = unknown>(this: FastifyRequest, user: T, done: DoneCallback): void
 export function logIn<T = unknown>(
-  this: Request,
+  this: FastifyRequest,
   user: T,
   options: { session?: boolean },
   done?: DoneCallback,
 ): void
 export function logIn<T = unknown>(
-  this: Request,
+  this: FastifyRequest,
   user: T,
   options: { session?: boolean } | DoneCallback,
   done?: DoneCallback,
@@ -49,7 +49,7 @@ export function logIn<T = unknown>(
   this[property] = user
   if (session) {
     if (!this._passport) {
-      throw new Error('passport.initialize() middleware not in use')
+      throw new Error('passport.initialize() plugin not in use')
     }
     if (typeof done !== 'function') {
       throw new Error('req.login requires a callback function')

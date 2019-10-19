@@ -3,64 +3,7 @@ import AuthenticationError from '../errors'
 import Authenticator from '../authenticator'
 import BasicStrategy from '../strategies'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { Request } from '../authenticator'
-
-/**
- * Authenticates requests.
- *
- * Applies the `name`ed strategy (or strategies) to the incoming request, in
- * order to authenticate the request.  If authentication is successful, the user
- * will be logged in and populated at `req.user` and a session will be
- * established by default.  If authentication fails, an unauthorized response
- * will be sent.
- *
- * Options:
- *   - `session`          Save login state in session, defaults to _true_
- *   - `successRedirect`  After successful login, redirect to given URL
- *   - `successMessage`   True to store success message in
- *                        req.session.messages, or a string to use as override
- *                        message for success.
- *   - `successFlash`     True to flash success messages or a string to use as a flash
- *                        message for success (overrides any from the strategy itself).
- *   - `failureRedirect`  After failed login, redirect to given URL
- *   - `failureMessage`   True to store failure message in
- *                        req.session.messages, or a string to use as override
- *                        message for failure.
- *   - `failureFlash`     True to flash failure messages or a string to use as a flash
- *                        message for failures (overrides any from the strategy itself).
- *   - `assignProperty`   Assign the object provided by the verify callback to given property
- *
- * An optional `callback` can be supplied to allow the application to override
- * the default manner in which authentication attempts are handled.  The
- * callback has the following signature, where `user` will be set to the
- * authenticated user on a successful authentication attempt, or `false`
- * otherwise.  An optional `info` argument will be passed, containing additional
- * details provided by the strategy's verify callback - this could be information about
- * a successful authentication or a challenge message for a failed authentication.
- * An optional `status` argument will be passed when authentication fails - this could
- * be a HTTP response code for a remote authentication failure or similar.
- *
- *     app.get('/protected', function(req, res, next) {
- *       passport.authenticate('local', function(err, user, info, status) {
- *         if (err) { return next(err) }
- *         if (!user) { return res.redirect('/signin') }
- *         res.redirect('/account');
- *       })(req, res, next);
- *     });
- *
- * Note that if a callback is supplied, it becomes the application's
- * responsibility to log-in the user, establish a session, and otherwise perform
- * the desired operations.
- *
- * Examples:
- *
- *     passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' });
- *
- *     passport.authenticate('basic', { session: false });
- *
- *     passport.authenticate('twitter');
- *
- */
+import '../types/fastify'
 
 type FlashObject = { type?: string; message?: string }
 type FailureObject = {
@@ -120,7 +63,7 @@ export default function authenticateFactory(
     multi = false
   }
 
-  function authenticate(request: Request, reply: FastifyReply<ServerResponse>, next: any) {
+  function authenticate(request: FastifyRequest, reply: FastifyReply<ServerResponse>, next: any) {
     // accumulator for failures from each strategy in the chain
     const failures: FailureObject[] = []
 
@@ -168,8 +111,8 @@ export default function authenticateFactory(
           msg = (challenge as FlashObject).message || challenge
         }
         if (typeof msg === 'string') {
-          request.session.messages = request.session.messages || []
-          request.session.messages.push(msg)
+          ;(request.session as any).messages = (request.session as any).messages || []
+          ;(request.session as any).messages.push(msg)
         }
       }
       if (authenticateOptions.failureRedirect) {
@@ -274,8 +217,8 @@ export default function authenticateFactory(
             msg = info.message || info
           }
           if (typeof msg === 'string') {
-            request.session.messages = request.session.messages || []
-            request.session.messages.push(msg)
+            ;(request.session as any).messages = (request.session as any).messages || []
+            ;(request.session as any).messages.push(msg)
           }
         }
         if (authenticateOptions.assignProperty) {
@@ -291,9 +234,9 @@ export default function authenticateFactory(
           function complete() {
             if (authenticateOptions.successReturnToOrRedirect) {
               let url = authenticateOptions.successReturnToOrRedirect
-              if (request.session && request.session.returnTo) {
-                url = request.session.returnTo
-                delete request.session.returnTo
+              if (request.session && (request.session as any).returnTo) {
+                url = (request.session as any).returnTo
+                delete (request.session as any).returnTo
               }
               return reply.redirect(url)
             }
@@ -377,9 +320,5 @@ export default function authenticateFactory(
       strategy.authenticate(request, options)
     })(0) // attempt
   }
-  return authenticate as (
-    request: FastifyRequest,
-    reply: FastifyReply<ServerResponse>,
-    next: any,
-  ) => {}
+  return authenticate
 }

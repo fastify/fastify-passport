@@ -1,6 +1,6 @@
-import { Request } from '../authenticator'
+import { FastifyRequest } from 'fastify'
 
-export function isAuthenticated(this: Request): boolean {
+export function isAuthenticated(this: FastifyRequest): boolean {
   let property = 'user'
   if (this._passport && this._passport.instance) {
     property = this._passport.instance._userProperty || 'user'
