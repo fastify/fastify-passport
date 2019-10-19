@@ -5,35 +5,10 @@ import { FastifyRequest } from 'fastify'
 import authenticateFactory, { AuthenticateFactoryOptions } from './handlers/authenticate'
 import initializeFactory from './handlers/initialize'
 import fastifyPlugin = require('fastify-plugin')
-import { DoneCallback } from './decorators/login'
 
 type DoneFunction = (err: null | Error | 'pass', user?: any) => void
 
 // (request: FastifyRequest, user: any, done: DoneFunction): void
-
-export interface Request extends FastifyRequest {
-  _passport: {
-    instance: Authenticator
-    session: any
-  }
-  flash(key: string, message: string)
-  logIn<T = unknown>(this: Request, user: T, done: DoneCallback): void
-  logIn<T = unknown>(
-    this: Request,
-    user: T,
-    options: { session?: boolean },
-    done?: DoneCallback,
-  ): void
-  logIn<T = unknown>(
-    this: Request,
-    user: T,
-    options: { session?: boolean } | DoneCallback,
-    done?: DoneCallback,
-  )
-  authInfo: any
-  isAuthenticated(this: Request)
-  session: any
-}
 
 export class Authenticator {
   private _strategies: { [k: string]: Strategy } = {}

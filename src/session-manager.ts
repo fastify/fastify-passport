@@ -1,4 +1,4 @@
-import { Request } from './authenticator'
+import { FastifyRequest } from 'fastify'
 
 class SessionManager {
   _key: string
@@ -15,7 +15,7 @@ class SessionManager {
     this._serializeUser = serializeUser
   }
 
-  logIn(request: Request, user: any, cb: (err?: Error) => void) {
+  logIn(request: FastifyRequest, user: any, cb: (err?: Error) => void) {
     const self = this
     this._serializeUser(user, request, function(err: Error, obj: any) {
       if (err) {
@@ -33,7 +33,7 @@ class SessionManager {
     })
   }
 
-  logOut(request: Request, cb?: () => void) {
+  logOut(request: FastifyRequest, cb?: () => void) {
     if (request._passport && request._passport.session) {
       delete request._passport.session.user
     }

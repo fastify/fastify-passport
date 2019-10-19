@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin'
 import { logIn, logOut, isAuthenticated, isUnauthenticated } from '../decorators'
-import Authenticator, { Request } from '../authenticator'
+import Authenticator from '../authenticator'
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { ServerResponse } from 'http'
 import flash from 'fastify-flash'
@@ -29,9 +29,13 @@ function preValidation(): (
   reply: FastifyReply<ServerResponse>,
   done: any,
 ) => void {
-  return function passport(request: Request, reply: FastifyReply<ServerResponse>, done: any) {
+  return function passport(
+    request: FastifyRequest,
+    reply: FastifyReply<ServerResponse>,
+    done: any,
+  ) {
     const sessionKey = request._passport.instance._key
     request._passport.session = request.session[sessionKey]
     done()
-  } as (request: FastifyRequest, reply: FastifyReply<ServerResponse>, next: any) => {}
+  }
 }

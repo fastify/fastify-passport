@@ -19,11 +19,20 @@ class TestStrategy extends Strategy {
 }
 
 fastifyPassport.use(new TestStrategy('test'))
+fastifyPassport.unuse('test')
+fastifyPassport.use('test', new TestStrategy('test'))
 fastifyPassport.serializeUser((user, done) => {
   done(null, JSON.stringify(user))
 })
 fastifyPassport.deserializeUser((user, done) => {
   done(null, user)
+})
+
+test('should throw error if strategy has no name', (t) => {
+  t.plan(1)
+  t.throws(() => {
+    fastifyPassport.use({} as Strategy)
+  })
 })
 
 test(`should return 401 Unauthorized if not logged in`, async (t) => {
