@@ -8,14 +8,11 @@ import fastifyPlugin = require('fastify-plugin')
 
 type DoneFunction = (err: null | Error | 'pass', user?: any) => void
 
-// (request: FastifyRequest, user: any, done: DoneFunction): void
-
 export class Authenticator {
   private _strategies: { [k: string]: Strategy } = {}
   private _serializers: Function[] = []
   private _deserializers: Function[] = []
   private _infoTransformers: Function[] = []
-  private _framework: any
   public _key = 'passport'
   public _userProperty = 'user'
   public _sessionManager: SessionManager
@@ -25,21 +22,6 @@ export class Authenticator {
     this._sessionManager = new SessionManager({ key: this._key }, this.serializeUser.bind(this))
   }
 
-  /**
-   * Utilize the given `strategy` with optional `name`, overridding the strategy's
-   * default name.
-   *
-   * Examples:
-   *
-   *     passport.use(new TwitterStrategy(...));
-   *
-   *     passport.use('api', new http.Strategy(...));
-   *
-   * @param {String|Strategy} name
-   * @param {Strategy} strategy
-   * @return {Authenticator} for chaining
-   * @api public
-   */
   use(strategy: Strategy): this
   use(name: string, strategy: Strategy): this
   use(name: Strategy | string, strategy?: Strategy): this {
@@ -55,87 +37,24 @@ export class Authenticator {
     return this
   }
 
-  /**
-   * Un-utilize the `strategy` with given `name`.
-   *
-   * In typical applications, the necessary authentication strategies are static,
-   * configured once and always available.  As such, there is often no need to
-   * invoke this function.
-   *
-   * However, in certain situations, applications may need dynamically configure
-   * and de-configure authentication strategies.  The `use()`/`unuse()`
-   * combination satisfies these scenarios.
-   *
-   * Examples:
-   *
-   *     passport.unuse('legacy-api');
-   *
-   * @param {String} name
-   * @return {Authenticator} for chaining
-   * @api public
-   */
-  unuse(name: string): this {
+  public unuse(name: string): this {
     delete this._strategies[name]
     return this
   }
 
-  initialize(options?: { userProperty?: string }) {
+  public initialize(options?: { userProperty?: string }) {
     return initializeFactory(this, options)
   }
 
-  /**
-   * Middleware that will authenticate a request using the given `strategy` name,
-   * with optional `options` and `callback`.
-   *
-   * Examples:
-   *
-   *     passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' })(req, res);
-   *
-   *     passport.authenticate('local', function(err, user) {
-   *       if (!user) { return res.redirect('/login'); }
-   *       res.end('Authenticated!');
-   *     })(req, res);
-   *
-   *     passport.authenticate('basic', { session: false })(req, res);
-   *
-   *     app.get('/auth/twitter', passport.authenticate('twitter'), function(req, res) {
-   *       // request will be redirected to Twitter
-   *     });
-   *     app.get('/auth/twitter/callback', passport.authenticate('twitter'), function(req, res) {
-   *       res.json(req.user);
-   *     });
-   */
   public authenticate(strategy: string, options?: AuthenticateFactoryOptions, callback?) {
-    return authenticateFactory(this, strategy, options, callback) as any
+    return authenticateFactory(this, strategy, options, callback)
   }
 
-  /**
-   * Middleware that will authorize a third-party account using the given
-   * `strategy` name, with optional `options`.
-   *
-   * If authorization is successful, the result provided by the strategy's verify
-   * callback will be assigned to `req.account`.  The existing login session and
-   * `req.user` will be unaffected.
-   *
-   * This function is particularly useful when connecting third-party accounts
-   * to the local account of a user that is currently authenticated.
-   *
-   * Examples:
-   *
-   *    passport.authorize('twitter-authz', { failureRedirect: '/account' });
-   *
-   * @param {String} strategy
-   * @param {Object} options
-   * @return {Function} middleware
-   * @api public
-   */
-  authorize(strategy: string, options?: any, callback?: Function) {
+  authorize(strategy: string, options?: any, callback?) {
     options = options || {}
     options.assignProperty = 'account'
 
-    const fn = this._framework.authorize || this._framework.authenticate
-    // TODO: _framework.authenticate must return fastify pre-handler in order to authenticate the incoming request
-    return fn(this, strategy, options, callback)
+    return authenticateFactory(this, strategy, options, callback)
   }
 
   /**

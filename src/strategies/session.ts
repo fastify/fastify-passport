@@ -3,7 +3,7 @@ import Authenticator from '../authenticator'
 import { FastifyRequest } from 'fastify'
 
 class SessionStrategy extends Strategy {
-  _deserializeUser: Function
+  private _deserializeUser: Function
 
   constructor(deserializeUser: Authenticator['deserializeUser'])
   constructor(options: any, deserializeUser: Authenticator['deserializeUser'])
@@ -30,36 +30,36 @@ class SessionStrategy extends Strategy {
    *
    * This strategy is registered automatically by Passport.
    *
-   * @param {Object} req
+   * @param {Object} request
    * @param {Object} options
    * @api protected
    */
-  authenticate(req: FastifyRequest, options?: { pauseStream?: boolean }) {
-    if (!req._passport) {
-      return this.error!(new Error('passport.initialize() middleware not in use'))
+  authenticate(request: FastifyRequest, options?: { pauseStream?: boolean }) {
+    if (!request._passport) {
+      return this.error!(new Error('passport.initialize() plugin not in use'))
     }
     options = options || {}
     // we need this to prevent basic passport's strategies to use unsupported feature.
     if (options.pauseStream) {
-      throw new Error(`fastify-passport doesn't support pauseStream option.`)
+      return this.error!(new Error("fastify-passport doesn't support pauseStream option."))
     }
 
     let sessionUser
-    if (req._passport.session) {
-      sessionUser = req._passport.session.user
+    if (request._passport.session) {
+      sessionUser = request._passport.session.user
     }
 
     if (sessionUser || sessionUser === 0) {
-      this._deserializeUser(sessionUser, req, (err?: Error | null, user?: any) => {
+      this._deserializeUser(sessionUser, request, (err?: Error | null, user?: any) => {
         if (err) {
           return this.error!(err)
         }
         if (!user) {
-          delete req._passport.session.user
+          delete request._passport.session.user
         } else {
           // TODO: Remove instance access
-          const property = req._passport.instance._userProperty || 'user'
-          req[property] = user
+          const property = request._passport.instance._userProperty || 'user'
+          request[property] = user
         }
         this.pass!()
       })

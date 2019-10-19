@@ -89,6 +89,55 @@ Examples:
  * `passport.authenticate('basic', { session: false });`
  * `passport.authenticate('twitter');`
 
+### authorize(name, options)
+
+Middleware that will authorize a third-party account using the given
+`strategy` name, with optional `options`.
+
+If authorization is successful, the result provided by the strategy's verify
+callback will be assigned to `request.account`.  The existing login session and
+`request.user` will be unaffected.
+
+This function is particularly useful when connecting third-party accounts
+to the local account of a user that is currently authenticated.
+
+Examples:
+
+```js
+passport.authorize('twitter-authz', { failureRedirect: '/account' });
+```
+
+### use([name], strategy)
+
+Utilize the given `strategy` with optional `name`, overridding the strategy's
+default name.
+
+Examples:
+
+```js
+passport.use(new TwitterStrategy(...));
+
+passport.use('api', new http.Strategy(...));
+```
+
+### unuse(name)
+
+Un-utilize the `strategy` with given `name`.
+
+In typical applications, the necessary authentication strategies are static,
+configured once and always available.  As such, there is often no need to
+invoke this function.
+
+However, in certain situations, applications may need dynamically configure
+and de-configure authentication strategies.  The `use()`/`unuse()`
+combination satisfies these scenarios.
+
+Example:
+
+```js
+passport.unuse('legacy-api');
+```
+
 ### Request#isUnauthenticated()
 
 Test if request is unauthenticated.
