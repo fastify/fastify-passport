@@ -18,5 +18,6 @@ declare module 'fastify' {
     }
     user: any
     authInfo: any
+    account: any
   }
 }
