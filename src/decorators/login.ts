@@ -1,6 +1,6 @@
-import { FastifyRequest } from 'fastify'
+import { FastifyRequest } from "fastify";
 
-export type DoneCallback = (err?: Error) => void
+export type DoneCallback = (err?: Error) => void;
 /**
  * Initiate a login session for `user`.
  *
@@ -21,51 +21,52 @@ export type DoneCallback = (err?: Error) => void
  * @param {Function} done
  * @api public
  */
-export function logIn<T = unknown>(this: FastifyRequest, user: T, done: DoneCallback): void
+export function logIn<T = unknown>(this: FastifyRequest, user: T, done: DoneCallback): void;
 export function logIn<T = unknown>(
   this: FastifyRequest,
   user: T,
   options: { session?: boolean },
-  done?: DoneCallback,
-): void
+  done?: DoneCallback
+): void;
 export function logIn<T = unknown>(
   this: FastifyRequest,
   user: T,
   options: { session?: boolean } | DoneCallback,
-  done?: DoneCallback,
+  done?: DoneCallback
 ) {
-  if (typeof options === 'function') {
-    done = options
-    options = { session: false }
+  if (typeof options === "function") {
+    done = options;
+    options = { session: false };
   }
-  options = options || {}
+  options = options || {};
 
-  let property = 'user'
+  let property = "user";
   if (this._passport && this._passport.instance) {
-    property = this._passport.instance._userProperty || 'user'
+    property = this._passport.instance._userProperty || "user";
   }
-  const session = options.session === undefined ? true : options.session
+  const session = options.session === undefined ? true : options.session;
 
-  this[property] = user
+  this[property] = user;
   if (session) {
     if (!this._passport) {
-      throw new Error('passport.initialize() plugin not in use')
+      throw new Error("passport.initialize() plugin not in use");
     }
-    if (typeof done !== 'function') {
-      throw new Error('req.login requires a callback function')
+    if (typeof done !== "function") {
+      throw new Error("req.login requires a callback function");
     }
 
-    const self = this
-    this._passport.instance._sessionManager.logIn(this, user, function(err?: Error) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    this._passport.instance._sessionManager.logIn(this, user, function (err?: Error) {
       if (err) {
-        self[property] = null
-        return done!(err)
+        self[property] = null;
+        return done!(err);
       }
-      done!()
-    })
+      done!();
+    });
   } else {
     if (done) {
-      done()
+      done();
     }
   }
 }

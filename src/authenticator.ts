@@ -1,86 +1,84 @@
-import SessionStrategy from './strategies/session'
-import SessionManager from './session-manager'
-import { Strategy } from './strategies'
-import { FastifyRequest } from 'fastify'
-import authenticateFactory, { AuthenticateFactoryOptions } from './handlers/authenticate'
-import initializeFactory from './handlers/initialize'
-import fastifyPlugin = require('fastify-plugin')
+import { SecureSessionManager } from "./session-managers/SecureSessionManager";
+import { Strategy, SessionStrategy } from "./strategies";
+import { FastifyRequest } from "fastify";
+import authenticateFactory, { AuthenticateFactoryOptions } from "./handlers/authenticate";
+import initializeFactory from "./handlers/initialize";
+import fastifyPlugin from "fastify-plugin";
 
-type DoneFunction = (err: null | Error | 'pass', user?: any) => void
+export type DoneFunction = (err: undefined | null | Error | "pass", user?: any) => void;
+export type SerializeFunction<TUser = any, TID = any> =
+  | ((user: TUser, done: (err: any, id?: TID) => void) => void)
+  | ((req: FastifyRequest, user: TUser, done: (err: any, id?: TID) => void) => void);
+export type DeserializeFunction<TUser = any, TID = any> =
+  | ((id: TID, done: (err: any, user?: TUser) => void) => void)
+  | ((req: FastifyRequest, id: TID, done: (err: any, user?: TUser) => void) => void);
+
+export type InfoTransformerFunction = ((info: any, done: (err: any, info: any) => void) => void) | ((info: any) => any);
 
 export class Authenticator {
-  private _strategies: { [k: string]: Strategy } = {}
-  private _serializers: Function[] = []
-  private _deserializers: Function[] = []
-  private _infoTransformers: Function[] = []
-  public _key = 'passport'
-  public _userProperty = 'user'
-  public _sessionManager: SessionManager
+  private _strategies: { [k: string]: Strategy } = {};
+  private _serializers: SerializeFunction<any, any>[] = [];
+  private _deserializers: DeserializeFunction<any, any>[] = [];
+  private _infoTransformers: InfoTransformerFunction[] = [];
+  public _key = "passport";
+  public _userProperty = "user";
+  public _sessionManager: SecureSessionManager;
 
   constructor() {
-    this.use(new SessionStrategy(this.deserializeUser.bind(this)))
-    this._sessionManager = new SessionManager({ key: this._key }, this.serializeUser.bind(this))
+    this.use(new SessionStrategy(this.deserializeUser.bind(this)));
+    this._sessionManager = new SecureSessionManager({ key: this._key }, this.serializeUser.bind(this));
   }
 
-  use(strategy: Strategy): this
-  use(name: string, strategy: Strategy): this
+  use(strategy: Strategy): this;
+  use(name: string, strategy: Strategy): this;
   use(name: Strategy | string, strategy?: Strategy): this {
     if (!strategy) {
-      strategy = name as Strategy
-      name = strategy.name as string
+      strategy = name as Strategy;
+      name = strategy.name as string;
     }
     if (!name) {
-      throw new Error('Authentication strategies must have a name')
+      throw new Error("Authentication strategies must have a name");
     }
 
-    this._strategies[name as string] = strategy
-    return this
+    this._strategies[name as string] = strategy;
+    return this;
   }
 
   public unuse(name: string): this {
-    delete this._strategies[name]
-    return this
+    delete this._strategies[name];
+    return this;
   }
 
   public initialize(options?: { userProperty?: string }) {
-    return initializeFactory(this, options)
+    return initializeFactory(this, options);
   }
 
   public authenticate(strategy: string, options?: AuthenticateFactoryOptions, callback?) {
-    return authenticateFactory(this, strategy, options, callback)
+    return authenticateFactory(this, strategy, options, callback);
   }
 
   authorize(strategy: string, options?: any, callback?) {
-    options = options || {}
-    options.assignProperty = 'account'
+    options = options || {};
+    options.assignProperty = "account";
 
-    return authenticateFactory(this, strategy, options, callback)
+    return authenticateFactory(this, strategy, options, callback);
   }
 
   /**
-   * Middleware that will restore login state from a session.
+   * Middleware that will restore login state from a session managed by fastify-secure-session.
    *
-   * Web applications typically use sessions to maintain login state between
-   * requests.  For example, a user will authenticate by entering credentials into
-   * a form which is submitted to the server.  If the credentials are valid, a
-   * login session is established by setting a cookie containing a session
-   * identifier in the user's web browser.  The web browser will send this cookie
-   * in subsequent requests to the server, allowing a session to be maintained.
+   * Web applications typically use sessions to maintain login state between requests.  For example, a user will authenticate by entering credentials into a form which is submitted to the server.  If the credentials are valid, a login session is established by setting a cookie containing a session identifier in the user's web browser.  The web browser will send this cookie in subsequent requests to the server, allowing a session to be maintained.
    *
-   * If sessions are being utilized, and a login session has been established,
-   * this middleware will populate `req.user` with the current user.
+   * If sessions are being utilized, and a login session has been established, this middleware will populate `req.user` with the current user.
    *
-   * Note that sessions are not strictly required for Passport to operate.
-   * However, as a general rule, most web applications will make use of sessions.
-   * An exception to this rule would be an API server, which expects each HTTP
-   * request to provide credentials in an Authorization header.
+   * Note that sessions are not strictly required for Passport to operate. However, as a general rule, most web applications will make use of sessions. An exception to this rule would be an API server, which expects each HTTP request to provide credentials in an Authorization header.
    *
    * Examples:
    *
    *     app.use(connect.cookieParser());
    *     app.use(connect.session({ secret: 'keyboard cat' }));
    *     app.use(passport.initialize());
-   *     app.use(passport.session());
+   *     app.use(passport.secureSession());
    *
    * Options:
    *   - `pauseStream`      Pause the request stream before deserializing the user
@@ -91,12 +89,12 @@ export class Authenticator {
    *
    * @return {Function} middleware
    */
-  public session(options?: AuthenticateFactoryOptions) {
-    const authenticate: any = authenticateFactory(this, 'session', options)
+  public secureSession(options?: AuthenticateFactoryOptions) {
+    const authenticate: any = authenticateFactory(this, "session", options);
     return fastifyPlugin(function session(fastify, opts, next) {
-      fastify.addHook('preValidation', authenticate)
-      next()
-    })
+      fastify.addHook("preValidation", authenticate);
+      next();
+    });
   }
 
   /**
@@ -110,64 +108,48 @@ export class Authenticator {
    *
    * @api public
    */
-  serializeUser(
-    fn:
-      | ((user: any, done: DoneFunction) => void)
-      | ((request: FastifyRequest, user: any, done: DoneFunction) => void),
-  ): void
-  serializeUser(user: any, done: DoneFunction): void
-  serializeUser(user: any, request: FastifyRequest, done: Function): void
-  serializeUser(
-    fn: Function | any,
-    req?: FastifyRequest | Function | undefined,
-    done?: Function,
-  ): void {
-    if (typeof fn === 'function') {
-      this._serializers.push(fn)
-      return
+  serializeUser<TUser, TID>(fn: SerializeFunction<TUser, TID>): void;
+  serializeUser<TUser>(user: TUser, req: FastifyRequest, done: DoneFunction): void;
+  serializeUser(fnOrUser, req?, done?) {
+    if (typeof fnOrUser === "function") {
+      this._serializers.push(fnOrUser);
+      return;
     }
 
-    // private implementation that traverses the chain of serializers, attempting
-    // to serialize a user
-    const user = fn
+    // private implementation that actually invokes the serializer chain attempting to serialize a user
+    const user = fnOrUser;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    done = done!;
+    const stack = this._serializers;
 
-    // For backwards compatibility
-    if (typeof req === 'function') {
-      done = req
-      req = undefined
-    }
-
-    const stack = this._serializers
-    ;(function pass(i: number, err?: null | 'pass' | Error, obj?: any) {
+    (function pass(index: number, err?: null | "pass" | Error, obj?: any) {
       // serializers use 'pass' as an error to skip processing
-      if ('pass' === err) {
-        err = undefined
+      if ("pass" === err) {
+        err = undefined;
       }
       // an error or serialized object was obtained, done
       if (err || obj || obj === 0) {
-        return done!(err, obj)
+        return done(err, obj);
       }
 
-      const layer = stack[i]
+      const layer = stack[index];
       if (!layer) {
-        return done!(new Error('Failed to serialize user into session'))
+        return done(new Error("Failed to serialize user into session"));
       }
 
-      function serialized(e: Error, o: any) {
-        pass(i + 1, e, o)
-      }
+      const innerDone = (innerError: Error, innerOutput: any) => pass(index + 1, innerError, innerOutput);
 
       try {
-        const arity = layer.length
+        const arity = layer.length;
         if (arity === 3) {
-          layer(req, user, serialized)
+          layer(req, user, innerDone);
         } else {
-          layer(user, serialized)
+          (layer as any)(user, innerDone);
         }
       } catch (e) {
-        return done!(e)
+        return done(e);
       }
-    })(0)
+    })(0);
   }
 
   /**
@@ -183,69 +165,54 @@ export class Authenticator {
    *
    * @api public
    */
-  deserializeUser(
-    fn:
-      | ((user: any, done: DoneFunction) => void)
-      | ((request: FastifyRequest, user: any, done: DoneFunction) => void),
-  ): void
-  deserializeUser(obj: any, done: DoneFunction): void
-  deserializeUser(obj: any, request: FastifyRequest, done: DoneFunction): void
-  deserializeUser(
-    fn: Function | any,
-    req?: FastifyRequest | Function | undefined,
-    done?: Function,
-  ): void {
-    if (typeof fn === 'function') {
-      this._deserializers.push(fn)
-      return
+  deserializeUser<TUser, TID>(fn: DeserializeFunction<TUser, TID>): void;
+  deserializeUser<TUser>(obj, req: FastifyRequest, done: DoneFunction): void;
+  deserializeUser(fnOrObj, req?: FastifyRequest, done?: DoneFunction): void {
+    if (typeof fnOrObj === "function") {
+      this._deserializers.push(fnOrObj);
+      return;
     }
 
     // private implementation that traverses the chain of deserializers,
     // attempting to deserialize a user
-    const obj = fn
+    const obj = fnOrObj;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    done = done!;
 
-    // For backwards compatibility
-    if (typeof req === 'function') {
-      done = req
-      req = undefined
-    }
-
-    const stack = this._deserializers
-    ;(function pass(i, err, user) {
+    const stack = this._deserializers;
+    (function pass(index: number, err?: undefined | null | "pass" | Error, user?: any) {
       // deserializers use 'pass' as an error to skip processing
-      if ('pass' === err) {
-        err = undefined
+      if ("pass" === err) {
+        err = undefined;
       }
       // an error or deserialized user was obtained, done
       if (err || user) {
-        return done!(err, user)
+        return done(err, user);
       }
       // a valid user existed when establishing the session, but that user has
       // since been removed
       if (user === null || user === false) {
-        return done!(null, false)
+        return done(null, false);
       }
 
-      const layer = stack[i]
+      const layer = stack[index];
       if (!layer) {
-        return done!(new Error('Failed to deserialize user out of session'))
+        return done(new Error("Failed to deserialize user out of session"));
       }
 
-      function deserialized(e: any, u: any) {
-        pass(i + 1, e, u)
-      }
+      const innerDone = (e: any, u: any) => pass(index + 1, e, u);
 
       try {
-        const arity = layer.length
+        const arity = layer.length;
         if (arity === 3) {
-          layer(req, obj, deserialized)
+          layer(req, obj, innerDone);
         } else {
-          layer(obj, deserialized)
+          (layer as any)(obj, innerDone);
         }
       } catch (e) {
-        return done!(e)
+        return done(e);
       }
-    })(0)
+    })(0);
   }
 
   /**
@@ -286,70 +253,57 @@ export class Authenticator {
    *
    * @api public
    */
-  transformAuthInfo(
-    fn:
-      | ((info: any, done: DoneFunction) => void)
-      | ((request: FastifyRequest, info: any, done: DoneFunction) => void),
-  ): void
-  transformAuthInfo(obj: any, done: DoneFunction): void
-  transformAuthInfo(obj: any, request: FastifyRequest, done: DoneFunction): void
-  transformAuthInfo(
-    fn: Function | any,
-    req?: FastifyRequest | Function | undefined,
-    done?: Function,
-  ): void {
-    if (typeof fn === 'function') {
-      this._infoTransformers.push(fn)
-      return
+  transformAuthInfo(fn: InfoTransformerFunction): void;
+  transformAuthInfo(obj: any, request: FastifyRequest, done: DoneFunction): void;
+  transformAuthInfo(fn, req?: FastifyRequest, done?: DoneFunction): void {
+    if (typeof fn === "function") {
+      this._infoTransformers.push(fn);
+      return;
     }
 
     // private implementation that traverses the chain of transformers,
     // attempting to transform auth info
-    const info = fn
+    const info = fn;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    done = done!;
 
-    // For backwards compatibility
-    if (typeof req === 'function') {
-      done = req
-      req = undefined
-    }
-
-    const stack = this._infoTransformers
-    ;(function pass(i, err, tinfo) {
+    const stack = this._infoTransformers;
+    (function pass(index, err, tinfo) {
       // transformers use 'pass' as an error to skip processing
-      if ('pass' === err) {
-        err = undefined
+      if ("pass" === err) {
+        err = undefined;
       }
       // an error or transformed info was obtained, done
       if (err || tinfo) {
-        return done!(err, tinfo)
+        return done(err, tinfo);
       }
 
-      const layer = stack[i]
+      const layer = stack[index];
       if (!layer) {
         // if no transformers are registered (or they all pass), the default
         // behavior is to use the un-transformed info as-is
-        return done!(null, info)
+        return done(null, info);
       }
 
       function transformed(e: any, t: any) {
-        pass(i + 1, e, t)
+        pass(index + 1, e, t);
       }
 
       try {
-        const arity = layer.length
+        const arity = layer.length;
         if (arity === 1) {
           // sync
-          const t = layer(info)
-          transformed(null, t)
+          const t = (layer as any)(info);
+          transformed(null, t);
         } else if (arity === 3) {
-          layer(req, info, transformed)
+          (layer as any)(req, info, transformed);
         } else {
-          layer(info, transformed)
+          layer(info, transformed);
         }
       } catch (e) {
-        return done!(e)
+        return done(e);
       }
-    })(0)
+    })(0);
   }
 
   /**
@@ -360,8 +314,8 @@ export class Authenticator {
    * @api private
    */
   _strategy(name: string): Strategy {
-    return this._strategies[name]
+    return this._strategies[name];
   }
 }
 
-export default Authenticator
+export default Authenticator;

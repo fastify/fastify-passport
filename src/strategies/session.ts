@@ -1,24 +1,24 @@
-import { Strategy } from '../strategies'
-import Authenticator from '../authenticator'
-import { FastifyRequest } from 'fastify'
+import { FastifyStrategy } from "./base";
+import { DeserializeFunction } from "../authenticator";
+import type { FastifyRequest } from "fastify";
 
-class SessionStrategy extends Strategy {
-  private _deserializeUser: Function
+/**
+ * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
+ * */
+export class SessionStrategy extends FastifyStrategy {
+  private _deserializeUser: DeserializeFunction;
 
-  constructor(deserializeUser: Authenticator['deserializeUser'])
-  constructor(options: any, deserializeUser: Authenticator['deserializeUser'])
-  constructor(
-    options: Authenticator['deserializeUser'] | any,
-    deserializeUser?: Authenticator['deserializeUser'],
-  ) {
-    super('session')
-    if (typeof options === 'function') {
-      deserializeUser = options
-      options = undefined
+  constructor(deserializeUser: DeserializeFunction);
+  constructor(options: any, deserializeUser: DeserializeFunction);
+  constructor(options: DeserializeFunction | any, deserializeUser?: DeserializeFunction) {
+    super("session");
+    if (typeof options === "function") {
+      deserializeUser = options;
+      options = undefined;
     }
-    options = options || {}
+    options = options || {};
 
-    this._deserializeUser = deserializeUser!
+    this._deserializeUser = deserializeUser!;
   }
 
   /**
@@ -36,37 +36,35 @@ class SessionStrategy extends Strategy {
    */
   authenticate(request: FastifyRequest, options?: { pauseStream?: boolean }) {
     if (!request._passport) {
-      return this.error!(new Error('passport.initialize() plugin not in use'))
+      return this.error!(new Error("passport.initialize() plugin not in use"));
     }
-    options = options || {}
+    options = options || {};
     // we need this to prevent basic passport's strategies to use unsupported feature.
     if (options.pauseStream) {
-      return this.error!(new Error("fastify-passport doesn't support pauseStream option."))
+      return this.error!(new Error("fastify-passport doesn't support pauseStream option."));
     }
 
-    let sessionUser
+    let sessionUser;
     if (request._passport.session) {
-      sessionUser = request._passport.session.user
+      sessionUser = request._passport.session.user;
     }
 
     if (sessionUser || sessionUser === 0) {
       this._deserializeUser(sessionUser, request, (err?: Error | null, user?: any) => {
         if (err) {
-          return this.error!(err)
+          return this.error!(err);
         }
         if (!user) {
-          delete request._passport.session.user
+          delete request._passport.session.user;
         } else {
           // TODO: Remove instance access
-          const property = request._passport.instance._userProperty || 'user'
-          request[property] = user
+          const property = request._passport.instance._userProperty || "user";
+          request[property] = user;
         }
-        this.pass!()
-      })
+        this.pass!();
+      });
     } else {
-      this.pass!()
+      this.pass!();
     }
   }
 }
-
-export default SessionStrategy
