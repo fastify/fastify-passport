@@ -59,7 +59,7 @@ jspm_packages/
 .next
 
 # compiled lib
-lib
+dist
 
 # TAP files
 out.tap

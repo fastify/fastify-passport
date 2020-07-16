@@ -4,7 +4,7 @@
     "declaration": true,
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "lib",
+    "outDir": "dist",
     "pretty": true,
     "noEmitOnError": true,
     "experimentalDecorators": true,
@@ -15,15 +15,13 @@
     "esModuleInterop": true,
     "removeComments": true,
     "noUnusedLocals": true,
-    "lib": [
-      "esnext"
-    ],
-    "typeRoots" : ["./node_modules/@types", "./src/types"]
+    "lib": ["esnext"],
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "formatCodeOptions": {
     "identSize": 2,
     "tabSize": 2
   },
   "exclude": ["node_modules"],
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.ts", "./test/**/*.ts"]
 }

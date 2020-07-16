@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import { FastifyRequest } from "fastify";
 
 /**
  * Terminate an existing login session.
@@ -6,13 +6,13 @@ import { FastifyRequest } from 'fastify'
  * @api public
  */
 export function logOut(this: FastifyRequest): void {
-  let property = 'user'
+  let property = "user";
   if (this._passport && this._passport.instance) {
-    property = this._passport.instance._userProperty || 'user'
+    property = this._passport.instance._userProperty || "user";
   }
 
-  this[property] = null
+  this[property] = null;
   if (this._passport) {
-    this._passport.instance._sessionManager.logOut(this)
+    this._passport.instance._sessionManager.logOut(this);
   }
 }

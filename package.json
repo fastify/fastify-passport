@@ -1,23 +1,15 @@
 {
   "name": "fastify-passport",
-  "version": "0.4.0",
+  "version": "0.1.0",
   "description": "Simple, unobtrusive authentication for Fastify.",
-  "main": "./lib",
+  "main": "./dist/src/index.js",
   "scripts": {
-    "prebuild": "npm run lint && npm run clean-build",
-    "build": "tsc",
-    "clean-build": "rimraf ./lib && mkdir lib",
-    "update": "npx npm-check -u",
-    "prettier": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\"",
-    "prelint": "npm run prettier",
-    "lint": "tslint --fix -c tslint.json -t stylish -p ./tsconfig.json",
-    "prepublishOnly": "npm run build",
-    "unit": "TS_NODE_PROJECT=./test/tsconfig.json tap --no-ts --coverage-report=lcov --no-browser --node-arg=--require=ts-node/register test/**/*.ts",
-    "test": "npm run build && npm run unit",
-    "test:watch": "chokidar \"src/**/*.ts\" \"test/**/*.ts\" -c \"npm run test\" --initial",
-    "test:report": "npm run test | tee out.tap",
-    "test:reporter": "tap-mocha-reporter xunit < out.tap > junit-testresults.xml",
-    "test:html-report": "npm test && tap --coverage-report=lcov"
+    "build": "rm -rf ./dist && mkdir dist && tsc",
+    "lint": "eslint '*/**/*.{js,ts,tsx}'",
+    "lintfix": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\" && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "prepublishOnly": "yarn run build",
+    "test": "yarn run build && yarn run test:unit",
+    "test:unit": "jest"
   },
   "repository": {
     "type": "git",
@@ -43,36 +35,36 @@
   },
   "homepage": "http://passportjs.org/",
   "engines": {
-    "node": ">= 10.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "~12.6.8",
-    "chokidar-cli": "~1.2.2",
-    "fastify": "^2.8.0",
-    "fastify-cookie": "^3.1.0",
-    "fastify-session": "^3.0.0",
-    "husky": "~3.0.1",
-    "prettier": "~1.18.2",
-    "request": "^2.88.0",
-    "rimraf": "~2.6.3",
-    "tap": "~14.4.3",
-    "tap-mocha-reporter": "~4.0.1",
-    "ts-node": "~8.3.0",
-    "tslint": "~5.18.0",
-    "tslint-config-prettier": "~1.18.0",
-    "typescript": "~3.5.3"
-  },
-  "files": [
-    "/lib",
-    "/typings"
-  ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run test && npm run build"
-    }
+    "node": ">= 12.0.0"
   },
   "dependencies": {
-    "fastify-flash": "^1.0.4",
-    "fastify-plugin": "~1.6.0"
-  }
+    "fastify-flash": "^2.0.2",
+    "fastify-plugin": "^2.0.1",
+    "fastify-secure-session": "^2.1.0"
+  },
+  "peerDependencies": {
+    "fastify": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.4",
+    "@types/node": "^14.0.23",
+    "@types/passport": "^1.0.4",
+    "@typescript-eslint/eslint-plugin": "^3.6.1",
+    "@typescript-eslint/parser": "^3.6.1",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "fastify": "^3.0.3",
+    "jest": "^26.1.0",
+    "passport-facebook": "^3.0.0",
+    "passport-github2": "^0.1.12",
+    "passport-google-oauth": "^2.0.0",
+    "prettier": "^2.0.5",
+    "request": "^2.88.2",
+    "ts-jest": "^26.1.2",
+    "typescript": "^3.9.6"
+  },
+  "files": [
+    "/dist/src"
+  ]
 }
