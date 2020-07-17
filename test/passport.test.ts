@@ -68,7 +68,7 @@ test(`should allow login, and add successMessage to the session from a strategy 
       if (request.isAuthenticated()) {
         return this.pass!();
       }
-      if (request.body && request.body.login === "otheruser" && request.body.password === "test") {
+      if (request.body && request.body.login === "welcomeuser" && request.body.password === "test") {
         return this.success!({ name: "test" }, { message: "welcome from strategy" });
       }
       this.fail!();
@@ -97,7 +97,7 @@ test(`should allow login, and add successMessage to the session from a strategy 
 
   const login = await server.inject({
     method: "POST",
-    payload: { login: "otheruser", password: "test" },
+    payload: { login: "welcomeuser", password: "test" },
     url: "/login",
   });
   expect(login.statusCode).toEqual(302);
