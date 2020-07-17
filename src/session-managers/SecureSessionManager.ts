@@ -1,4 +1,4 @@
-import type { FastifyRequest } from "fastify";
+import { FastifyRequest } from "fastify";
 import { SerializeFunction } from "../authenticator";
 
 /** Class for storing passport data in the session using `fastify-secure-session` */

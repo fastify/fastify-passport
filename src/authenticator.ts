@@ -1,7 +1,7 @@
 import { SecureSessionManager } from "./session-managers/SecureSessionManager";
 import { Strategy, SessionStrategy } from "./strategies";
 import { FastifyRequest } from "fastify";
-import authenticateFactory, { AuthenticateFactoryOptions } from "./handlers/authenticate";
+import { AuthenticateOptions, AuthenticateCallback, AuthenticationHandler } from "./handlers/AuthenticationHandler";
 import initializeFactory from "./handlers/initialize";
 import fastifyPlugin from "fastify-plugin";
 
@@ -53,32 +53,117 @@ export class Authenticator {
     return initializeFactory(this, options);
   }
 
-  public authenticate(strategy: string, options?: AuthenticateFactoryOptions, callback?) {
-    return authenticateFactory(this, strategy, options, callback);
-  }
+  /**
+   * Hook or handler that will authenticate a request using the given `strategy` name,
+   * with optional `options` and `callback`.
+   *
+   * Examples:
+   *
+   *     passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' })(req, res);
+   *
+   *     passport.authenticate('local', function(err, user) {
+   *       if (!user) { return res.redirect('/login'); }
+   *       res.end('Authenticated!');
+   *     })(req, res);
+   *
+   *     passport.authenticate('basic', { session: false })(req, res);
+   *
+   *     app.get('/auth/twitter', passport.authenticate('twitter'), function(req, res) {
+   *       // request will be redirected to Twitter
+   *     });
+   *     app.get('/auth/twitter/callback', passport.authenticate('twitter'), function(req, res) {
+   *       res.json(request.user);
+   *     });
+   *
+   * @param {String} strategy
+   * @param {Object} options
+   * @param {Function} callback
+   * @return {Function} middleware
+   * @api public
+   */
+  public authenticate<StrategyName extends string | string[]>(
+    strategy: StrategyName,
+    callback?: AuthenticateCallback<StrategyName>
+  );
+  public authenticate<StrategyName extends string | string[]>(strategy: StrategyName, options?: AuthenticateOptions);
+  public authenticate<StrategyName extends string | string[]>(
+    strategy: StrategyName,
+    options?: AuthenticateOptions,
+    callback?: AuthenticateCallback<StrategyName>
+  );
+  public authenticate<StrategyName extends string | string[]>(
+    strategyOrStrategies: StrategyName,
+    optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
+    callback?: AuthenticateCallback<StrategyName>
+  ) {
+    let options;
+    if (typeof optionsOrCallback == "function") {
+      options = {};
+      callback = optionsOrCallback;
+    } else {
+      options = optionsOrCallback;
+    }
 
-  authorize(strategy: string, options?: any, callback?) {
-    options = options || {};
-    options.assignProperty = "account";
-
-    return authenticateFactory(this, strategy, options, callback);
+    return new AuthenticationHandler(this, strategyOrStrategies, options, callback).handler;
   }
 
   /**
-   * Middleware that will restore login state from a session managed by fastify-secure-session.
+   * Hook or handler that will authorize a third-party account using the given `strategy` name, with optional `options`.
+   *
+   * If authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`.  The existing login session and `request.user` will be unaffected.
+   *
+   * This function is particularly useful when connecting third-party accounts to the local account of a user that is currently authenticated.
+   *
+   * Examples:
+   *
+   *    passport.authorize('twitter-authz', { failureRedirect: '/account' });
+   *
+   * @param {String} strategy
+   * @param {Object} options
+   * @return {Function} middleware
+   * @api public
+   */
+  public authorize<StrategyName extends string | string[]>(
+    strategy: StrategyName,
+    callback?: AuthenticateCallback<StrategyName>
+  );
+  public authorize<StrategyName extends string | string[]>(strategy: StrategyName, options?: AuthenticateOptions);
+  public authorize<StrategyName extends string | string[]>(
+    strategy: StrategyName,
+    options?: AuthenticateOptions,
+    callback?: AuthenticateCallback<StrategyName>
+  );
+  public authorize<StrategyName extends string | string[]>(
+    strategyOrStrategies: StrategyName,
+    optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
+    callback?: AuthenticateCallback<StrategyName>
+  ) {
+    let options;
+    if (typeof optionsOrCallback == "function") {
+      options = {};
+      callback = optionsOrCallback;
+    } else {
+      options = optionsOrCallback;
+    }
+    options.assignProperty = "account";
+
+    return new AuthenticationHandler(this, strategyOrStrategies, options, callback).handler;
+  }
+
+  /**
+   * Hook or handler that will restore login state from a session managed by fastify-secure-session.
    *
    * Web applications typically use sessions to maintain login state between requests.  For example, a user will authenticate by entering credentials into a form which is submitted to the server.  If the credentials are valid, a login session is established by setting a cookie containing a session identifier in the user's web browser.  The web browser will send this cookie in subsequent requests to the server, allowing a session to be maintained.
    *
-   * If sessions are being utilized, and a login session has been established, this middleware will populate `req.user` with the current user.
+   * If sessions are being utilized, and a login session has been established, this middleware will populate `request.user` with the current user.
    *
    * Note that sessions are not strictly required for Passport to operate. However, as a general rule, most web applications will make use of sessions. An exception to this rule would be an API server, which expects each HTTP request to provide credentials in an Authorization header.
    *
    * Examples:
    *
-   *     app.use(connect.cookieParser());
-   *     app.use(connect.session({ secret: 'keyboard cat' }));
-   *     app.use(passport.initialize());
-   *     app.use(passport.secureSession());
+   *     server.register(FastifySecureSession);
+   *     server.register(FastifyPassport.initialize());
+   *     server.register(FastifyPassport.secureSession());
    *
    * Options:
    *   - `pauseStream`      Pause the request stream before deserializing the user
@@ -89,11 +174,9 @@ export class Authenticator {
    *
    * @return {Function} middleware
    */
-  public secureSession(options?: AuthenticateFactoryOptions) {
-    const authenticate: any = authenticateFactory(this, "session", options);
-    return fastifyPlugin(function session(fastify, opts, next) {
-      fastify.addHook("preValidation", authenticate);
-      next();
+  public secureSession(options?: AuthenticateOptions) {
+    return fastifyPlugin(async (fastify) => {
+      fastify.addHook("preValidation", new AuthenticationHandler(this, "session", options).handler);
     });
   }
 
@@ -218,29 +301,15 @@ export class Authenticator {
   /**
    * Registers a function used to transform auth info.
    *
-   * In some circumstances authorization details are contained in authentication
-   * credentials or loaded as part of verification.
+   * In some circumstances authorization details are contained in authentication credentials or loaded as part of verification.
    *
-   * For example, when using bearer tokens for API authentication, the tokens may
-   * encode (either directly or indirectly in a database), details such as scope
-   * of access or the client to which the token was issued.
+   * For example, when using bearer tokens for API authentication, the tokens may encode (either directly or indirectly in a database), details such as scope of access or the client to which the token was issued.
    *
-   * Such authorization details should be enforced separately from authentication.
-   * Because Passport deals only with the latter, this is the responsiblity of
-   * middleware or routes further along the chain.  However, it is not optimal to
-   * decode the same data or execute the same database query later.  To avoid
-   * this, Passport accepts optional `info` along with the authenticated `user`
-   * in a strategy's `success()` action.  This info is set at `req.authInfo`,
-   * where said later middlware or routes can access it.
+   * Such authorization details should be enforced separately from authentication. Because Passport deals only with the latter, this is the responsiblity of middleware or routes further along the chain.  However, it is not optimal to decode the same data or execute the same database query later.  To avoid this, Passport accepts optional `info` along with the authenticated `user` in a strategy's `success()` action.  This info is set at `request.authInfo`, where said later middlware or routes can access it.
    *
-   * Optionally, applications can register transforms to proccess this info,
-   * which take effect prior to `req.authInfo` being set.  This is useful, for
-   * example, when the info contains a client ID.  The transform can load the
-   * client from the database and include the instance in the transformed info,
-   * allowing the full set of client properties to be convieniently accessed.
+   * Optionally, applications can register transforms to proccess this info, which take effect prior to `request.authInfo` being set.  This is useful, forexample, when the info contains a client ID.  The transform can load the client from the database and include the instance in the transformed info, allowing the full set of client properties to be convieniently accessed.
    *
-   * If no transforms are registered, `info` supplied by the strategy will be left
-   * unmodified.
+   * If no transforms are registered, `info` supplied by the strategy will be left unmodified.
    *
    * Examples:
    *
