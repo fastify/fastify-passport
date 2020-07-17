@@ -3,11 +3,11 @@ import requestCallback from "request";
 import fastify from "fastify";
 import fastifySecureSession from "fastify-secure-session";
 import Authenticator from "../src/Authenticator";
-import { FastifyStrategy } from "../src/strategies";
+import { Strategy } from "../src/strategies";
 
 const SecretKey = fs.readFileSync(__dirname + "/secure.key");
 
-export class TestStrategy extends FastifyStrategy {
+export class TestStrategy extends Strategy {
   authenticate(request: any, _options?: { pauseStream?: boolean }) {
     if (request.isAuthenticated()) {
       return this.pass!();

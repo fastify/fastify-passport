@@ -1,7 +1,7 @@
 import { FastifyRequest } from "fastify";
 import { DeserializeFunction } from "../Authenticator";
 
-export class FastifyStrategy {
+export class Strategy {
   name: string;
 
   constructor(name: string) {

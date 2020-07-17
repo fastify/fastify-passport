@@ -1,5 +1,5 @@
 import { SecureSessionManager } from "./session-managers/SecureSessionManager";
-import { Strategy, SessionStrategy } from "./strategies";
+import { AnyStrategy, SessionStrategy } from "./strategies";
 import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from "fastify";
 import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from "./routes/AuthenticationRoute";
 import initializeFactory from "./routes/initialize";
@@ -18,7 +18,7 @@ export type DeserializeFunction<SerializedUser = any, User = any> = (
 export type InfoTransformerFunction = (info: any) => Promise<any>;
 
 export class Authenticator {
-  private _strategies: { [k: string]: Strategy } = {};
+  private _strategies: { [k: string]: AnyStrategy } = {};
   private _serializers: SerializeFunction<any, any>[] = [];
   private _deserializers: DeserializeFunction<any, any>[] = [];
   private _infoTransformers: InfoTransformerFunction[] = [];
@@ -31,11 +31,11 @@ export class Authenticator {
     this._sessionManager = new SecureSessionManager({ key: this._key }, this.serializeUser.bind(this));
   }
 
-  use(strategy: Strategy): this;
-  use(name: string, strategy: Strategy): this;
-  use(name: Strategy | string, strategy?: Strategy): this {
+  use(strategy: AnyStrategy): this;
+  use(name: string, strategy: AnyStrategy): this;
+  use(name: AnyStrategy | string, strategy?: AnyStrategy): this {
     if (!strategy) {
-      strategy = name as Strategy;
+      strategy = name as AnyStrategy;
       name = strategy.name as string;
     }
     if (!name) {
@@ -56,33 +56,70 @@ export class Authenticator {
   }
 
   /**
-   * Hook or handler that will authenticate a request using the given `strategy` name,
-   * with optional `options` and `callback`.
+   * Authenticates requests.
+   *
+   * Applies the `name`ed strategy (or strategies) to the incoming request, in order to authenticate the request.  If authentication is successful, the user will be logged in and populated at `req.user` and a session will be established by default.  If authentication fails, an unauthorized response will be sent.
+   *
+   * Options:
+   *   - `session`          Save login state in session, defaults to _true_
+   *   - `successRedirect`  After successful login, redirect to given URL
+   *   - `successMessage`   True to store success message in
+   *                        req.session.messages, or a string to use as override
+   *                        message for success.
+   *   - `successFlash`     True to flash success messages or a string to use as a flash
+   *                        message for success (overrides any from the strategy itself).
+   *   - `failureRedirect`  After failed login, redirect to given URL
+   *   - `failureMessage`   True to store failure message in
+   *                        req.session.messages, or a string to use as override
+   *                        message for failure.
+   *   - `failureFlash`     True to flash failure messages or a string to use as a flash
+   *                        message for failures (overrides any from the strategy itself).
+   *   - `assignProperty`   Assign the object provided by the verify callback to given property
+   *
+   * An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled.  The callback has the following signature, where `user` will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.  An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication. An optional `status` argument will be passed when authentication fails - this could be a HTTP response code for a remote authentication failure or similar.
+   *
+   *     fastify.get('/protected', function(req, res, next) {
+   *       passport.authenticate('local', function(err, user, info, status) {
+   *         if (err) { return next(err) }
+   *         if (!user) { return res.redirect('/signin') }
+   *         res.redirect('/account');
+   *       })(req, res, next);
+   *     });
+   *
+   * Note that if a callback is supplied, it becomes the application's responsibility to log-in the user, establish a session, and otherwise perform the desired operations.
    *
    * Examples:
    *
-   *     passport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' })(req, res);
+   *    // protect a route with a validation handler
+   *    fastify.get(
+   *      '/protected',
+   *      { preValidation: fastifyPassport.authenticate('local', {failureRedirect: '/login}) },
+   *      async (request, reply) => {
+   *       reply.send("Hello " + request.user.name);
+   *      }
+   *    )
    *
-   *     passport.authenticate('local', function(err, user) {
-   *       if (!user) { return res.redirect('/login'); }
-   *       res.end('Authenticated!');
-   *     })(req, res);
+   *    // handle a route with a custom callback that uses request/reply to handle the request depending on the authentication result
+   *    fastify.get('/checkLogin', fastifyPassport.authenticate('local', async (request, reply, err, user) => {
+   *      if (user) {
+   *        return reply.redirect(request.session.get('returnTo'));
+   *      } else {
+   *        return reply.redirect('/login');
+   *      }
+        })
    *
-   *     passport.authenticate('basic', { session: false })(req, res);
+   *    fastifyPassport.authenticate('basic', { session: false })(req, res);
    *
-   *     app.get('/auth/twitter', passport.authenticate('twitter'), function(req, res) {
-   *       // request will be redirected to Twitter
-   *     });
-   *     app.get('/auth/twitter/callback', passport.authenticate('twitter'), function(req, res) {
-   *       res.json(request.user);
-   *     });
+   *    fastify.get('/auth/twitter', fastifyPassport.authenticate('twitter'));
+   *    fastify.get('/auth/twitter/callback', fastifyPassport.authenticate('twitter', { successRedirect: '/', failureRedirect: '/login' }))
    *
-   * @param {String} strategy
+   * @param {|String|Array} name
    * @param {Object} options
    * @param {Function} callback
-   * @return {Function} handler
+   * @return {Function}
    * @api public
    */
+
   public authenticate<StrategyName extends string | string[]>(
     strategy: StrategyName,
     callback?: AuthenticateCallback<StrategyName>
@@ -128,6 +165,7 @@ export class Authenticator {
    * @return {Function} middleware
    * @api public
    */
+
   public authorize<StrategyName extends string | string[]>(
     strategy: StrategyName,
     callback?: AuthenticateCallback<StrategyName>
@@ -270,10 +308,10 @@ export class Authenticator {
    * Return strategy with given `name`.
    *
    * @param {String} name
-   * @return {Strategy}
+   * @return {AnyStrategy}
    * @api private
    */
-  strategy(name: string): Strategy {
+  strategy(name: string): AnyStrategy {
     return this._strategies[name];
   }
 

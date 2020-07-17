@@ -2,7 +2,7 @@
 import Authenticator from "../src/Authenticator";
 import { getTestServer, getConfiguredTestServer, TestStrategy, request } from "./helpers";
 import { AddressInfo } from "net";
-import { FastifyStrategy } from "../src/strategies";
+import { Strategy } from "../src/strategies";
 
 test(`should return 401 Unauthorized if not logged in`, async () => {
   const { server, fastifyPassport } = getConfiguredTestServer();
@@ -63,7 +63,7 @@ test(`should allow login, and add successMessage to session upon logged in`, asy
 });
 
 test(`should allow login, and add successMessage to the session from a strategy that sets it`, async () => {
-  class WelcomeStrategy extends FastifyStrategy {
+  class WelcomeStrategy extends Strategy {
     authenticate(request: any, _options?: { pauseStream?: boolean }) {
       if (request.isAuthenticated()) {
         return this.pass!();

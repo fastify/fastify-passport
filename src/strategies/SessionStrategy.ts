@@ -1,11 +1,11 @@
-import { FastifyStrategy } from "./base";
+import { Strategy } from "./base";
 import { DeserializeFunction } from "../Authenticator";
 import type { FastifyRequest } from "fastify";
 
 /**
  * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
  * */
-export class SessionStrategy extends FastifyStrategy {
+export class SessionStrategy extends Strategy {
   private deserializeUser: DeserializeFunction;
 
   constructor(deserializeUser: DeserializeFunction);

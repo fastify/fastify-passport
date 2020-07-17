@@ -1,6 +1,6 @@
 import type { Strategy as ExpressStrategy } from "passport";
-import type { FastifyStrategy } from "./base";
+import type { Strategy } from "./base";
 export * from "./base";
 export * from "./SessionStrategy";
 
-export type Strategy = FastifyStrategy | ExpressStrategy;
+export type AnyStrategy = Strategy | ExpressStrategy;
