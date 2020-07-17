@@ -1,7 +1,7 @@
 import http from "http";
 import AuthenticationError from "../errors";
 import Authenticator from "../Authenticator";
-import { FastifyStrategy } from "../strategies";
+import { Strategy } from "../strategies";
 import { FastifyReply, FastifyRequest } from "fastify";
 import "../types/fastify";
 
@@ -33,8 +33,17 @@ export interface AuthenticateOptions {
   session?: boolean;
 }
 
-export type SingleStrategyCallback = (err: null | Error, user?: any, info?: any, status?: number) => Promise<void>;
+export type SingleStrategyCallback = (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  err: null | Error,
+  user?: any,
+  info?: any,
+  status?: number
+) => Promise<void>;
 export type MultiStrategyCallback = (
+  request: FastifyRequest,
+  reply: FastifyReply,
   err: null | Error,
   user?: any,
   info?: any,
@@ -99,7 +108,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
       throw new Error(`Unknown authentication strategy ${name}!`);
     }
 
-    const strategy = Object.create(prototype) as FastifyStrategy;
+    const strategy = Object.create(prototype) as Strategy;
 
     // This is a messed up way of adapting passport's API to fastify's async world. We create a promise that the strategy's per-call functions close over and resolve/reject with the result of the strategy. This augmentation business is a key part of how Passport strategies expect to work.
     return new Promise((resolve, reject) => {
@@ -110,7 +119,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        */
       strategy.success = (user: any, info: { type: string; message: string }) => {
         if (this.callback) {
-          resolve(this.callback(null, user, info));
+          resolve(this.callback(request, reply, null, user, info));
         }
 
         info = info || {};
@@ -196,7 +205,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        */
       strategy.error = (err: Error) => {
         if (this.callback) {
-          return resolve(this.callback(err));
+          return resolve(this.callback(request, reply, err));
         }
 
         reject(err);
@@ -211,9 +220,16 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
       if (this.isMultiStrategy) {
         const challenges = failures.map((f) => f.challenge);
         const statuses = failures.map((f) => f.status);
-        return await (this.callback as MultiStrategyCallback)(null, false, challenges, statuses);
+        return await (this.callback as MultiStrategyCallback)(request, reply, null, false, challenges, statuses);
       } else {
-        return await (this.callback as SingleStrategyCallback)(null, false, failures[0].challenge, failures[0].status);
+        return await (this.callback as SingleStrategyCallback)(
+          request,
+          reply,
+          null,
+          false,
+          failures[0].challenge,
+          failures[0].status
+        );
       }
     }
 
