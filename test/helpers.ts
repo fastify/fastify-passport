@@ -2,21 +2,8 @@ import fs from "fs";
 import requestCallback from "request";
 import fastify from "fastify";
 import fastifySecureSession from "fastify-secure-session";
-import Authenticator from "../src/authenticator";
+import Authenticator from "../src/Authenticator";
 import { FastifyStrategy } from "../src/strategies";
-
-export const expectAsyncThrow = async (fn: () => Promise<void>) => {
-  let error = null;
-  try {
-    await fn();
-  } catch (e) {
-    error = e;
-  }
-
-  if (!error) {
-    fail("no error thrown in async function");
-  }
-};
 
 const SecretKey = fs.readFileSync(__dirname + "/secure.key");
 
@@ -53,12 +40,8 @@ export const request = (options): Promise<{ response: any; body: any }> => {
 export const getConfiguredTestServer = (name = "test", strategy = new TestStrategy("test")) => {
   const fastifyPassport = new Authenticator();
   fastifyPassport.use(name, strategy);
-  fastifyPassport.serializeUser((user, done) => {
-    done(null, JSON.stringify(user));
-  });
-  fastifyPassport.deserializeUser((user, done) => {
-    done(null, user);
-  });
+  fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user));
+  fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized));
 
   const server = getTestServer();
   server.register(fastifyPassport.initialize());

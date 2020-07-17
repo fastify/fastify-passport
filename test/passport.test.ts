@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import Authenticator from "../src/authenticator";
+import Authenticator from "../src/Authenticator";
 import { getTestServer, getConfiguredTestServer, TestStrategy, request } from "./helpers";
 import { AddressInfo } from "net";
 import { FastifyStrategy } from "../src/strategies";
@@ -118,12 +118,8 @@ test(`should allow login, and add successMessage to the session from a strategy 
 test(`should throw error if pauseStream is being used`, async () => {
   const fastifyPassport = new Authenticator();
   fastifyPassport.use("test", new TestStrategy("test"));
-  fastifyPassport.serializeUser((user, done) => {
-    done(null, JSON.stringify(user));
-  });
-  fastifyPassport.deserializeUser((user, done) => {
-    done(null, user);
-  });
+  fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user));
+  fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized));
 
   const server = getTestServer();
   server.register(fastifyPassport.initialize());

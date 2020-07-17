@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Strategy } from "../src";
-import Authenticator from "../src/authenticator";
+import Authenticator from "../src/Authenticator";
 import { TestStrategy } from "./helpers";
 
 test("should be able to unuse strategy", () => {

@@ -1,10 +1,10 @@
 import { FastifyRequest } from "fastify";
-import { SerializeFunction } from "../authenticator";
+import { SerializeFunction } from "../Authenticator";
 
 /** Class for storing passport data in the session using `fastify-secure-session` */
 export class SecureSessionManager {
-  _key: string;
-  _serializeUser: SerializeFunction;
+  key: string;
+  serializeUser: SerializeFunction;
 
   constructor(options: SerializeFunction | any, serializeUser?: SerializeFunction) {
     if (typeof options === "function") {
@@ -13,27 +13,26 @@ export class SecureSessionManager {
     }
     options = options || {};
 
-    this._key = options.key || "passport";
-    this._serializeUser = serializeUser!;
+    this.key = options.key || "passport";
+    this.serializeUser = serializeUser!;
   }
 
   logIn(request: FastifyRequest, user: any, cb: (err?: Error) => void) {
-    this._serializeUser(user, request, (err: Error, obj: any) => {
-      if (err) {
-        return cb(err);
-      }
-      if (!request._passport.session) {
-        request._passport.session = {};
-      }
-      request._passport.session.user = obj;
-      request.session.set(this._key, request._passport.session);
-      cb();
-    });
+    this.serializeUser(user, request)
+      .catch(cb)
+      .then((obj: any) => {
+        if (!request._passport.session) {
+          request._passport.session = {};
+        }
+        request._passport.session.user = obj;
+        request.session.set(this.key, request._passport.session);
+        cb();
+      });
   }
 
   logOut(request: FastifyRequest, cb?: () => void) {
     if (request._passport && request._passport.session) {
-      request.session.set(this._key, undefined);
+      request.session.set(this.key, undefined);
     }
     if (cb) {
       cb();

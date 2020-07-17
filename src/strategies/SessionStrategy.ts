@@ -1,12 +1,12 @@
 import { FastifyStrategy } from "./base";
-import { DeserializeFunction } from "../authenticator";
+import { DeserializeFunction } from "../Authenticator";
 import type { FastifyRequest } from "fastify";
 
 /**
  * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
  * */
 export class SessionStrategy extends FastifyStrategy {
-  private _deserializeUser: DeserializeFunction;
+  private deserializeUser: DeserializeFunction;
 
   constructor(deserializeUser: DeserializeFunction);
   constructor(options: any, deserializeUser: DeserializeFunction);
@@ -18,7 +18,7 @@ export class SessionStrategy extends FastifyStrategy {
     }
     options = options || {};
 
-    this._deserializeUser = deserializeUser!;
+    this.deserializeUser = deserializeUser!;
   }
 
   /**
@@ -50,19 +50,18 @@ export class SessionStrategy extends FastifyStrategy {
     }
 
     if (sessionUser || sessionUser === 0) {
-      this._deserializeUser(sessionUser, request, (err?: Error | null, user?: any) => {
-        if (err) {
-          return this.error!(err);
-        }
-        if (!user) {
-          delete request._passport.session.user;
-        } else {
-          // TODO: Remove instance access
-          const property = request._passport.instance._userProperty || "user";
-          request[property] = user;
-        }
-        this.pass!();
-      });
+      this.deserializeUser(sessionUser, request)
+        .catch((err) => this.error!(err))
+        .then((user?: any) => {
+          if (!user) {
+            delete request._passport.session.user;
+          } else {
+            // TODO: Remove instance access
+            const property = request._passport.instance._userProperty || "user";
+            request[property] = user;
+          }
+          this.pass!();
+        });
     } else {
       this.pass!();
     }

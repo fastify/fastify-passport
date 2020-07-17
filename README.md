@@ -143,6 +143,16 @@ fastifyPassport.unuse("legacy-api");
 
 Test if request is unauthenticated.
 
+# Differences from Passport.js
+
+`fastify-passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatabilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
+
+Differences:
+
+- `serializeUser` renamed to `registerUserSerializer` and always takes an async function with the signature `(user: User, request: FastifyRequest) => Promise<SerializedUser>`
+- `deserializeUser` renamed to `registerUserDeserializer` and always takes an async function with the signature `(serialized: SerializedUser, request: FastifyRequest) => Promise<User>`
+- `transformAuthInfo` renamed to `registerAuthInfoTransformer` and always takes an async function with the signature `(info: any, request: FastifyRequest) => Promise<any>`
+
 ## License
 
 [MIT](./LICENSE)

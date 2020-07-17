@@ -1,6 +1,6 @@
 import http from "http";
 import AuthenticationError from "../errors";
-import Authenticator from "../authenticator";
+import Authenticator from "../Authenticator";
 import { FastifyStrategy } from "../strategies";
 import { FastifyReply, FastifyRequest } from "fastify";
 import "../types/fastify";
@@ -47,7 +47,7 @@ export type AuthenticateCallback<Names extends string | string[]> = Names extend
 
 const Unhandled = Symbol.for("passport-unhandled");
 
-export class AuthenticationHandler<StrategyNames extends string | string[]> {
+export class AuthenticationRoute<StrategyNames extends string | string[]> {
   readonly options: AuthenticateOptions;
   readonly strategies: string[];
   readonly isMultiStrategy: boolean;
@@ -94,7 +94,7 @@ export class AuthenticationHandler<StrategyNames extends string | string[]> {
   };
 
   async attemptStrategy(failures: FailureObject[], name: string, request: FastifyRequest, reply: FastifyReply) {
-    const prototype = this.authenticator._strategy(name);
+    const prototype = this.authenticator.strategy(name);
     if (!prototype) {
       throw new Error(`Unknown authentication strategy ${name}!`);
     }
@@ -142,13 +142,13 @@ export class AuthenticationHandler<StrategyNames extends string | string[]> {
           };
 
           if (this.options.authInfo !== false) {
-            this.authenticator.transformAuthInfo(info, request, function (error, tinfo) {
-              if (error) {
-                return reject(error);
-              }
-              request.authInfo = tinfo;
-              complete();
-            });
+            this.authenticator
+              .transformAuthInfo(info, request)
+              .catch(reject)
+              .then((transformedInfo) => {
+                request.authInfo = transformedInfo;
+                complete();
+              });
           } else {
             complete();
           }
