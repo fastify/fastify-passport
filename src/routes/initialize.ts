@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import { logIn, logOut, isAuthenticated, isUnauthenticated } from "../decorators";
-import Authenticator from "../authenticator";
+import Authenticator from "../Authenticator";
 import { FastifyRequest } from "fastify";
 import flash from "fastify-flash";
 

@@ -1,5 +1,5 @@
 import { FastifyRequest } from "fastify";
-import { DeserializeFunction } from "../authenticator";
+import { DeserializeFunction } from "../Authenticator";
 
 export class FastifyStrategy {
   name: string;

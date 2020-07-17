@@ -1,19 +1,21 @@
 import { SecureSessionManager } from "./session-managers/SecureSessionManager";
 import { Strategy, SessionStrategy } from "./strategies";
-import { FastifyRequest } from "fastify";
-import { AuthenticateOptions, AuthenticateCallback, AuthenticationHandler } from "./handlers/AuthenticationHandler";
-import initializeFactory from "./handlers/initialize";
+import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from "fastify";
+import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from "./routes/AuthenticationRoute";
+import initializeFactory from "./routes/initialize";
 import fastifyPlugin from "fastify-plugin";
 
-export type DoneFunction = (err: undefined | null | Error | "pass", user?: any) => void;
-export type SerializeFunction<TUser = any, TID = any> =
-  | ((user: TUser, done: (err: any, id?: TID) => void) => void)
-  | ((req: FastifyRequest, user: TUser, done: (err: any, id?: TID) => void) => void);
-export type DeserializeFunction<TUser = any, TID = any> =
-  | ((id: TID, done: (err: any, user?: TUser) => void) => void)
-  | ((req: FastifyRequest, id: TID, done: (err: any, user?: TUser) => void) => void);
+export type SerializeFunction<User = any, SerializedUser = any> = (
+  user: User,
+  req: FastifyRequest
+) => Promise<SerializedUser>;
 
-export type InfoTransformerFunction = ((info: any, done: (err: any, info: any) => void) => void) | ((info: any) => any);
+export type DeserializeFunction<SerializedUser = any, User = any> = (
+  serialized: SerializedUser,
+  req: FastifyRequest
+) => Promise<User>;
+
+export type InfoTransformerFunction = (info: any) => Promise<any>;
 
 export class Authenticator {
   private _strategies: { [k: string]: Strategy } = {};
@@ -49,7 +51,7 @@ export class Authenticator {
     return this;
   }
 
-  public initialize(options?: { userProperty?: string }) {
+  public initialize(options?: { userProperty?: string }): FastifyPlugin {
     return initializeFactory(this, options);
   }
 
@@ -78,24 +80,27 @@ export class Authenticator {
    * @param {String} strategy
    * @param {Object} options
    * @param {Function} callback
-   * @return {Function} middleware
+   * @return {Function} handler
    * @api public
    */
   public authenticate<StrategyName extends string | string[]>(
     strategy: StrategyName,
     callback?: AuthenticateCallback<StrategyName>
-  );
-  public authenticate<StrategyName extends string | string[]>(strategy: StrategyName, options?: AuthenticateOptions);
+  ): RouteHandlerMethod;
+  public authenticate<StrategyName extends string | string[]>(
+    strategy: StrategyName,
+    options?: AuthenticateOptions
+  ): RouteHandlerMethod;
   public authenticate<StrategyName extends string | string[]>(
     strategy: StrategyName,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyName>
-  );
+  ): RouteHandlerMethod;
   public authenticate<StrategyName extends string | string[]>(
     strategyOrStrategies: StrategyName,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
     callback?: AuthenticateCallback<StrategyName>
-  ) {
+  ): RouteHandlerMethod {
     let options;
     if (typeof optionsOrCallback == "function") {
       options = {};
@@ -104,7 +109,7 @@ export class Authenticator {
       options = optionsOrCallback;
     }
 
-    return new AuthenticationHandler(this, strategyOrStrategies, options, callback).handler;
+    return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler;
   }
 
   /**
@@ -147,7 +152,7 @@ export class Authenticator {
     }
     options.assignProperty = "account";
 
-    return new AuthenticationHandler(this, strategyOrStrategies, options, callback).handler;
+    return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler;
   }
 
   /**
@@ -174,9 +179,9 @@ export class Authenticator {
    *
    * @return {Function} middleware
    */
-  public secureSession(options?: AuthenticateOptions) {
+  public secureSession(options?: AuthenticateOptions): FastifyPlugin {
     return fastifyPlugin(async (fastify) => {
-      fastify.addHook("preValidation", new AuthenticationHandler(this, "session", options).handler);
+      fastify.addHook("preValidation", new AuthenticationRoute(this, "session", options).handler);
     });
   }
 
@@ -185,54 +190,23 @@ export class Authenticator {
    *
    * Examples:
    *
-   *     passport.serializeUser(function(user, done) {
-   *       done(null, user.id);
-   *     });
+   *     passport.registerUserSerializer(async (user) => user.id);
    *
    * @api public
    */
-  serializeUser<TUser, TID>(fn: SerializeFunction<TUser, TID>): void;
-  serializeUser<TUser>(user: TUser, req: FastifyRequest, done: DoneFunction): void;
-  serializeUser(fnOrUser, req?, done?) {
-    if (typeof fnOrUser === "function") {
-      this._serializers.push(fnOrUser);
-      return;
+  registerUserSerializer<TUser, TID>(fn: SerializeFunction<TUser, TID>) {
+    this._serializers.push(fn);
+  }
+
+  /** Runs the chain of serializers to find the first one that serializes a user, and returns it. */
+  async serializeUser<User, StoredUser = any>(user: User, request: FastifyRequest): Promise<StoredUser> {
+    const result = this.runStack(this._serializers, user, request);
+
+    if (result) {
+      return result;
+    } else {
+      throw new Error(`Failed to serialize user into session. Tried ${this._serializers.length} serializers.`);
     }
-
-    // private implementation that actually invokes the serializer chain attempting to serialize a user
-    const user = fnOrUser;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    done = done!;
-    const stack = this._serializers;
-
-    (function pass(index: number, err?: null | "pass" | Error, obj?: any) {
-      // serializers use 'pass' as an error to skip processing
-      if ("pass" === err) {
-        err = undefined;
-      }
-      // an error or serialized object was obtained, done
-      if (err || obj || obj === 0) {
-        return done(err, obj);
-      }
-
-      const layer = stack[index];
-      if (!layer) {
-        return done(new Error("Failed to serialize user into session"));
-      }
-
-      const innerDone = (innerError: Error, innerOutput: any) => pass(index + 1, innerError, innerOutput);
-
-      try {
-        const arity = layer.length;
-        if (arity === 3) {
-          layer(req, user, innerDone);
-        } else {
-          (layer as any)(user, innerDone);
-        }
-      } catch (e) {
-        return done(e);
-      }
-    })(0);
   }
 
   /**
@@ -240,62 +214,24 @@ export class Authenticator {
    *
    * Examples:
    *
-   *     passport.deserializeUser(function(id, done) {
-   *       User.findById(id, function (err, user) {
-   *         done(err, user);
-   *       });
+   *     fastifyPassport.registerUserDeserializer(async (id) => {
+   *       return await User.findById(id);
    *     });
    *
    * @api public
    */
-  deserializeUser<TUser, TID>(fn: DeserializeFunction<TUser, TID>): void;
-  deserializeUser<TUser>(obj, req: FastifyRequest, done: DoneFunction): void;
-  deserializeUser(fnOrObj, req?: FastifyRequest, done?: DoneFunction): void {
-    if (typeof fnOrObj === "function") {
-      this._deserializers.push(fnOrObj);
-      return;
+  registerUserDeserializer<User, StoredUser>(fn: DeserializeFunction<User, StoredUser>) {
+    this._deserializers.push(fn);
+  }
+
+  async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest) {
+    const result = this.runStack(this._deserializers, stored, request);
+
+    if (result) {
+      return result;
+    } else {
+      throw new Error(`Failed to deserialize user out of session. Tried ${this._deserializers.length} serializers.`);
     }
-
-    // private implementation that traverses the chain of deserializers,
-    // attempting to deserialize a user
-    const obj = fnOrObj;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    done = done!;
-
-    const stack = this._deserializers;
-    (function pass(index: number, err?: undefined | null | "pass" | Error, user?: any) {
-      // deserializers use 'pass' as an error to skip processing
-      if ("pass" === err) {
-        err = undefined;
-      }
-      // an error or deserialized user was obtained, done
-      if (err || user) {
-        return done(err, user);
-      }
-      // a valid user existed when establishing the session, but that user has
-      // since been removed
-      if (user === null || user === false) {
-        return done(null, false);
-      }
-
-      const layer = stack[index];
-      if (!layer) {
-        return done(new Error("Failed to deserialize user out of session"));
-      }
-
-      const innerDone = (e: any, u: any) => pass(index + 1, e, u);
-
-      try {
-        const arity = layer.length;
-        if (arity === 3) {
-          layer(req, obj, innerDone);
-        } else {
-          (layer as any)(obj, innerDone);
-        }
-      } catch (e) {
-        return done(e);
-      }
-    })(0);
   }
 
   /**
@@ -313,66 +249,21 @@ export class Authenticator {
    *
    * Examples:
    *
-   *     passport.transformAuthInfo(function(info, done) {
-   *       Client.findById(info.clientID, function (err, client) {
-   *         info.client = client;
-   *         done(err, info);
-   *       });
+   *     fastifyPassport.registerAuthInfoTransformer(async (info) => {
+   *       info.client = await Client.findById(info.clientID);
+   *       return info;
    *     });
    *
    * @api public
    */
-  transformAuthInfo(fn: InfoTransformerFunction): void;
-  transformAuthInfo(obj: any, request: FastifyRequest, done: DoneFunction): void;
-  transformAuthInfo(fn, req?: FastifyRequest, done?: DoneFunction): void {
-    if (typeof fn === "function") {
-      this._infoTransformers.push(fn);
-      return;
-    }
+  registerAuthInfoTransformer(fn: InfoTransformerFunction) {
+    this._infoTransformers.push(fn);
+  }
 
-    // private implementation that traverses the chain of transformers,
-    // attempting to transform auth info
-    const info = fn;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    done = done!;
-
-    const stack = this._infoTransformers;
-    (function pass(index, err, tinfo) {
-      // transformers use 'pass' as an error to skip processing
-      if ("pass" === err) {
-        err = undefined;
-      }
-      // an error or transformed info was obtained, done
-      if (err || tinfo) {
-        return done(err, tinfo);
-      }
-
-      const layer = stack[index];
-      if (!layer) {
-        // if no transformers are registered (or they all pass), the default
-        // behavior is to use the un-transformed info as-is
-        return done(null, info);
-      }
-
-      function transformed(e: any, t: any) {
-        pass(index + 1, e, t);
-      }
-
-      try {
-        const arity = layer.length;
-        if (arity === 1) {
-          // sync
-          const t = (layer as any)(info);
-          transformed(null, t);
-        } else if (arity === 3) {
-          (layer as any)(req, info, transformed);
-        } else {
-          layer(info, transformed);
-        }
-      } catch (e) {
-        return done(e);
-      }
-    })(0);
+  transformAuthInfo(info: any, request: FastifyRequest) {
+    const result = this.runStack(this._infoTransformers, info, request);
+    // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
+    return result || info;
   }
 
   /**
@@ -382,8 +273,22 @@ export class Authenticator {
    * @return {Strategy}
    * @api private
    */
-  _strategy(name: string): Strategy {
+  strategy(name: string): Strategy {
     return this._strategies[name];
+  }
+
+  private async runStack<Result, A, B>(stack: ((...args: [A, B]) => Promise<Result>)[], ...args: [A, B]) {
+    for (const attempt of stack) {
+      try {
+        return await attempt(...args);
+      } catch (e) {
+        if (e == "pass") {
+          continue;
+        } else {
+          throw e;
+        }
+      }
+    }
   }
 }
 

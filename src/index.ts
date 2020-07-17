@@ -1,7 +1,6 @@
-import Authenticator from "./authenticator";
+import Authenticator from "./Authenticator";
 
 const passport = new Authenticator();
 
 export default passport;
 export { Strategy } from "./strategies";
-export { DoneFunction } from "./authenticator";
