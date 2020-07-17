@@ -118,6 +118,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        * Strategies should call this function to successfully authenticate a user.  `user` should be an object supplied by the application after it has been given an opportunity to verify credentials.  `info` is an optional argument containing additional user information.  This is useful for third-party authentication strategies to pass profile details.
        */
       strategy.success = (user: any, info: { type: string; message: string }) => {
+        request.log.debug(`passport strategy ${name} success`);
         if (this.callback) {
           resolve(this.callback(request, reply, null, user, info));
         }
@@ -185,7 +186,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        *
        * Strategies should call this function to redirect the user (via their user agent) to a third-party website for authentication.
        */
-      strategy.redirect = function (url: string, status: number): void {
+      strategy.redirect = (url: string, status?: number) => {
         reply.status(status || 302);
         reply.redirect(url);
         resolve();

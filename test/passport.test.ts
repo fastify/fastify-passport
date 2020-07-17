@@ -66,12 +66,12 @@ test(`should allow login, and add successMessage to the session from a strategy 
   class WelcomeStrategy extends Strategy {
     authenticate(request: any, _options?: { pauseStream?: boolean }) {
       if (request.isAuthenticated()) {
-        return this.pass!();
+        return this.pass();
       }
       if (request.body && request.body.login === "welcomeuser" && request.body.password === "test") {
-        return this.success!({ name: "test" }, { message: "welcome from strategy" });
+        return this.success({ name: "test" }, { message: "welcome from strategy" });
       }
-      this.fail!();
+      this.fail();
     }
   }
 

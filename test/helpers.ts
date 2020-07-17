@@ -10,12 +10,13 @@ const SecretKey = fs.readFileSync(__dirname + "/secure.key");
 export class TestStrategy extends Strategy {
   authenticate(request: any, _options?: { pauseStream?: boolean }) {
     if (request.isAuthenticated()) {
-      return this.pass!();
+      return this.pass();
     }
     if (request.body && request.body.login === "test" && request.body.password === "test") {
-      return this.success!({ name: "test" });
+      return this.success({ name: "test" });
     }
-    this.fail!();
+
+    this.fail();
   }
 }
 

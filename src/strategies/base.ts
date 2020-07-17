@@ -1,5 +1,4 @@
 import { FastifyRequest } from "fastify";
-import { DeserializeFunction } from "../Authenticator";
 
 export class Strategy {
   name: string;
@@ -22,31 +21,11 @@ export class Strategy {
     throw new Error("Strategy#authenticate must be overridden by subclass");
   }
 
-  success?: AugmentedStrategy["success"];
-  fail?: AugmentedStrategy["fail"];
-  redirect?: AugmentedStrategy["redirect"];
-  pass?: AugmentedStrategy["pass"];
-  error?: AugmentedStrategy["error"];
-}
-
-export interface AugmentedStrategy {
-  name: string;
-  _deserializeUser?: DeserializeFunction;
-
-  /**
-   * Performs authentication for the request.
-   * Note: Virtual function - re-implement in the strategy.
-   * @param req The request to authenticate.
-   * @param options Options passed to the strategy.
-   */
-  authenticate(request: FastifyRequest, options?: any): void;
-
   //
   // Augmented strategy functions.
   // These are available only from the 'authenticate' function.
   // They are added manually by the passport framework.
   //
-
   /**
    * Authenticate `user`, with optional `info`.
    *
@@ -61,7 +40,7 @@ export interface AugmentedStrategy {
    * @param {Object} info
    * @api public
    */
-  success(user: any, info?: any): void;
+  success!: (user: any, info?: any) => void;
 
   /**
    * Fail authentication, with optional `challenge` and `status`, defaulting
@@ -73,8 +52,7 @@ export interface AugmentedStrategy {
    * @param {Number} status
    * @api public
    */
-  fail(challenge?: any, status?: number): void;
-  fail(status: number): void;
+  fail!: ((challenge?: any, status?: number) => void) | ((status?: number) => void);
 
   /**
    * Redirect to `url` with optional `status`, defaulting to 302.
@@ -86,7 +64,7 @@ export interface AugmentedStrategy {
    * @param {Number} status
    * @api public
    */
-  redirect(url: string, status?: number): void;
+  redirect!: (url: string, status?: number) => void;
 
   /**
    * Pass without making a success or fail decision.
@@ -97,7 +75,7 @@ export interface AugmentedStrategy {
    *
    * @api public
    */
-  pass(): void;
+  pass!: () => void;
 
   /**
    * Internal error while performing authentication.
@@ -109,5 +87,5 @@ export interface AugmentedStrategy {
    * @param {Error} err
    * @api public
    */
-  error(err: Error): void;
+  error!: (err: Error) => void;
 }
