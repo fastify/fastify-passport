@@ -2,7 +2,8 @@
   "name": "fastify-passport",
   "version": "0.1.0",
   "description": "Simple, unobtrusive authentication for Fastify.",
-  "main": "./dist/src/index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "rm -rf ./dist && mkdir dist && tsc",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
