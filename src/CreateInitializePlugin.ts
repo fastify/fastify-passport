@@ -1,10 +1,10 @@
 import fp from "fastify-plugin";
-import { logIn, logOut, isAuthenticated, isUnauthenticated } from "../decorators";
-import Authenticator from "../Authenticator";
+import { logIn, logOut, isAuthenticated, isUnauthenticated } from "./decorators";
+import Authenticator from "./Authenticator";
 import { FastifyRequest } from "fastify";
 import flash from "fastify-flash";
 
-export default function initializeFactory(passport: Authenticator, options: { userProperty?: string } = {}) {
+export function CreateInitializePlugin(passport: Authenticator, options: { userProperty?: string } = {}) {
   const preValidator = async (request: FastifyRequest) => {
     const sessionKey = request._passport.instance._key;
     request._passport.session = request.session.get(sessionKey);

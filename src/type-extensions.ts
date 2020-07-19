@@ -1,9 +1,5 @@
-import "fastify";
-import { logIn } from "../../decorators/login";
-import { logOut } from "../../decorators/logout";
-import { isAuthenticated } from "../../decorators/is-authenticated";
-import { isUnauthenticated } from "../../decorators/is-unauthenticated";
 import { flashFactory } from "fastify-flash/lib/flash";
+import { logIn, logOut, isAuthenticated, isUnauthenticated } from "./decorators";
 
 declare module "fastify" {
   interface FastifyRequest {
