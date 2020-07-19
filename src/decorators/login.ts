@@ -21,25 +21,9 @@ export type DoneCallback = (err?: Error) => void;
  * @param {Function} done
  * @api public
  */
-export function logIn<T = unknown>(this: FastifyRequest, user: T, done: DoneCallback): void;
-export function logIn<T = unknown>(
-  this: FastifyRequest,
-  user: T,
-  options: { session?: boolean },
-  done?: DoneCallback
-): void;
-export function logIn<T = unknown>(
-  this: FastifyRequest,
-  user: T,
-  options: { session?: boolean } | DoneCallback,
-  done?: DoneCallback
-) {
-  if (typeof options === "function") {
-    done = options;
-    options = { session: false };
-  }
-  options = options || {};
-
+export async function logIn<T = unknown>(this: FastifyRequest, user: T): Promise<void>;
+export async function logIn<T = unknown>(this: FastifyRequest, user: T, options: { session?: boolean }): Promise<void>;
+export async function logIn<T = unknown>(this: FastifyRequest, user: T, options: { session?: boolean } = {}) {
   let property = "user";
   if (this._passport && this._passport.instance) {
     property = this._passport.instance._userProperty || "user";
@@ -51,22 +35,12 @@ export function logIn<T = unknown>(
     if (!this._passport) {
       throw new Error("passport.initialize() plugin not in use");
     }
-    if (typeof done !== "function") {
-      throw new Error("req.login requires a callback function");
-    }
 
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    this._passport.instance._sessionManager.logIn(this, user, function (err?: Error) {
-      if (err) {
-        self[property] = null;
-        return done!(err);
-      }
-      done!();
-    });
-  } else {
-    if (done) {
-      done();
+    try {
+      await this._passport.instance._sessionManager.logIn(this, user);
+    } catch (e) {
+      this[property] = null;
+      throw e;
     }
   }
 }

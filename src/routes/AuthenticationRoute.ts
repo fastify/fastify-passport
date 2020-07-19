@@ -131,38 +131,37 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
           return resolve();
         }
 
-        request.logIn(user, this.options, (err) => {
-          if (err) {
-            return reject(err);
-          }
+        request
+          .logIn(user, this.options)
+          .catch(reject)
+          .then(() => {
+            const complete = () => {
+              if (this.options.successReturnToOrRedirect) {
+                let url = this.options.successReturnToOrRedirect;
+                if (request.session && request.session.get("returnTo")) {
+                  url = request.session.get("returnTo");
+                  request.session.set("returnTo", undefined);
+                }
 
-          const complete = () => {
-            if (this.options.successReturnToOrRedirect) {
-              let url = this.options.successReturnToOrRedirect;
-              if (request.session && request.session.get("returnTo")) {
-                url = request.session.get("returnTo");
-                request.session.set("returnTo", undefined);
+                reply.redirect(url);
+              } else if (this.options.successRedirect) {
+                reply.redirect(this.options.successRedirect);
               }
+              return resolve();
+            };
 
-              reply.redirect(url);
-            } else if (this.options.successRedirect) {
-              reply.redirect(this.options.successRedirect);
+            if (this.options.authInfo !== false) {
+              this.authenticator
+                .transformAuthInfo(info, request)
+                .catch(reject)
+                .then((transformedInfo) => {
+                  request.authInfo = transformedInfo;
+                  complete();
+                });
+            } else {
+              complete();
             }
-            return resolve();
-          };
-
-          if (this.options.authInfo !== false) {
-            this.authenticator
-              .transformAuthInfo(info, request)
-              .catch(reject)
-              .then((transformedInfo) => {
-                request.authInfo = transformedInfo;
-                complete();
-              });
-          } else {
-            complete();
-          }
-        });
+          });
       };
 
       /**

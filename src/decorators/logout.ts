@@ -5,7 +5,7 @@ import { FastifyRequest } from "fastify";
  *
  * @api public
  */
-export function logOut(this: FastifyRequest): void {
+export async function logOut(this: FastifyRequest): Promise<void> {
   let property = "user";
   if (this._passport && this._passport.instance) {
     property = this._passport.instance._userProperty || "user";
