@@ -17,25 +17,18 @@ export class SecureSessionManager {
     this.serializeUser = serializeUser!;
   }
 
-  logIn(request: FastifyRequest, user: any, cb: (err?: Error) => void) {
-    this.serializeUser(user, request)
-      .catch(cb)
-      .then((obj: any) => {
-        if (!request._passport.session) {
-          request._passport.session = {};
-        }
-        request._passport.session.user = obj;
-        request.session.set(this.key, request._passport.session);
-        cb();
-      });
+  async logIn(request: FastifyRequest, user: any) {
+    const object = await this.serializeUser(user, request);
+    if (!request._passport.session) {
+      request._passport.session = {};
+    }
+    request._passport.session.user = object;
+    request.session.set(this.key, request._passport.session);
   }
 
-  logOut(request: FastifyRequest, cb?: () => void) {
+  async logOut(request: FastifyRequest) {
     if (request._passport && request._passport.session) {
       request.session.set(this.key, undefined);
-    }
-    if (cb) {
-      cb();
     }
   }
 }

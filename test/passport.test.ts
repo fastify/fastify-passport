@@ -400,57 +400,6 @@ test(`should return 200 if logged in against a running server`, async () => {
   expect(home.response.statusCode).toEqual(200);
 });
 
-test(`should logout`, async () => {
-  const { server, fastifyPassport } = getConfiguredTestServer();
-  server.get(
-    "/",
-    { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) },
-    async () => "the root!"
-  );
-  server.get(
-    "/logout",
-    { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) },
-    async (request, reply) => {
-      request.logout();
-      reply.send("logged out");
-    }
-  );
-  server.post(
-    "/login",
-    { preValidation: fastifyPassport.authenticate("test", { successRedirect: "/", authInfo: false }) },
-    () => {}
-  );
-
-  const login = await server.inject({
-    method: "POST",
-    payload: { login: "test", password: "test" },
-    url: "/login",
-  });
-  expect(login.statusCode).toEqual(302);
-  expect(login.headers.location).toEqual("/");
-
-  const logout = await server.inject({
-    url: "/logout",
-    headers: {
-      cookie: login.headers["set-cookie"],
-    },
-    method: "GET",
-  });
-
-  expect(logout.statusCode).toEqual(200);
-  expect(logout.headers["set-cookie"]).toBeDefined();
-
-  const retry = await server.inject({
-    url: "/",
-    headers: {
-      cookie: logout.headers["set-cookie"],
-    },
-    method: "GET",
-  });
-
-  expect(retry.statusCode).toEqual(401);
-});
-
 test(`should execute failureRedirect if failed to log in`, async () => {
   const { server, fastifyPassport } = getConfiguredTestServer();
   server.post(
