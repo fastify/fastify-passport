@@ -15,8 +15,7 @@
     "esModuleInterop": true,
     "removeComments": true,
     "noUnusedLocals": true,
-    "lib": ["esnext"],
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "lib": ["esnext"]
   },
   "formatCodeOptions": {
     "identSize": 2,

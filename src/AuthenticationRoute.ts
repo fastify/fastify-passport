@@ -1,9 +1,9 @@
+/// <reference types="fastify-secure-session" />
 import http from "http";
-import AuthenticationError from "../errors";
-import Authenticator from "../Authenticator";
-import { Strategy } from "../strategies";
+import AuthenticationError from "./errors";
+import Authenticator from "./Authenticator";
+import { Strategy } from "./strategies";
 import { FastifyReply, FastifyRequest } from "fastify";
-import "../types/fastify";
 
 type FlashObject = { type?: string; message?: string };
 type FailureObject = {
@@ -117,7 +117,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        *
        * Strategies should call this function to successfully authenticate a user.  `user` should be an object supplied by the application after it has been given an opportunity to verify credentials.  `info` is an optional argument containing additional user information.  This is useful for third-party authentication strategies to pass profile details.
        */
-      strategy.success = (user: any, info: { type: string; message: string }) => {
+      strategy.success = (user: any, info: { type?: string; message?: string }) => {
         request.log.debug(`passport strategy ${name} success`);
         if (this.callback) {
           resolve(this.callback(request, reply, null, user, info));
@@ -169,10 +169,13 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        *
        * Strategies should call this function to fail an authentication attempt.
        */
-      strategy.fail = function (challenge?: string | number | undefined, status?: number) {
-        if (typeof challenge === "number") {
-          status = challenge;
+      strategy.fail = function (challengeOrStatus?: string | number | undefined, status?: number) {
+        let challenge;
+        if (typeof challengeOrStatus === "number") {
+          status = challengeOrStatus;
           challenge = undefined;
+        } else {
+          challenge = challengeOrStatus;
         }
 
         // push this failure into the accumulator and attempt authentication using the next strategy

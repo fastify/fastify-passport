@@ -1,8 +1,8 @@
 import { SecureSessionManager } from "./session-managers/SecureSessionManager";
 import { AnyStrategy, SessionStrategy } from "./strategies";
 import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from "fastify";
-import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from "./routes/AuthenticationRoute";
-import initializeFactory from "./routes/initialize";
+import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from "./AuthenticationRoute";
+import { CreateInitializePlugin } from "./CreateInitializePlugin";
 import fastifyPlugin from "fastify-plugin";
 
 export type SerializeFunction<User = any, SerializedUser = any> = (
@@ -52,7 +52,7 @@ export class Authenticator {
   }
 
   public initialize(options?: { userProperty?: string }): FastifyPlugin {
-    return initializeFactory(this, options);
+    return CreateInitializePlugin(this, options);
   }
 
   /**

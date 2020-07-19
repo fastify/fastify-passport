@@ -1,3 +1,4 @@
+/// <reference types="fastify-secure-session" />
 import { FastifyRequest } from "fastify";
 import { SerializeFunction } from "../Authenticator";
 
