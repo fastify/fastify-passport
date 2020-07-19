@@ -1,11 +1,11 @@
 {
   "name": "fastify-passport",
-  "version": "0.1.0",
+  "version": "0.1.0-pre",
   "description": "Simple, unobtrusive authentication for Fastify.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist && mkdir dist && tsc",
+    "build": "rm -rf ./dist && mkdir dist && tsc && git rev-parse HEAD > BUILD_SHA",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
     "lintfix": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\" && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "prepublishOnly": "yarn run build",
