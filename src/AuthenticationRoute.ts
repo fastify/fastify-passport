@@ -120,7 +120,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
       strategy.success = (user: any, info: { type?: string; message?: string }) => {
         request.log.debug(`passport strategy ${name} success`);
         if (this.callback) {
-          resolve(this.callback(request, reply, null, user, info));
+          return resolve(this.callback(request, reply, null, user, info));
         }
 
         info = info || {};
