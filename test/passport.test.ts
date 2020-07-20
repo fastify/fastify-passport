@@ -559,3 +559,39 @@ test(`should redirect when used as a handler`, async () => {
   expect(response.body).toEqual("hello world!");
   expect(response.statusCode).toEqual(200);
 });
+
+test(`should not log the user in when passed a callback`, async () => {
+  const { server, fastifyPassport } = getConfiguredTestServer();
+  server.get(
+    "/",
+    { preValidation: fastifyPassport.authenticate("test", { authInfo: true }) },
+    async () => "hello world!"
+  );
+  server.post(
+    "/login",
+    fastifyPassport.authenticate("test", async (request, reply, err, user) => {
+      return user!.name;
+    })
+  );
+
+  const login = await server.inject({
+    method: "POST",
+    payload: { login: "test", password: "test" },
+    url: "/login",
+  });
+  expect(login.statusCode).toEqual(200);
+  expect(login.body).toEqual("test");
+
+  const headers: Record<string, any> = {};
+  if (login.headers["set-cookie"]) {
+    headers["cookie"] = login.headers["set-cookie"];
+  }
+
+  const response = await server.inject({
+    url: "/",
+    headers,
+    method: "GET",
+  });
+
+  expect(response.statusCode).toEqual(401);
+});
