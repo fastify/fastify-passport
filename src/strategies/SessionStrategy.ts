@@ -24,18 +24,16 @@ export class SessionStrategy extends Strategy {
   /**
    * Authenticate request based on the current session state.
    *
-   * The session authentication strategy uses the session to restore any login
-   * state across requests.  If a login session has been established, `req.user`
-   * will be populated with the current user.
+   * The session authentication strategy uses the session to restore any login state across requests.  If a login session has been established, `request.user` will be populated with the current user.
    *
-   * This strategy is registered automatically by Passport.
+   * This strategy is registered automatically by fastify-passport.
    *
    * @param {Object} request
    * @param {Object} options
    * @api protected
    */
   authenticate(request: FastifyRequest, options?: { pauseStream?: boolean }) {
-    if (!request._passport) {
+    if (!request.passport) {
       return this.error!(new Error("passport.initialize() plugin not in use"));
     }
     options = options || {};
@@ -44,20 +42,16 @@ export class SessionStrategy extends Strategy {
       return this.error!(new Error("fastify-passport doesn't support pauseStream option."));
     }
 
-    let sessionUser;
-    if (request._passport.session) {
-      sessionUser = request._passport.session.user;
-    }
+    const sessionUser = request.passport.sessionManager.getUserFromSession(request);
 
     if (sessionUser || sessionUser === 0) {
       this.deserializeUser(sessionUser, request)
         .catch((err) => this.error!(err))
         .then((user?: any) => {
           if (!user) {
-            delete request._passport.session.user;
+            request.passport.sessionManager.logOut(request);
           } else {
-            // TODO: Remove instance access
-            const property = request._passport.instance._userProperty || "user";
+            const property = request.passport.userProperty || "user";
             request[property] = user;
           }
           this.pass!();

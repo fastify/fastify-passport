@@ -11,10 +11,7 @@ declare module "fastify" {
     logOut: typeof logOut;
     isAuthenticated: typeof isAuthenticated;
     isUnauthenticated: typeof isUnauthenticated;
-    _passport: {
-      instance: any;
-      session?: any;
-    };
+    passport: any;
     user: any;
     authInfo: any;
     account: any;

@@ -24,20 +24,17 @@ export type DoneCallback = (err?: Error) => void;
 export async function logIn<T = unknown>(this: FastifyRequest, user: T): Promise<void>;
 export async function logIn<T = unknown>(this: FastifyRequest, user: T, options: { session?: boolean }): Promise<void>;
 export async function logIn<T = unknown>(this: FastifyRequest, user: T, options: { session?: boolean } = {}) {
-  let property = "user";
-  if (this._passport && this._passport.instance) {
-    property = this._passport.instance._userProperty || "user";
+  if (!this.passport) {
+    throw new Error("passport.initialize() plugin not in use");
   }
+
+  const property = this.passport.userProperty || "user";
   const session = options.session === undefined ? true : options.session;
 
   this[property] = user;
   if (session) {
-    if (!this._passport) {
-      throw new Error("passport.initialize() plugin not in use");
-    }
-
     try {
-      await this._passport.instance._sessionManager.logIn(this, user);
+      await this.passport.sessionManager.logIn(this, user);
     } catch (e) {
       this[property] = null;
       throw e;

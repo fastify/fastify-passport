@@ -81,7 +81,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
   }
 
   handler = async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!request._passport) {
+    if (!request.passport) {
       throw new Error("passport.initialize() plugin not in use");
     }
     // accumulator for failures from each strategy in the chain
