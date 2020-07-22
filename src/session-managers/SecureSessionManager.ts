@@ -20,16 +20,14 @@ export class SecureSessionManager {
 
   async logIn(request: FastifyRequest, user: any) {
     const object = await this.serializeUser(user, request);
-    if (!request._passport.session) {
-      request._passport.session = {};
-    }
-    request._passport.session.user = object;
-    request.session.set(this.key, request._passport.session);
+    request.session.set(this.key, object);
   }
 
   async logOut(request: FastifyRequest) {
-    if (request._passport && request._passport.session) {
-      request.session.set(this.key, undefined);
-    }
+    request.session.set(this.key, undefined);
+  }
+
+  getUserFromSession(request: FastifyRequest) {
+    return request.session.get(this.key);
   }
 }

@@ -18,17 +18,18 @@ export type DeserializeFunction<SerializedUser = any, User = any> = (
 export type InfoTransformerFunction = (info: any) => Promise<any>;
 
 export class Authenticator {
-  private _strategies: { [k: string]: AnyStrategy } = {};
-  private _serializers: SerializeFunction<any, any>[] = [];
-  private _deserializers: DeserializeFunction<any, any>[] = [];
-  private _infoTransformers: InfoTransformerFunction[] = [];
-  public _key = "passport";
-  public _userProperty = "user";
-  public _sessionManager: SecureSessionManager;
+  public key = "passport";
+  public userProperty = "user";
+  public sessionManager: SecureSessionManager;
+
+  private strategies: { [k: string]: AnyStrategy } = {};
+  private serializers: SerializeFunction<any, any>[] = [];
+  private deserializers: DeserializeFunction<any, any>[] = [];
+  private infoTransformers: InfoTransformerFunction[] = [];
 
   constructor() {
     this.use(new SessionStrategy(this.deserializeUser.bind(this)));
-    this._sessionManager = new SecureSessionManager({ key: this._key }, this.serializeUser.bind(this));
+    this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this));
   }
 
   use(strategy: AnyStrategy): this;
@@ -42,12 +43,12 @@ export class Authenticator {
       throw new Error("Authentication strategies must have a name");
     }
 
-    this._strategies[name as string] = strategy;
+    this.strategies[name as string] = strategy;
     return this;
   }
 
   public unuse(name: string): this {
-    delete this._strategies[name];
+    delete this.strategies[name];
     return this;
   }
 
@@ -233,17 +234,17 @@ export class Authenticator {
    * @api public
    */
   registerUserSerializer<TUser, TID>(fn: SerializeFunction<TUser, TID>) {
-    this._serializers.push(fn);
+    this.serializers.push(fn);
   }
 
   /** Runs the chain of serializers to find the first one that serializes a user, and returns it. */
   async serializeUser<User, StoredUser = any>(user: User, request: FastifyRequest): Promise<StoredUser> {
-    const result = this.runStack(this._serializers, user, request);
+    const result = this.runStack(this.serializers, user, request);
 
     if (result) {
       return result;
     } else {
-      throw new Error(`Failed to serialize user into session. Tried ${this._serializers.length} serializers.`);
+      throw new Error(`Failed to serialize user into session. Tried ${this.serializers.length} serializers.`);
     }
   }
 
@@ -259,16 +260,16 @@ export class Authenticator {
    * @api public
    */
   registerUserDeserializer<User, StoredUser>(fn: DeserializeFunction<User, StoredUser>) {
-    this._deserializers.push(fn);
+    this.deserializers.push(fn);
   }
 
   async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest) {
-    const result = this.runStack(this._deserializers, stored, request);
+    const result = this.runStack(this.deserializers, stored, request);
 
     if (result) {
       return result;
     } else {
-      throw new Error(`Failed to deserialize user out of session. Tried ${this._deserializers.length} serializers.`);
+      throw new Error(`Failed to deserialize user out of session. Tried ${this.deserializers.length} serializers.`);
     }
   }
 
@@ -295,11 +296,11 @@ export class Authenticator {
    * @api public
    */
   registerAuthInfoTransformer(fn: InfoTransformerFunction) {
-    this._infoTransformers.push(fn);
+    this.infoTransformers.push(fn);
   }
 
   transformAuthInfo(info: any, request: FastifyRequest) {
-    const result = this.runStack(this._infoTransformers, info, request);
+    const result = this.runStack(this.infoTransformers, info, request);
     // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
     return result || info;
   }
@@ -312,7 +313,7 @@ export class Authenticator {
    * @api private
    */
   strategy(name: string): AnyStrategy {
-    return this._strategies[name];
+    return this.strategies[name];
   }
 
   private async runStack<Result, A, B>(stack: ((...args: [A, B]) => Promise<Result>)[], ...args: [A, B]) {

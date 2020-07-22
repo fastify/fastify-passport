@@ -116,6 +116,7 @@ test(`should allow login, and add successMessage to the session from a strategy 
 });
 
 test(`should throw error if pauseStream is being used`, async () => {
+  jest.spyOn(console, "error").mockImplementation(jest.fn());
   const fastifyPassport = new Authenticator();
   fastifyPassport.use("test", new TestStrategy("test"));
   fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user));
