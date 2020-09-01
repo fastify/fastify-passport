@@ -101,9 +101,7 @@ Note that if a callback is supplied, it becomes the application's responsibility
 
 ### authorize(name, options)
 
-Returns a hook that will authorize a third-party account using the given `strategy` name, with optional `options`. Intended for use as a `preValidation` hook on any route.
-
-If authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
+Returns a hook that will authorize a third-party account using the given `strategy` name, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it doesn't modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
 
 This function is particularly useful when connecting third-party accounts to the local account of a user that is currently authenticated.
 

@@ -189,6 +189,7 @@ export class Authenticator {
     } else {
       options = optionsOrCallback;
     }
+    options || (options = {});
     options.assignProperty = "account";
 
     return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler;
