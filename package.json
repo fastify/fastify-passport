@@ -57,12 +57,12 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "fastify": "^3.0.3",
+    "got": "^11.6.1",
     "jest": "^26.1.0",
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth": "^2.0.0",
     "prettier": "^2.0.5",
-    "request": "^2.88.2",
     "set-cookie-parser": "^2.4.6",
     "ts-jest": "^26.1.2",
     "typescript": "^3.9.6"

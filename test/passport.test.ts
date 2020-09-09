@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import got from "got";
 import Authenticator from "../src/Authenticator";
-import { getTestServer, getConfiguredTestServer, TestStrategy, request } from "./helpers";
+import { getTestServer, getConfiguredTestServer, TestStrategy } from "./helpers";
 import { AddressInfo } from "net";
 import { Strategy } from "../src/strategies";
 
@@ -380,25 +381,25 @@ test(`should return 200 if logged in against a running server`, async () => {
   server.server.unref();
 
   const port = (server.server.address() as AddressInfo).port;
-  const login = await request({
+  const login = await got("http://localhost:" + port + "/login", {
     method: "POST",
-    body: { login: "test", password: "test" },
-    url: "http://localhost:" + port + "/login",
-    json: true,
+    json: { login: "test", password: "test" },
     followRedirect: false,
   });
-  expect(login.response.statusCode).toEqual(302);
-  expect(login.response.headers.location).toEqual("/");
+  expect(login.statusCode).toEqual(302);
+  expect(login.headers.location).toEqual("/");
+  const cookies = login.headers["set-cookie"]!;
+  expect(cookies).toHaveLength(1);
 
-  const home = await request({
+  const home = await got({
     url: "http://localhost:" + port,
     headers: {
-      cookie: login.response.headers["set-cookie"][0],
+      cookie: cookies[0],
     },
     method: "GET",
   });
 
-  expect(home.response.statusCode).toEqual(200);
+  expect(home.statusCode).toEqual(200);
 });
 
 test(`should execute failureRedirect if failed to log in`, async () => {
