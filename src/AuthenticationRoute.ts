@@ -102,7 +102,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
     return this.onAllFailed(failures, request, reply);
   };
 
-  async attemptStrategy(failures: FailureObject[], name: string, request: FastifyRequest, reply: FastifyReply) {
+  attemptStrategy(failures: FailureObject[], name: string, request: FastifyRequest, reply: FastifyReply) {
     const prototype = this.authenticator.strategy(name);
     if (!prototype) {
       throw new Error(`Unknown authentication strategy ${name}!`);
@@ -118,7 +118,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        * Strategies should call this function to successfully authenticate a user.  `user` should be an object supplied by the application after it has been given an opportunity to verify credentials.  `info` is an optional argument containing additional user information.  This is useful for third-party authentication strategies to pass profile details.
        */
       strategy.success = (user: any, info: { type?: string; message?: string }) => {
-        request.log.debug(`passport strategy ${name} success`);
+        request.log.debug({ strategy: name }, "passport strategy success");
         if (this.callback) {
           return resolve(this.callback(request, reply, null, user, info));
         }
