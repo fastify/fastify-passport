@@ -7,7 +7,7 @@
 
 ## Status
 
-Brand fricken new! There may be incompatabilities with normal Passport deployments, and bugs. Use at your own risk!
+Alpha. Pre-any-release. There may be incompatabilities with express-based `passport` deployments, and bugs. Use at your own risk, but please report any issues so we can correct them!
 
 ## Installation
 
