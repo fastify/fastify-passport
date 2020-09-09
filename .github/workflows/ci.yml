@@ -20,15 +20,6 @@ jobs:
 
       - name: Install
         run: yarn install --frozen-lockfile
+
       - name: Run Tests & generate coverage
         run: yarn run test
-      # - name: Coveralls Parallel
-      #   uses: coverallsapp/github-action@master
-      #   with:
-      #     github-token: ${{ secrets.github_token }}
-      #     parallel: true
-      # - name: Coveralls Finished
-      #   uses: coverallsapp/github-action@master
-      #   with:
-      #     github-token: ${{ secrets.github_token }}
-      #     parallel-finished: true
