@@ -22,7 +22,8 @@
     "authentication"
   ],
   "contributors": [
-    "Maksim Sinik <maksim@sinik.it>"
+    "Maksim Sinik <maksim@sinik.it>",
+    "Harry Brundage <harry@harry.me>"
   ],
   "license": "MIT",
   "licenses": [
@@ -65,7 +66,7 @@
     "prettier": "^2.0.5",
     "set-cookie-parser": "^2.4.6",
     "ts-jest": "^26.1.2",
-    "typescript": "^3.9.6"
+    "typescript": "^4.0.2"
   },
   "files": [
     "/dist/src"
