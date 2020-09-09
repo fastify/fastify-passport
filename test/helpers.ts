@@ -1,5 +1,4 @@
 import fs from "fs";
-import requestCallback from "request";
 import fastify, { FastifyInstance } from "fastify";
 import fastifySecureSession from "fastify-secure-session";
 import Authenticator from "../src/Authenticator";
@@ -58,18 +57,6 @@ export const getTestServer = () => {
     reply.send(error);
   });
   return server;
-};
-
-export const request = (options): Promise<{ response: any; body: any }> => {
-  return new Promise((resolve, reject) => {
-    requestCallback(options, (error, response, body) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve({ response, body });
-      }
-    });
-  });
 };
 
 export const getConfiguredTestServer = (name = "test", strategy = new TestStrategy("test")) => {
