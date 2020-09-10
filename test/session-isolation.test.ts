@@ -9,7 +9,7 @@ server.get(
   async () => "hello!"
 );
 server.get("/my-id", { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) }, async (request) =>
-  String(request.user.id)
+  String((request.user as any).id)
 );
 server.post(
   "/login",
