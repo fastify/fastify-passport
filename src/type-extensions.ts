@@ -1,5 +1,6 @@
 import { flashFactory } from "fastify-flash/lib/flash";
 import { logIn, logOut, isAuthenticated, isUnauthenticated } from "./decorators";
+import Authenticator from "./Authenticator";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -11,10 +12,10 @@ declare module "fastify" {
     logOut: typeof logOut;
     isAuthenticated: typeof isAuthenticated;
     isUnauthenticated: typeof isUnauthenticated;
-    passport: any;
-    user: any;
-    authInfo: any;
-    account: any;
+    passport: Authenticator;
+    user: unknown;
+    authInfo: unknown;
+    account: unknown;
   }
 
   interface FastifyReply {

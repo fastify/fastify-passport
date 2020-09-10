@@ -13,9 +13,11 @@ describe(".authorize", () => {
     fastifyPassport.use(new TestThirdPartyStrategy("third-party"));
 
     server.get("/", { preValidation: fastifyPassport.authorize("third-party") }, async (request) => {
-      expect(request.user).toBeFalsy();
-      expect(request.account.id).toBeTruthy();
-      expect(request.account.name).toEqual("test");
+      const user = request.user as any;
+      expect(user).toBeFalsy();
+      const account = request.account as any;
+      expect(account.id).toBeTruthy();
+      expect(account.name).toEqual("test");
 
       return "it worked";
     });

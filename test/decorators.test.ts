@@ -6,7 +6,7 @@ describe("Request decorators", () => {
     server.get(
       "/",
       { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) },
-      async (request) => request.user.name
+      async (request) => (request.user as any).name
     );
     server.post("/force-login", async (request, reply) => {
       await request.logIn({ name: "force logged in user" });
@@ -36,7 +36,7 @@ describe("Request decorators", () => {
     const { server } = getConfiguredTestServer();
     server.post("/force-login", async (request, reply) => {
       await request.logIn({ name: "force logged in user" }, { session: false });
-      reply.send(request.user.name);
+      reply.send((request.user as any).name);
     });
 
     const login = await server.inject({
