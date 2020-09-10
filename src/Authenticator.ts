@@ -240,7 +240,7 @@ export class Authenticator {
 
   /** Runs the chain of serializers to find the first one that serializes a user, and returns it. */
   async serializeUser<User, StoredUser = any>(user: User, request: FastifyRequest): Promise<StoredUser> {
-    const result = this.runStack(this.serializers, user, request)
+    const result = await this.runStack(this.serializers, user, request)
 
     if (result) {
       return result
@@ -265,7 +265,7 @@ export class Authenticator {
   }
 
   async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest) {
-    const result = this.runStack(this.deserializers, stored, request)
+    const result = await this.runStack(this.deserializers, stored, request)
 
     if (result) {
       return result
@@ -300,8 +300,8 @@ export class Authenticator {
     this.infoTransformers.push(fn)
   }
 
-  transformAuthInfo(info: any, request: FastifyRequest) {
-    const result = this.runStack(this.infoTransformers, info, request)
+  async transformAuthInfo(info: any, request: FastifyRequest) {
+    const result = await this.runStack(this.infoTransformers, info, request)
     // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
     return result || info
   }
@@ -313,7 +313,7 @@ export class Authenticator {
    * @return {AnyStrategy}
    * @api private
    */
-  strategy(name: string): AnyStrategy {
+  strategy(name: string): AnyStrategy | undefined {
     return this.strategies[name]
   }
 

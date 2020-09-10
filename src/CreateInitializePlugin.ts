@@ -5,7 +5,7 @@ import flash from 'fastify-flash'
 
 export function CreateInitializePlugin(passport: Authenticator, options: { userProperty?: string } = {}) {
   return fp(async (fastify) => {
-    fastify.register(flash)
+    void fastify.register(flash)
     fastify.decorateRequest('passport', passport)
     fastify.decorateRequest('logIn', logIn)
     fastify.decorateRequest('login', logIn)

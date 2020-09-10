@@ -17,10 +17,10 @@ module.exports = {
     'plugin:prettier/recommended', // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
   ],
   rules: {
-    // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {
@@ -28,5 +28,14 @@ module.exports = {
         argsIgnorePattern: '^_',
       },
     ],
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/require-await': 'off', // fastify uses async functions to signify if a callback is needed, so we just leave this off for less noise
+    '@typescript-eslint/restrict-plus-operands': 'off',
+    '@typescript-eslint/restrict-template-expressions': 'off',
+    '@typescript-eslint/unbound-method': 'off',
   },
 }

@@ -50,11 +50,11 @@ export class TestBrowserSession {
 
 export const getTestServer = () => {
   const server = fastify()
-  server.register(fastifySecureSession, { key: SecretKey })
+  void server.register(fastifySecureSession, { key: SecretKey })
   server.setErrorHandler((error, request, reply) => {
     console.error(error)
-    reply.status(500)
-    reply.send(error)
+    void reply.status(500)
+    void reply.send(error)
   })
   return server
 }
@@ -66,8 +66,8 @@ export const getConfiguredTestServer = (name = 'test', strategy = new TestStrate
   fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
   const server = getTestServer()
-  server.register(fastifyPassport.initialize())
-  server.register(fastifyPassport.secureSession())
+  void server.register(fastifyPassport.initialize())
+  void server.register(fastifyPassport.secureSession())
 
   return { fastifyPassport, server }
 }
