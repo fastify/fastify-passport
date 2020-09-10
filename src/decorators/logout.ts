@@ -1,4 +1,4 @@
-import { FastifyRequest } from "fastify";
+import { FastifyRequest } from 'fastify'
 
 /**
  * Terminate an existing login session.
@@ -6,7 +6,7 @@ import { FastifyRequest } from "fastify";
  * @api public
  */
 export async function logOut(this: FastifyRequest): Promise<void> {
-  const property = this.passport.userProperty || "user";
-  this[property] = null;
-  this.passport.sessionManager.logOut(this);
+  const property = this.passport.userProperty || 'user'
+  this[property] = null
+  this.passport.sessionManager.logOut(this)
 }

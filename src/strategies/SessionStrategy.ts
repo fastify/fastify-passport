@@ -1,24 +1,24 @@
-import { Strategy } from "./base";
-import { DeserializeFunction } from "../Authenticator";
-import type { FastifyRequest } from "fastify";
+import { Strategy } from './base'
+import { DeserializeFunction } from '../Authenticator'
+import type { FastifyRequest } from 'fastify'
 
 /**
  * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
  * */
 export class SessionStrategy extends Strategy {
-  private deserializeUser: DeserializeFunction;
+  private deserializeUser: DeserializeFunction
 
-  constructor(deserializeUser: DeserializeFunction);
-  constructor(options: any, deserializeUser: DeserializeFunction);
+  constructor(deserializeUser: DeserializeFunction)
+  constructor(options: any, deserializeUser: DeserializeFunction)
   constructor(options: DeserializeFunction | any, deserializeUser?: DeserializeFunction) {
-    super("session");
-    if (typeof options === "function") {
-      deserializeUser = options;
-      options = undefined;
+    super('session')
+    if (typeof options === 'function') {
+      deserializeUser = options
+      options = undefined
     }
-    options = options || {};
+    options = options || {}
 
-    this.deserializeUser = deserializeUser!;
+    this.deserializeUser = deserializeUser!
   }
 
   /**
@@ -34,30 +34,30 @@ export class SessionStrategy extends Strategy {
    */
   authenticate(request: FastifyRequest, options?: { pauseStream?: boolean }) {
     if (!request.passport) {
-      return this.error!(new Error("passport.initialize() plugin not in use"));
+      return this.error!(new Error('passport.initialize() plugin not in use'))
     }
-    options = options || {};
+    options = options || {}
     // we need this to prevent basic passport's strategies to use unsupported feature.
     if (options.pauseStream) {
-      return this.error!(new Error("fastify-passport doesn't support pauseStream option."));
+      return this.error!(new Error("fastify-passport doesn't support pauseStream option."))
     }
 
-    const sessionUser = request.passport.sessionManager.getUserFromSession(request);
+    const sessionUser = request.passport.sessionManager.getUserFromSession(request)
 
     if (sessionUser || sessionUser === 0) {
       this.deserializeUser(sessionUser, request)
         .catch((err) => this.error!(err))
         .then((user?: any) => {
           if (!user) {
-            request.passport.sessionManager.logOut(request);
+            request.passport.sessionManager.logOut(request)
           } else {
-            const property = request.passport.userProperty || "user";
-            request[property] = user;
+            const property = request.passport.userProperty || 'user'
+            request[property] = user
           }
-          this.pass!();
-        });
+          this.pass!()
+        })
     } else {
-      this.pass!();
+      this.pass!()
     }
   }
 }

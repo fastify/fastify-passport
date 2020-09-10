@@ -7,9 +7,9 @@
   "scripts": {
     "build": "rm -rf ./build && mkdir build && tsc && git rev-parse HEAD > BUILD_SHA",
     "lint": "eslint '*/**/*.{js,ts,tsx}'",
-    "lintfix": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\" && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "lint:fix": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\" && eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "prepublishOnly": "yarn run build",
-    "test": "yarn run build && yarn run test:unit",
+    "test": "yarn run build && yarn run test:unit && yarn run lint",
     "test:unit": "jest"
   },
   "repository": {
