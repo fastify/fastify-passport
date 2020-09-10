@@ -37,16 +37,16 @@ export type SingleStrategyCallback = (
   request: FastifyRequest,
   reply: FastifyReply,
   err: null | Error,
-  user?: any,
-  info?: any,
+  user?: unknown,
+  info?: unknown,
   status?: number
 ) => Promise<void>
 export type MultiStrategyCallback = (
   request: FastifyRequest,
   reply: FastifyReply,
   err: null | Error,
-  user?: any,
-  info?: any,
+  user?: unknown,
+  info?: unknown,
   statuses?: (number | undefined)[]
 ) => Promise<void>
 
@@ -131,7 +131,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
           return resolve()
         }
 
-        request
+        void request
           .logIn(user, this.options)
           .catch(reject)
           .then(() => {
@@ -143,15 +143,15 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
                   request.session.set('returnTo', undefined)
                 }
 
-                reply.redirect(url)
+                void reply.redirect(url)
               } else if (this.options.successRedirect) {
-                reply.redirect(this.options.successRedirect)
+                void reply.redirect(this.options.successRedirect)
               }
               return resolve()
             }
 
             if (this.options.authInfo !== false) {
-              this.authenticator
+              void this.authenticator
                 .transformAuthInfo(info, request)
                 .catch(reject)
                 .then((transformedInfo) => {
@@ -189,8 +189,8 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        * Strategies should call this function to redirect the user (via their user agent) to a third-party website for authentication.
        */
       strategy.redirect = (url: string, status?: number) => {
-        reply.status(status || 302)
-        reply.redirect(url)
+        void reply.status(status || 302)
+        void reply.redirect(url)
         resolve()
       }
 
@@ -254,17 +254,17 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
     }
 
     rstatus = rstatus || 401
-    reply.code(rstatus)
+    void reply.code(rstatus)
 
     if (reply.statusCode === 401 && rchallenge.length) {
-      reply.header('WWW-Authenticate', rchallenge)
+      void reply.header('WWW-Authenticate', rchallenge)
     }
 
     if (this.options.failWithError) {
       throw new AuthenticationError(http.STATUS_CODES[reply.statusCode]!, rstatus)
     }
 
-    reply.send(http.STATUS_CODES[reply.statusCode])
+    void reply.send(http.STATUS_CODES[reply.statusCode])
   }
 
   applyFlashOrMessage(event: 'success' | 'failure', request: FastifyRequest, result?: FlashObject) {

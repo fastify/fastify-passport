@@ -19,7 +19,7 @@ server.post(
 
 server.post('/force-login', async (request, reply) => {
   await request.logIn(generateTestUser())
-  reply.send('logged in')
+  void reply.send('logged in')
 })
 
 server.post(
@@ -27,7 +27,7 @@ server.post(
   { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
   async (request, reply) => {
     await request.logout()
-    reply.send('logged out')
+    void reply.send('logged out')
   }
 )
 

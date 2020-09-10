@@ -8,5 +8,5 @@ import { FastifyRequest } from 'fastify'
 export async function logOut(this: FastifyRequest): Promise<void> {
   const property = this.passport.userProperty || 'user'
   this[property] = null
-  this.passport.sessionManager.logOut(this)
+  await this.passport.sessionManager.logOut(this)
 }

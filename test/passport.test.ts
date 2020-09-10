@@ -27,7 +27,7 @@ test(`should allow login, and add successMessage to session upon logged in`, asy
     '/',
     { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async (request, reply) => {
-      reply.send(request.session.get('messages'))
+      void reply.send(request.session.get('messages'))
     }
   )
   server.post(
@@ -124,8 +124,8 @@ test(`should throw error if pauseStream is being used`, async () => {
   fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
   const server = getTestServer()
-  server.register(fastifyPassport.initialize())
-  server.register(
+  void server.register(fastifyPassport.initialize())
+  void server.register(
     fastifyPassport.secureSession({
       pauseStream: true,
     } as any)
@@ -572,7 +572,7 @@ test(`should not log the user in when passed a callback`, async () => {
   server.post(
     '/login',
     fastifyPassport.authenticate('test', async (request, reply, err, user) => {
-      return user!.name
+      return (user as any).name
     })
   )
 

@@ -34,30 +34,30 @@ export class SessionStrategy extends Strategy {
    */
   authenticate(request: FastifyRequest, options?: { pauseStream?: boolean }) {
     if (!request.passport) {
-      return this.error!(new Error('passport.initialize() plugin not in use'))
+      return this.error(new Error('passport.initialize() plugin not in use'))
     }
     options = options || {}
     // we need this to prevent basic passport's strategies to use unsupported feature.
     if (options.pauseStream) {
-      return this.error!(new Error("fastify-passport doesn't support pauseStream option."))
+      return this.error(new Error("fastify-passport doesn't support pauseStream option."))
     }
 
     const sessionUser = request.passport.sessionManager.getUserFromSession(request)
 
     if (sessionUser || sessionUser === 0) {
-      this.deserializeUser(sessionUser, request)
-        .catch((err) => this.error!(err))
-        .then((user?: any) => {
+      void this.deserializeUser(sessionUser, request)
+        .catch((err) => this.error(err))
+        .then(async (user?: any) => {
           if (!user) {
-            request.passport.sessionManager.logOut(request)
+            await request.passport.sessionManager.logOut(request)
           } else {
             const property = request.passport.userProperty || 'user'
             request[property] = user
           }
-          this.pass!()
+          this.pass()
         })
     } else {
-      this.pass!()
+      this.pass()
     }
   }
 }
