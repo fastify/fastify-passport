@@ -1,10 +1,10 @@
-import { FastifyRequest } from "fastify";
+import { FastifyRequest } from 'fastify'
 
 export class Strategy {
-  name: string;
+  name: string
 
   constructor(name: string) {
-    this.name = name;
+    this.name = name
   }
   /**
    * Authenticate request.
@@ -16,9 +16,9 @@ export class Strategy {
    * @param {Object} [options] Strategy-specific options.
    * @api public
    */
-  authenticate(request: FastifyRequest, options?: any): void;
+  authenticate(request: FastifyRequest, options?: any): void
   authenticate() {
-    throw new Error("Strategy#authenticate must be overridden by subclass");
+    throw new Error('Strategy#authenticate must be overridden by subclass')
   }
 
   //
@@ -40,7 +40,7 @@ export class Strategy {
    * @param {Object} info
    * @api public
    */
-  success!: (user: any, info?: any) => void;
+  success!: (user: any, info?: any) => void
 
   /**
    * Fail authentication, with optional `challenge` and `status`, defaulting
@@ -52,7 +52,7 @@ export class Strategy {
    * @param {Number} status
    * @api public
    */
-  fail!: ((challenge?: any, status?: number) => void) | ((status?: number) => void);
+  fail!: ((challenge?: any, status?: number) => void) | ((status?: number) => void)
 
   /**
    * Redirect to `url` with optional `status`, defaulting to 302.
@@ -64,7 +64,7 @@ export class Strategy {
    * @param {Number} status
    * @api public
    */
-  redirect!: (url: string, status?: number) => void;
+  redirect!: (url: string, status?: number) => void
 
   /**
    * Pass without making a success or fail decision.
@@ -75,7 +75,7 @@ export class Strategy {
    *
    * @api public
    */
-  pass!: () => void;
+  pass!: () => void
 
   /**
    * Internal error while performing authentication.
@@ -87,5 +87,5 @@ export class Strategy {
    * @param {Error} err
    * @api public
    */
-  error!: (err: Error) => void;
+  error!: (err: Error) => void
 }

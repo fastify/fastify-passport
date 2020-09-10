@@ -1,59 +1,59 @@
-import { SecureSessionManager } from "./session-managers/SecureSessionManager";
-import { AnyStrategy, SessionStrategy } from "./strategies";
-import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from "fastify";
-import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from "./AuthenticationRoute";
-import { CreateInitializePlugin } from "./CreateInitializePlugin";
-import fastifyPlugin from "fastify-plugin";
+import { SecureSessionManager } from './session-managers/SecureSessionManager'
+import { AnyStrategy, SessionStrategy } from './strategies'
+import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from 'fastify'
+import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from './AuthenticationRoute'
+import { CreateInitializePlugin } from './CreateInitializePlugin'
+import fastifyPlugin from 'fastify-plugin'
 
 export type SerializeFunction<User = any, SerializedUser = any> = (
   user: User,
   req: FastifyRequest
-) => Promise<SerializedUser>;
+) => Promise<SerializedUser>
 
 export type DeserializeFunction<SerializedUser = any, User = any> = (
   serialized: SerializedUser,
   req: FastifyRequest
-) => Promise<User>;
+) => Promise<User>
 
-export type InfoTransformerFunction = (info: any) => Promise<any>;
+export type InfoTransformerFunction = (info: any) => Promise<any>
 
 export class Authenticator {
-  public key = "passport";
-  public userProperty = "user";
-  public sessionManager: SecureSessionManager;
+  public key = 'passport'
+  public userProperty = 'user'
+  public sessionManager: SecureSessionManager
 
-  private strategies: { [k: string]: AnyStrategy } = {};
-  private serializers: SerializeFunction<any, any>[] = [];
-  private deserializers: DeserializeFunction<any, any>[] = [];
-  private infoTransformers: InfoTransformerFunction[] = [];
+  private strategies: { [k: string]: AnyStrategy } = {}
+  private serializers: SerializeFunction<any, any>[] = []
+  private deserializers: DeserializeFunction<any, any>[] = []
+  private infoTransformers: InfoTransformerFunction[] = []
 
   constructor() {
-    this.use(new SessionStrategy(this.deserializeUser.bind(this)));
-    this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this));
+    this.use(new SessionStrategy(this.deserializeUser.bind(this)))
+    this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this))
   }
 
-  use(strategy: AnyStrategy): this;
-  use(name: string, strategy: AnyStrategy): this;
+  use(strategy: AnyStrategy): this
+  use(name: string, strategy: AnyStrategy): this
   use(name: AnyStrategy | string, strategy?: AnyStrategy): this {
     if (!strategy) {
-      strategy = name as AnyStrategy;
-      name = strategy.name as string;
+      strategy = name as AnyStrategy
+      name = strategy.name as string
     }
     if (!name) {
-      throw new Error("Authentication strategies must have a name");
+      throw new Error('Authentication strategies must have a name')
     }
 
-    this.strategies[name as string] = strategy;
-    return this;
+    this.strategies[name as string] = strategy
+    return this
   }
 
   public unuse(name: string): this {
-    delete this.strategies[name];
-    return this;
+    delete this.strategies[name]
+    return this
   }
 
   public initialize(options?: { userProperty?: string }): FastifyPlugin {
-    return CreateInitializePlugin(this, options);
+    return CreateInitializePlugin(this, options)
   }
 
   /**
@@ -124,30 +124,30 @@ export class Authenticator {
   public authenticate<StrategyName extends string | string[]>(
     strategy: StrategyName,
     callback?: AuthenticateCallback<StrategyName>
-  ): RouteHandlerMethod;
+  ): RouteHandlerMethod
   public authenticate<StrategyName extends string | string[]>(
     strategy: StrategyName,
     options?: AuthenticateOptions
-  ): RouteHandlerMethod;
+  ): RouteHandlerMethod
   public authenticate<StrategyName extends string | string[]>(
     strategy: StrategyName,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyName>
-  ): RouteHandlerMethod;
+  ): RouteHandlerMethod
   public authenticate<StrategyName extends string | string[]>(
     strategyOrStrategies: StrategyName,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
     callback?: AuthenticateCallback<StrategyName>
   ): RouteHandlerMethod {
-    let options;
-    if (typeof optionsOrCallback == "function") {
-      options = {};
-      callback = optionsOrCallback;
+    let options
+    if (typeof optionsOrCallback == 'function') {
+      options = {}
+      callback = optionsOrCallback
     } else {
-      options = optionsOrCallback;
+      options = optionsOrCallback
     }
 
-    return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler;
+    return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler
   }
 
   /**
@@ -170,29 +170,29 @@ export class Authenticator {
   public authorize<StrategyName extends string | string[]>(
     strategy: StrategyName,
     callback?: AuthenticateCallback<StrategyName>
-  );
-  public authorize<StrategyName extends string | string[]>(strategy: StrategyName, options?: AuthenticateOptions);
+  )
+  public authorize<StrategyName extends string | string[]>(strategy: StrategyName, options?: AuthenticateOptions)
   public authorize<StrategyName extends string | string[]>(
     strategy: StrategyName,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyName>
-  );
+  )
   public authorize<StrategyName extends string | string[]>(
     strategyOrStrategies: StrategyName,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
     callback?: AuthenticateCallback<StrategyName>
   ) {
-    let options;
-    if (typeof optionsOrCallback == "function") {
-      options = {};
-      callback = optionsOrCallback;
+    let options
+    if (typeof optionsOrCallback == 'function') {
+      options = {}
+      callback = optionsOrCallback
     } else {
-      options = optionsOrCallback;
+      options = optionsOrCallback
     }
-    options || (options = {});
-    options.assignProperty = "account";
+    options || (options = {})
+    options.assignProperty = 'account'
 
-    return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler;
+    return new AuthenticationRoute(this, strategyOrStrategies, options, callback).handler
   }
 
   /**
@@ -221,8 +221,8 @@ export class Authenticator {
    */
   public secureSession(options?: AuthenticateOptions): FastifyPlugin {
     return fastifyPlugin(async (fastify) => {
-      fastify.addHook("preValidation", new AuthenticationRoute(this, "session", options).handler);
-    });
+      fastify.addHook('preValidation', new AuthenticationRoute(this, 'session', options).handler)
+    })
   }
 
   /**
@@ -235,17 +235,17 @@ export class Authenticator {
    * @api public
    */
   registerUserSerializer<TUser, TID>(fn: SerializeFunction<TUser, TID>) {
-    this.serializers.push(fn);
+    this.serializers.push(fn)
   }
 
   /** Runs the chain of serializers to find the first one that serializes a user, and returns it. */
   async serializeUser<User, StoredUser = any>(user: User, request: FastifyRequest): Promise<StoredUser> {
-    const result = this.runStack(this.serializers, user, request);
+    const result = this.runStack(this.serializers, user, request)
 
     if (result) {
-      return result;
+      return result
     } else {
-      throw new Error(`Failed to serialize user into session. Tried ${this.serializers.length} serializers.`);
+      throw new Error(`Failed to serialize user into session. Tried ${this.serializers.length} serializers.`)
     }
   }
 
@@ -261,16 +261,16 @@ export class Authenticator {
    * @api public
    */
   registerUserDeserializer<User, StoredUser>(fn: DeserializeFunction<User, StoredUser>) {
-    this.deserializers.push(fn);
+    this.deserializers.push(fn)
   }
 
   async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest) {
-    const result = this.runStack(this.deserializers, stored, request);
+    const result = this.runStack(this.deserializers, stored, request)
 
     if (result) {
-      return result;
+      return result
     } else {
-      throw new Error(`Failed to deserialize user out of session. Tried ${this.deserializers.length} serializers.`);
+      throw new Error(`Failed to deserialize user out of session. Tried ${this.deserializers.length} serializers.`)
     }
   }
 
@@ -297,13 +297,13 @@ export class Authenticator {
    * @api public
    */
   registerAuthInfoTransformer(fn: InfoTransformerFunction) {
-    this.infoTransformers.push(fn);
+    this.infoTransformers.push(fn)
   }
 
   transformAuthInfo(info: any, request: FastifyRequest) {
-    const result = this.runStack(this.infoTransformers, info, request);
+    const result = this.runStack(this.infoTransformers, info, request)
     // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
-    return result || info;
+    return result || info
   }
 
   /**
@@ -314,22 +314,22 @@ export class Authenticator {
    * @api private
    */
   strategy(name: string): AnyStrategy {
-    return this.strategies[name];
+    return this.strategies[name]
   }
 
   private async runStack<Result, A, B>(stack: ((...args: [A, B]) => Promise<Result>)[], ...args: [A, B]) {
     for (const attempt of stack) {
       try {
-        return await attempt(...args);
+        return await attempt(...args)
       } catch (e) {
-        if (e == "pass") {
-          continue;
+        if (e == 'pass') {
+          continue
         } else {
-          throw e;
+          throw e
         }
       }
     }
   }
 }
 
-export default Authenticator;
+export default Authenticator
