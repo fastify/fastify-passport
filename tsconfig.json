@@ -4,7 +4,6 @@
     "declaration": true,
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "build",
     "pretty": true,
     "noEmitOnError": true,
     "experimentalDecorators": true,
@@ -15,12 +14,12 @@
     "esModuleInterop": true,
     "removeComments": true,
     "noUnusedLocals": true,
-    "lib": ["esnext"]
+    "lib": ["esnext"],
+    "rootDir": "./src"
   },
   "formatCodeOptions": {
     "identSize": 2,
     "tabSize": 2
   },
-  "exclude": ["node_modules"],
-  "include": ["./src/**/*.ts", "./test/**/*.ts"]
+  "include": ["src"]
 }
