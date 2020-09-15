@@ -1,10 +1,10 @@
-import fs from 'fs'
+import * as fs from 'fs'
 import fastify, { FastifyInstance } from 'fastify'
 import fastifySecureSession from 'fastify-secure-session'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
-import parseCookies from 'set-cookie-parser'
+import * as parseCookies from 'set-cookie-parser'
 
 const SecretKey = fs.readFileSync(__dirname + '/secure.key')
 

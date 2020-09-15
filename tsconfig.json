@@ -6,20 +6,16 @@
     "module": "commonjs",
     "pretty": true,
     "noEmitOnError": true,
-    "experimentalDecorators": true,
-    "sourceMap": true,
-    "emitDecoratorMetadata": true,
     "strict": true,
     "noImplicitAny": false,
-    "esModuleInterop": true,
     "removeComments": true,
     "noUnusedLocals": true,
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "rootDir": "./src"
   },
-  "formatCodeOptions": {
-    "identSize": 2,
-    "tabSize": 2
-  },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
