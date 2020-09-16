@@ -1,5 +1,5 @@
 /// <reference types="fastify-secure-session" />
-import http from 'http'
+import * as http from 'http'
 import AuthenticationError from './errors'
 import Authenticator from './Authenticator'
 import { Strategy } from './strategies'
