@@ -1,6 +1,6 @@
 # fastify-passport
 
-![Build Status](https://github.com/fastify/fastify-passport/workflows/ci/badge.svg)
+[![CircleCI](https://circleci.com/gh/RobertLowe/fastify-passport.svg?style=svg)](https://circleci.com/gh/RobertLowe/fastify-passport)
 [![NPM version](https://img.shields.io/npm/v/fastify-passport.svg?style=flat)](https://www.npmjs.com/package/fastify-passport)
 
 `fastify-passport` is a port of the [`passport`](http://www.passportjs.org/) for the Fastify ecosystem. It lets you use Passport strategies to protect Fastify routes!
