@@ -72,7 +72,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
     // Cast `name` to an array, allowing authentication to pass through a chain of strategies.  The first strategy to succeed, redirect, or error will halt the chain.  Authentication failures will proceed through each strategy in series, ultimately failing if all strategies fail.
     // This is typically used on API endpoints to allow clients to authenticate using their preferred choice of Basic, Digest, token-based schemes, etc. It is not feasible to construct a chain of multiple strategies that involve redirection (for example both Facebook and Twitter), since the first one to redirect will halt the chain.
     if (Array.isArray(strategyOrStrategies)) {
-      this.strategies = strategyOrStrategies
+      this.strategies = strategyOrStrategies as string[]
       this.isMultiStrategy = false
     } else {
       this.strategies = [strategyOrStrategies as string]
@@ -111,7 +111,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
     const strategy = Object.create(prototype) as Strategy
 
     // This is a messed up way of adapting passport's API to fastify's async world. We create a promise that the strategy's per-call functions close over and resolve/reject with the result of the strategy. This augmentation business is a key part of how Passport strategies expect to work.
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       /**
        * Authenticate `user`, with optional `info`.
        *
