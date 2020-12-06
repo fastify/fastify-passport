@@ -78,15 +78,27 @@ Options:
   message for failures (overrides any from the strategy itself).
 - `assignProperty` Assign the object provided by the verify callback to given property
 
-An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled. The callback has the following signature, where `user` will be set to the authenticated user on a successful authentication attempt, or `false` otherwise. An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication.
+An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled. The callback has the following signature:
+```js
+(request, reply, err | null, user | false, info?, (status | statuses)?) => Promise<void>
+```
+ where `request` and `reply` will be set to the original `FastifyRequest` and `FastifyReply` objects, and `err` will be set to `null` in case of a success or an `Error` object in case of a failure. If `err` is not `null` then `user`, `info` and `status` objects will be `undefined`. The `user` object will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.
 
-An optional `status` argument will be passed when authentication fails - this could be a HTTP response code for a remote authentication failure or similar.
+ An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication.
+
+An optional `status` or `statuses` argument will be passed when authentication fails - this could be a HTTP response code for a remote authentication failure or similar.
 
 ```js
 fastify.get(
   "/",
   { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) },
-  async (request) => `Hello ${request.user.name}!`
+  async (request, reply, err, user, info, status) => {
+    if (err !== null) {
+      console.warn(err)
+    } else if (user) {
+      console.log(`Hello ${user.name}!`)
+    }
+  }
 );
 ```
 
