@@ -1,8 +1,24 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 import { flashFactory } from 'fastify-flash/lib/flash'
 import { logIn, logOut, isAuthenticated, isUnauthenticated } from './decorators'
 import Authenticator from './Authenticator'
 
 declare module 'fastify' {
+  /**
+   * An empty interface representing the type of users that applications using `fastify-passport` might assign to the request
+   * Suitable for TypeScript users of the library to declaration merge with, like so:
+   * ```
+   * import { User } from "./my/types";
+   *
+   * declare module 'fastify' {
+   *   interface PassportUser {
+   *     [Key in keyof User]: User[Key]
+   *   }
+   * }
+   * ```
+   */
+  interface PassportUser {}
+
   interface FastifyRequest {
     flash: ReturnType<typeof flashFactory>['request']
 
@@ -13,9 +29,9 @@ declare module 'fastify' {
     isAuthenticated: typeof isAuthenticated
     isUnauthenticated: typeof isUnauthenticated
     passport: Authenticator
-    user: unknown
-    authInfo: unknown
-    account: unknown
+    user?: PassportUser
+    authInfo?: Record<string, any>
+    account?: PassportUser
   }
 
   interface FastifyReply {

@@ -152,6 +152,30 @@ fastifyPassport.unuse("legacy-api");
 
 Test if request is unauthenticated.
 
+## Using with TypeScript
+
+`fastify-passport` is written in TypeScript, so it includes type definitions for all of it's API. You can also strongly type the `FastifyRequest.user` property using TypeScript declaration merging. You must re-declare the `PassportUser` interface in the `fastify` module within your own code to add the properties you expect to be assigned by the strategy when authenticating:
+
+```typescript
+declare module 'fastify' {
+  interface PassportUser {
+    id: string
+  }
+}
+```
+
+or, if you already have a type for the objects returned from all of the strategies, you can map it onto the interface with a mapped index type:
+
+```typescript
+import { User } from './my/types'
+
+declare module 'fastify' {
+  interface PassportUser {
+   [Key in keyof User]: User[Key]
+  }
+}
+```
+
 # Differences from Passport.js
 
 `fastify-passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatabilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
