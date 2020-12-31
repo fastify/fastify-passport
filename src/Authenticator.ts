@@ -264,11 +264,13 @@ export class Authenticator {
     this.deserializers.push(fn)
   }
 
-  async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest) {
+  async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest): Promise<StoredUser | false> {
     const result = await this.runStack(this.deserializers, stored, request)
 
     if (result) {
       return result
+    } else if (result === null || result === false) {
+      return false
     } else {
       throw new Error(`Failed to deserialize user out of session. Tried ${this.deserializers.length} serializers.`)
     }

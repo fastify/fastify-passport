@@ -45,6 +45,20 @@ server.post(
 server.listen(0);
 ```
 
+## Session Serialization
+
+In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `fastify-passport` implements this pattern by storing sessions using `fastify-secure-cookie`, and serializing/deserializing user objects to and from the session referenced by the cookie. `fastify-passport` can't store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+
+```js
+// register a serializer that stores the user object's id in the session ...
+fastifyPassport.registerUserSerializer(async (user, request) => user.id);
+
+// ... and then a deserializer that will fetch that user from the database when a request with an id in the session arrives
+fastifyPassport.registerUserDeserializer(async (id, request) {
+  return await User.findById(id);
+});
+```
+
 ## API
 
 ### initialize()
@@ -79,12 +93,14 @@ Options:
 - `assignProperty` Assign the object provided by the verify callback to given property
 
 An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled. The callback has the following signature:
+
 ```js
 (request, reply, err | null, user | false, info?, (status | statuses)?) => Promise<void>
 ```
- where `request` and `reply` will be set to the original `FastifyRequest` and `FastifyReply` objects, and `err` will be set to `null` in case of a success or an `Error` object in case of a failure. If `err` is not `null` then `user`, `info` and `status` objects will be `undefined`. The `user` object will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.
 
- An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication.
+where `request` and `reply` will be set to the original `FastifyRequest` and `FastifyReply` objects, and `err` will be set to `null` in case of a success or an `Error` object in case of a failure. If `err` is not `null` then `user`, `info` and `status` objects will be `undefined`. The `user` object will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.
+
+An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication.
 
 An optional `status` or `statuses` argument will be passed when authentication fails - this could be a HTTP response code for a remote authentication failure or similar.
 
@@ -146,7 +162,56 @@ Example:
 
 ```js
 fastifyPassport.unuse("legacy-api");
+
+### registerUserSerializer(serializer: (user, request) => Promise<SerializedUser>)
+
+Registers an async user serializer function for taking a high level User object from your application and serializing it for storage into the session. `fastify-passport` can't store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+
+```js
+// register a serializer that stores the user object's id in the session ...
+fastifyPassport.registerUserSerializer(async (user, request) => user.id)
 ```
+
+### registerUserDeserializer(deserializer: (serializedUser, request) => Promise<User>)
+
+Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `fastify-passport` can't store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+
+```js
+fastifyPassport.registerUserDeserializer(async (id, request) {
+  return await User.findById(id);
+});
+```
+
+Deserializers can throw the string `"pass"` if they don't apply to the current session and the next deserializer should be tried. This is useful if you are using `fastify-passport` to store two different kinds of user objects. An example:
+
+```js
+// register a deserializer for database users
+fastifyPassport.registerUserDeserializer(async (id, request) {
+  if (id.startsWith("db-")) {
+    return await User.findById(id);
+  } else {
+    throw "pass"
+  }
+});
+
+// register a deserializer for redis users
+fastifyPassport.registerUserDeserializer(async (id, request) {
+  if (id.startsWith("redis-")) {
+    return await redis.get(id);
+  } else {
+    throw "pass"
+  }
+});
+```
+
+Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row can't be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `fastify-passport`'s behaviour in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behaviour of the original `passport` module.
+
+So, a deserializer can return several things:
+
+- if a deserializer returns an object, that object is assumed to be a successfully deserialized user
+- if a deserializer returns `undefined`, `fastify-passport` interprets that as an erroneously missing user, and throws an error because the user couldn't be deserialized.
+- if a deserializer returns `null` or `false`, `fastify-passport` interprets that as a missing but expected user, and resets the session to log the user out
+- if a deserializer throws the string `"pass"`, `fastify-passport` will try the next deserializer if it exists, or throw an error because the user couldn't be deserialized.
 
 ### Request#isUnauthenticated()
 
