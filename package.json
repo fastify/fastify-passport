@@ -48,17 +48,17 @@
     "fastify": "^3.0.3"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.4",
-    "@types/node": "^14.0.23",
-    "@types/passport": "^1.0.4",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.14.17",
+    "@types/passport": "^1.0.5",
     "@types/set-cookie-parser": "^2.4.0",
-    "@typescript-eslint/eslint-plugin": "^4.0.0",
-    "@typescript-eslint/parser": "^3.6.1",
-    "eslint": "^7.4.0",
-    "eslint-config-prettier": "^7.0.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "fastify": "^3.0.3",
-    "got": "^11.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.11.1",
+    "@typescript-eslint/parser": "^4.11.1",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-prettier": "^3.3.0",
+    "fastify": "^3.9.2",
+    "got": "^11.8.1",
     "jest": "^26.1.0",
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
@@ -67,7 +67,7 @@
     "rimraf": "^3.0.2",
     "set-cookie-parser": "^2.4.6",
     "ts-jest": "^26.3.0",
-    "typescript": "^4.0.2"
+    "typescript": "^4.1.3"
   },
   "files": [
     "dist"
