@@ -24,6 +24,28 @@ export class TestStrategy extends Strategy {
   }
 }
 
+export class TestDatabaseStrategy extends Strategy {
+  constructor(name: string, readonly database: Record<string, { id: string; login: string; password: string }> = {}) {
+    super(name)
+  }
+
+  authenticate(request: any, _options?: { pauseStream?: boolean }) {
+    if (request.isAuthenticated()) {
+      return this.pass()
+    }
+    if (request.body) {
+      const user = Object.values(this.database).find(
+        (user) => user.login == request.body.login && user.password == request.body.password
+      )
+      if (user) {
+        return this.success(user)
+      }
+    }
+
+    this.fail()
+  }
+}
+
 /** Class representing a browser in tests */
 export class TestBrowserSession {
   cookies: Record<string, string>
