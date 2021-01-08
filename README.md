@@ -229,15 +229,13 @@ declare module 'fastify' {
 }
 ```
 
-or, if you already have a type for the objects returned from all of the strategies, you can map it onto the interface with a mapped index type:
+or, if you already have a type for the objects returned from all of the strategies, you can make `PassportUser` extend it:
 
 ```typescript
 import { User } from './my/types'
 
 declare module 'fastify' {
-  interface PassportUser {
-   [Key in keyof User]: User[Key]
-  }
+  interface PassportUser extends User {}
 }
 ```
 
