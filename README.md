@@ -18,31 +18,34 @@ npm install fastify-passport
 ## Example
 
 ```js
-import fastifyPassport from "fastify-passport";
-import fastifySecureSession from "fastify-secure-session";
+import fastifyPassport from 'fastify-passport'
+import fastifySecureSession from 'fastify-secure-session'
 
-const server = fastify();
+const server = fastify()
 // set up secure sessions for fastify-passport to store data in
-server.register(fastifySecureSession, { key: fs.readFileSync(path.join(__dirname, "secret-key")) });
+server.register(fastifySecureSession, { key: fs.readFileSync(path.join(__dirname, 'secret-key')) })
 // initialize fastify-passport and connect it to the secure-session storage. Note: both of these plugins are mandatory.
-server.register(fastifyPassport.initialize());
-server.register(fastifyPassport.secureSession());
+server.register(fastifyPassport.initialize())
+server.register(fastifyPassport.secureSession())
+
+// register an example strategy for fastifyPassport to authenticate users using
+fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
 
 // Add an authentication for a route which will use the strategy named "test" to protect the route
 server.get(
-  "/",
-  { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) },
-  async () => "hello world!"
-);
+  '/',
+  { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+  async () => 'hello world!'
+)
 
 // Add an authentication for a route which will use the strategy named "test" to protect the route, and redirect on success to a particular other route.
 server.post(
-  "/login",
-  { preValidation: fastifyPassport.authenticate("test", { successRedirect: "/", authInfo: false }) },
+  '/login',
+  { preValidation: fastifyPassport.authenticate('test', { successRedirect: '/', authInfo: false }) },
   () => {}
-);
+)
 
-server.listen(0);
+server.listen(0)
 ```
 
 ## Session Serialization
@@ -106,8 +109,8 @@ An optional `status` or `statuses` argument will be passed when authentication f
 
 ```js
 fastify.get(
-  "/",
-  { preValidation: fastifyPassport.authenticate("test", { authInfo: false }) },
+  '/',
+  { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
   async (request, reply, err, user, info, status) => {
     if (err !== null) {
       console.warn(err)
@@ -115,7 +118,7 @@ fastify.get(
       console.log(`Hello ${user.name}!`)
     }
   }
-);
+)
 ```
 
 Examples:
@@ -126,6 +129,30 @@ Examples:
 
 Note that if a callback is supplied, it becomes the application's responsibility to log-in the user, establish a session, and otherwise perform the desired operations.
 
+#### Multiple Strategies
+
+`fastify-passport` supports authenticating with a list of strategies, and will try each in order until one passes. Pass an array of strategy names to `authenticate` for this:
+
+```js
+// somewhere before several strategies are registered
+fastifyPassport.use('google', new FancyGoogleStrategy())
+fastifyPassport.use('twitter', new CoolTwitterStrategy())
+fastifyPassport.use('facebook', new FacebookStrategy())
+
+// and then an `authenticate` call can test incoming requests against multiple strategies
+fastify.get(
+  '/',
+  { preValidation: fastifyPassport.authenticate(['google', 'twitter', 'facebook'], { authInfo: false }) },
+  async (request, reply, err, user, info, status) => {
+    if (err !== null) {
+      console.warn(err)
+    } else if (user) {
+      console.log(`Hello ${user.name}!`)
+    }
+  }
+)
+```
+
 ### authorize(name, options)
 
 Returns a hook that will authorize a third-party account using the given `strategy` name, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it doesn't modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
@@ -135,7 +162,7 @@ This function is particularly useful when connecting third-party accounts to the
 Examples:
 
 ```js
-fastifyPassport.authorize("twitter-authz", { failureRedirect: "/account" });
+fastifyPassport.authorize('twitter-authz', { failureRedirect: '/account' })
 ```
 
 ### use([name], strategy)
@@ -161,7 +188,8 @@ However, in certain situations, applications may need dynamically configure and 
 Example:
 
 ```js
-fastifyPassport.unuse("legacy-api");
+fastifyPassport.unuse('legacy-api')
+```
 
 ### registerUserSerializer(serializer: (user, request) => Promise<SerializedUser>)
 
