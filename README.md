@@ -267,6 +267,48 @@ declare module 'fastify' {
 }
 ```
 
+## Using multiple instances
+
+`fastify-passport` supports being registered multiple times, in the same or in different plugin encapsulation contexts. This is useful to implement two totally separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other.
+
+To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they don't collide when decorating your fastify instance or storing things in the session.
+
+```typescript
+import { Authenticator } from 'fastify-passport'
+
+const server = fastify()
+
+// setup an Authenticator instance for users that stores the login result at `request.user`
+const userPassport = new Authenticator({ key: 'users', userProperty: 'user' })
+userPassport.use('some-strategy', new CoolOAuthStrategy('some-strategy'))
+server.register(userPassport.initialize())
+server.register(userPassport.secureSession())
+
+// setup an Authenticator instance for users that stores the login result at `request.admin`
+const adminPassport = new Authenticator({ key: 'admin', userProperty: 'admin' })
+adminPassport.use('admin-google', new GoogleOAuth2Strategy('admin-google'))
+server.register(adminPassport.initialize())
+server.register(adminPassport.secureSession())
+
+// protect some routes with the userPassport
+server.get(
+  `/`,
+  { preValidation: userPassport.authenticate('some-strategy') },
+  async () => `hello ${JSON.serialize(request.user)}!`
+)
+
+// and protect others with the adminPassport
+server.get(
+  `/admin`,
+  { preValidation: adminPassport.authenticate('admin-google') },
+  async () => `hello administrator ${JSON.serialize(request.admin)}!`
+)
+```
+
+**Note**: Each `Authenticator` instance's initialize plugin and session plugin must be registered separately.
+
+It is important to note that using multiple `fastify-passport` instances is not necessary if you want to use multiple strategies to login the same type of user. `fastify-passport` supports multiple strategies by passing an array to any `.authenticate` call.
+
 # Differences from Passport.js
 
 `fastify-passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatabilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.

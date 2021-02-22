@@ -17,9 +17,16 @@ export type DeserializeFunction<SerializedUser = any, User = any> = (
 
 export type InfoTransformerFunction = (info: any) => Promise<any>
 
+export interface AuthenticatorOptions {
+  key?: string
+  userProperty?: string
+}
+
 export class Authenticator {
-  public key = 'passport'
-  public userProperty = 'user'
+  // a Fastify-instance wide unique string identifying this instance of fastify-passport (default: "passport")
+  public key: string
+  // the key on the request at which to store the deserialized user value (default: "user")
+  public userProperty: string
   public sessionManager: SecureSessionManager
 
   private strategies: { [k: string]: AnyStrategy } = {}
@@ -27,7 +34,10 @@ export class Authenticator {
   private deserializers: DeserializeFunction<any, any>[] = []
   private infoTransformers: InfoTransformerFunction[] = []
 
-  constructor() {
+  constructor(options: AuthenticatorOptions = {}) {
+    this.key = options.key || 'passport'
+    this.userProperty = options.userProperty || 'user'
+
     this.use(new SessionStrategy(this.deserializeUser.bind(this)))
     this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this))
   }
