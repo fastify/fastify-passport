@@ -3,7 +3,7 @@ import { logIn, logOut, isAuthenticated, isUnauthenticated } from './decorators'
 import Authenticator from './Authenticator'
 import flash = require('fastify-flash')
 
-export function CreateInitializePlugin(passport: Authenticator, options: { userProperty?: string } = {}) {
+export function CreateInitializePlugin(passport: Authenticator) {
   return fp(async (fastify) => {
     void fastify.register(flash)
     fastify.decorateRequest('passport', {
@@ -17,6 +17,6 @@ export function CreateInitializePlugin(passport: Authenticator, options: { userP
     fastify.decorateRequest('logout', logOut)
     fastify.decorateRequest('isAuthenticated', isAuthenticated)
     fastify.decorateRequest('isUnauthenticated', isUnauthenticated)
-    fastify.decorateRequest(options.userProperty || 'user', null)
+    fastify.decorateRequest(passport.userProperty, null)
   })
 }

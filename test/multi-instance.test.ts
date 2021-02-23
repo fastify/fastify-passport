@@ -1,51 +1,82 @@
 import { FastifyInstance } from 'fastify'
-import { getTestServer, TestBrowserSession, TestStrategy } from './helpers'
+import { getTestServer, TestBrowserSession } from './helpers'
 import { Authenticator } from '../src/Authenticator'
+import { Strategy } from '../src/strategies'
 
 describe('multiple registered instances', () => {
   let server: FastifyInstance
   let authenticators: Record<string, Authenticator>
   let session: TestBrowserSession
+  let counter: number
 
   beforeEach(async () => {
+    counter = 0
     server = getTestServer()
     authenticators = {}
     session = new TestBrowserSession(server)
 
-    for (const name of ['a', 'b']) {
-      const strategyName = `test-${name}`
+    for (const namespace of ['a', 'b']) {
       await server.register(async (instance) => {
-        const authenticator = new Authenticator({ key: name, userProperty: `user${name}` })
+        class TestStrategy extends Strategy {
+          authenticate(request: any, _options?: { pauseStream?: boolean }) {
+            if (request.isAuthenticated()) {
+              return this.pass()
+            }
+            if (request.body && request.body.login === 'test' && request.body.password === 'test') {
+              return this.success({ namespace, id: String(counter++) })
+            }
+
+            this.fail()
+          }
+        }
+
+        const strategyName = `test-${namespace}`
+        const authenticator = new Authenticator({ key: `passport${namespace}`, userProperty: `user${namespace}` })
         authenticator.use(strategyName, new TestStrategy(strategyName))
-        authenticator.registerUserSerializer(async (user) => JSON.stringify(user))
-        authenticator.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
+        authenticator.registerUserSerializer<any, string>(async (user) => {
+          if (user.namespace == namespace) {
+            return namespace + '-' + JSON.stringify(user)
+          }
+          throw 'pass'
+        })
+        authenticator.registerUserDeserializer<string, any>(async (serialized: string) => {
+          if (serialized.startsWith(`${namespace}-`)) {
+            return JSON.parse(serialized.slice(`${namespace}-`.length))
+          }
+          throw 'pass'
+        })
 
         await instance.register(authenticator.initialize())
         await instance.register(authenticator.secureSession())
-        authenticators[name] = authenticator
+        authenticators[namespace] = authenticator
 
         instance.get(
-          `/${name}`,
+          `/${namespace}`,
           { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
-          async () => `hello ${name}!`
+          async () => `hello ${namespace}!`
         )
 
         instance.get(
-          `/user/${name}`,
+          `/user/${namespace}`,
           { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
-          async (request) => JSON.stringify(request[`user${name}`])
+          async (request) => JSON.stringify(request[`user${namespace}`])
         )
 
         instance.post(
-          `/login-${name}`,
-          { preValidation: authenticator.authenticate(strategyName, { successRedirect: `/${name}`, authInfo: false }) },
+          `/login-${namespace}`,
+          {
+            preValidation: authenticator.authenticate(strategyName, {
+              successRedirect: `/${namespace}`,
+              authInfo: false,
+            }),
+          },
           () => {
             return
           }
         )
 
         instance.post(
-          `/logout-${name}`,
+          `/logout-${namespace}`,
           { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
           async (request, reply) => {
             await request.logout()

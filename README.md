@@ -135,14 +135,14 @@ Note that if a callback is supplied, it becomes the application's responsibility
 
 ```js
 // somewhere before several strategies are registered
+fastifyPassport.use('bearer', new BearerTokenStrategy())
+fastifyPassport.use('basic', new BasicAuthStrategy())
 fastifyPassport.use('google', new FancyGoogleStrategy())
-fastifyPassport.use('twitter', new CoolTwitterStrategy())
-fastifyPassport.use('facebook', new FacebookStrategy())
 
 // and then an `authenticate` call can test incoming requests against multiple strategies
 fastify.get(
   '/',
-  { preValidation: fastifyPassport.authenticate(['google', 'twitter', 'facebook'], { authInfo: false }) },
+  { preValidation: fastifyPassport.authenticate(['bearer', 'basic', 'google'], { authInfo: false }) },
   async (request, reply, err, user, info, status) => {
     if (err !== null) {
       console.warn(err)
@@ -152,6 +152,8 @@ fastify.get(
   }
 )
 ```
+
+Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, shouldn't really be used together in the same `authenticate` call. This is because `fastify-passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
 
 ### authorize(name, options)
 
@@ -269,7 +271,7 @@ declare module 'fastify' {
 
 ## Using multiple instances
 
-`fastify-passport` supports being registered multiple times, in the same or in different plugin encapsulation contexts. This is useful to implement two totally separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other.
+`fastify-passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two totally separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It's important to register each instance of `fastify-passport` in a different Fastify plugin context so that the decorators `fastify-passport` like `request.logIn` and `request.logOut` don't collide.
 
 To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they don't collide when decorating your fastify instance or storing things in the session.
 

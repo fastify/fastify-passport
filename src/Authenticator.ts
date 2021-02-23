@@ -62,8 +62,8 @@ export class Authenticator {
     return this
   }
 
-  public initialize(options?: { userProperty?: string }): FastifyPlugin {
-    return CreateInitializePlugin(this, options)
+  public initialize(): FastifyPlugin {
+    return CreateInitializePlugin(this)
   }
 
   /**
