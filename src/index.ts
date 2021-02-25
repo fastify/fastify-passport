@@ -6,3 +6,4 @@ const passport = new Authenticator()
 module.exports = exports = passport
 export default passport
 export { Strategy } from './strategies'
+export { SessionManager } from './session-managers'

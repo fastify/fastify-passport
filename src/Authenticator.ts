@@ -3,6 +3,7 @@ import { AnyStrategy, SessionStrategy } from './strategies'
 import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from 'fastify'
 import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
+import { SessionManager } from './session-managers'
 import fastifyPlugin from 'fastify-plugin'
 
 export type SerializeFunction<User = any, SerializedUser = any> = (
@@ -20,7 +21,7 @@ export type InfoTransformerFunction = (info: any) => Promise<any>
 export class Authenticator {
   public key = 'passport'
   public userProperty = 'user'
-  public sessionManager: SecureSessionManager
+  public sessionManager: SessionManager
 
   private strategies: { [k: string]: AnyStrategy } = {}
   private serializers: SerializeFunction<any, any>[] = []
