@@ -51,8 +51,7 @@ export class SessionStrategy extends Strategy {
           if (!user) {
             await request.passport.sessionManager.logOut(request)
           } else {
-            const property = request.passport.userProperty || 'user'
-            request[property] = user
+            request[request.passport.userProperty] = user
           }
           this.pass()
         })

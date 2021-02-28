@@ -28,7 +28,7 @@ export async function logIn<T = unknown>(this: FastifyRequest, user: T, options:
     throw new Error('passport.initialize() plugin not in use')
   }
 
-  const property = this.passport.userProperty || 'user'
+  const property = this.passport.userProperty
   const session = options.session === undefined ? true : options.session
 
   this[property] = user
