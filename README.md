@@ -7,7 +7,7 @@
 
 ## Status
 
-Alpha. Pre-any-release. There may be incompatabilities with express-based `passport` deployments, and bugs. Use at your own risk, but please report any issues so we can correct them!
+Beta. `fastify-passport` is still a relatively new project. There may be incompatabilities with express-based `passport` deployments, and bugs. Please report any issues so we can correct them!
 
 ## Installation
 
