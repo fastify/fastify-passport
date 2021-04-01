@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -11,13 +11,13 @@ on:
       - '*.md'
 
 jobs:
-  build:
+  test:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         node-version: [12.x, 14.x]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v2.3.4
@@ -35,16 +35,17 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install
-        run: npm install --frozen-lockfile
+        run: npm install --ignore-scripts --frozen-lockfile
 
       - name: Run Tests & generate coverage
         run: npm run test
 
   automerge:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: fastify/github-action-merge-dependabot@v2.0.0
         if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
         with:
-          github-token: ${{secrets.github_token}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
