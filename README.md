@@ -1,13 +1,15 @@
 # fastify-passport
 
-![Build Status](https://github.com/fastify/fastify-passport/workflows/ci/badge.svg)
+![CI](https://github.com/fastify/fastify-passport/workflows/CI/badge.svg)
 [![NPM version](https://img.shields.io/npm/v/fastify-passport.svg?style=flat)](https://www.npmjs.com/package/fastify-passport)
+[![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-passport/badge.svg)](https://snyk.io/test/github/fastify/fastify-passport)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://standardjs.com/)
 
 `fastify-passport` is a port of [`passport`](http://www.passportjs.org/) for the Fastify ecosystem. It lets you use Passport strategies to authenticate requests and protect Fastify routes!
 
 ## Status
 
-Beta. `fastify-passport` is still a relatively new project. There may be incompatabilities with express-based `passport` deployments, and bugs. Please report any issues so we can correct them!
+Beta. `fastify-passport` is still a relatively new project. There may be incompatibilities with express-based `passport` deployments, and bugs. Please report any issues so we can correct them!
 
 ## Installation
 
@@ -50,7 +52,7 @@ server.listen(0)
 
 ## Session Serialization
 
-In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `fastify-passport` implements this pattern by storing sessions using `fastify-secure-cookie`, and serializing/deserializing user objects to and from the session referenced by the cookie. `fastify-passport` can't store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `fastify-passport` implements this pattern by storing sessions using `fastify-secure-cookie`, and serializing/deserializing user objects to and from the session referenced by the cookie. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 // register a serializer that stores the user object's id in the session ...
@@ -153,11 +155,11 @@ fastify.get(
 )
 ```
 
-Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, shouldn't really be used together in the same `authenticate` call. This is because `fastify-passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
+Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, should not really be used together in the same `authenticate` call. This is because `fastify-passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
 
 ### authorize(name, options)
 
-Returns a hook that will authorize a third-party account using the given `strategy` name, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it doesn't modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
+Returns a hook that will authorize a third-party account using the given `strategy` name, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it does not modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
 
 This function is particularly useful when connecting third-party accounts to the local account of a user that is currently authenticated.
 
@@ -195,7 +197,7 @@ fastifyPassport.unuse('legacy-api')
 
 ### registerUserSerializer(serializer: (user, request) => Promise<SerializedUser>)
 
-Registers an async user serializer function for taking a high level User object from your application and serializing it for storage into the session. `fastify-passport` can't store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+Registers an async user serializer function for taking a high level User object from your application and serializing it for storage into the session. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 // register a serializer that stores the user object's id in the session ...
@@ -204,7 +206,7 @@ fastifyPassport.registerUserSerializer(async (user, request) => user.id)
 
 ### registerUserDeserializer(deserializer: (serializedUser, request) => Promise<User>)
 
-Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `fastify-passport` can't store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 fastifyPassport.registerUserDeserializer(async (id, request) {
@@ -212,7 +214,7 @@ fastifyPassport.registerUserDeserializer(async (id, request) {
 });
 ```
 
-Deserializers can throw the string `"pass"` if they don't apply to the current session and the next deserializer should be tried. This is useful if you are using `fastify-passport` to store two different kinds of user objects. An example:
+Deserializers can throw the string `"pass"` if they do not apply to the current session and the next deserializer should be tried. This is useful if you are using `fastify-passport` to store two different kinds of user objects. An example:
 
 ```js
 // register a deserializer for database users
@@ -234,14 +236,14 @@ fastifyPassport.registerUserDeserializer(async (id, request) {
 });
 ```
 
-Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row can't be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `fastify-passport`'s behaviour in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behaviour of the original `passport` module.
+Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row cannot be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `fastify-passport`'s behaviour in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behaviour of the original `passport` module.
 
-So, a deserializer can return several things:
+Therefore, a deserializer can return several things:
 
 - if a deserializer returns an object, that object is assumed to be a successfully deserialized user
-- if a deserializer returns `undefined`, `fastify-passport` interprets that as an erroneously missing user, and throws an error because the user couldn't be deserialized.
+- if a deserializer returns `undefined`, `fastify-passport` interprets that as an erroneously missing user, and throws an error because the user could not be deserialized.
 - if a deserializer returns `null` or `false`, `fastify-passport` interprets that as a missing but expected user, and resets the session to log the user out
-- if a deserializer throws the string `"pass"`, `fastify-passport` will try the next deserializer if it exists, or throw an error because the user couldn't be deserialized.
+- if a deserializer throws the string `"pass"`, `fastify-passport` will try the next deserializer if it exists, or throw an error because the user could not be deserialized.
 
 ### Request#isUnauthenticated()
 
@@ -271,9 +273,9 @@ declare module 'fastify' {
 
 ## Using multiple instances
 
-`fastify-passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two totally separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It's important to register each instance of `fastify-passport` in a different Fastify plugin context so that the decorators `fastify-passport` like `request.logIn` and `request.logOut` don't collide.
+`fastify-passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It is important to register each instance of `fastify-passport` in a different Fastify plugin context so that the decorators `fastify-passport` like `request.logIn` and `request.logOut` do not collide.
 
-To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they don't collide when decorating your fastify instance or storing things in the session.
+To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they do not collide when decorating your fastify instance or storing things in the session.
 
 ```typescript
 import { Authenticator } from 'fastify-passport'
