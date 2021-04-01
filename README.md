@@ -1,7 +1,9 @@
 # fastify-passport
 
-![Build Status](https://github.com/fastify/fastify-passport/workflows/ci/badge.svg)
+![CI](https://github.com/fastify/fastify-passport/workflows/CI/badge.svg)
 [![NPM version](https://img.shields.io/npm/v/fastify-passport.svg?style=flat)](https://www.npmjs.com/package/fastify-passport)
+[![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-passport/badge.svg)](https://snyk.io/test/github/fastify/fastify-passport)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://standardjs.com/)
 
 `fastify-passport` is a port of [`passport`](http://www.passportjs.org/) for the Fastify ecosystem. It lets you use Passport strategies to authenticate requests and protect Fastify routes!
 
