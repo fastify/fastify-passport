@@ -57,7 +57,7 @@ const Unhandled = Symbol.for('passport-unhandled')
 
 export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]> {
   readonly options: AuthenticateOptions
-  readonly strategies: AnyStrategy[]
+  readonly strategies: (string | Strategy)[]
   readonly isMultiStrategy: boolean
 
   /**
@@ -79,12 +79,10 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     // Cast `name` to an array, allowing authentication to pass through a chain of strategies.  The first strategy to succeed, redirect, or error will halt the chain.  Authentication failures will proceed through each strategy in series, ultimately failing if all strategies fail.
     // This is typically used on API endpoints to allow clients to authenticate using their preferred choice of Basic, Digest, token-based schemes, etc. It is not feasible to construct a chain of multiple strategies that involve redirection (for example both Facebook and Twitter), since the first one to redirect will halt the chain.
     if (Array.isArray(strategyOrStrategies)) {
-      this.strategies = strategyOrStrategies.map((stringOrInstance: string | Strategy) =>
-        this.getStrategy(stringOrInstance)
-      )
+      this.strategies = strategyOrStrategies
       this.isMultiStrategy = false
     } else {
-      this.strategies = [this.getStrategy(strategyOrStrategies as string | Strategy)]
+      this.strategies = [strategyOrStrategies as string | Strategy]
       this.isMultiStrategy = false
     }
   }
@@ -96,9 +94,9 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     // accumulator for failures from each strategy in the chain
     const failures: FailureObject[] = []
 
-    for (const strategy of this.strategies) {
+    for (const nameOrInstance of this.strategies) {
       try {
-        return await this.attemptStrategy(failures, strategy, request, reply)
+        return await this.attemptStrategy(failures, this.getStrategy(nameOrInstance), request, reply)
       } catch (e) {
         if (e == Unhandled) {
           continue
