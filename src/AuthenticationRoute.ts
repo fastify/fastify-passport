@@ -2,7 +2,7 @@
 import * as http from 'http'
 import AuthenticationError from './errors'
 import Authenticator from './Authenticator'
-import { Strategy } from './strategies'
+import { AnyStrategy, Strategy } from './strategies'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 type FlashObject = { type?: string; message?: string }
@@ -50,32 +50,41 @@ export type MultiStrategyCallback = (
   statuses?: (number | undefined)[]
 ) => Promise<void>
 
-export type AuthenticateCallback<Names extends string | string[]> = Names extends string
-  ? SingleStrategyCallback
-  : MultiStrategyCallback
+export type AuthenticateCallback<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]> =
+  StrategyOrStrategies extends any[] ? MultiStrategyCallback : SingleStrategyCallback
 
 const Unhandled = Symbol.for('passport-unhandled')
 
-export class AuthenticationRoute<StrategyNames extends string | string[]> {
+export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]> {
   readonly options: AuthenticateOptions
-  readonly strategies: string[]
+  readonly strategies: AnyStrategy[]
   readonly isMultiStrategy: boolean
 
+  /**
+   * Create a new route handler that runs authentication strategies.
+   *
+   * @param authenticator aggregator instance that owns the chain of strategies
+   * @param strategyOrStrategies list of strategies this handler tries as string names of registered strategies or strategy instances
+   * @param options  options governing behaviour of strategies
+   * @param callback optional custom callback to process the result of the strategy invocations
+   */
   constructor(
-    readonly authenticator: Authenticator, // aggregator instance that owns the chain of strategies
-    strategyOrStrategies: StrategyNames, // list of strategies this handler tries
-    options?: AuthenticateOptions, // options governing behaviour of strategies
-    readonly callback?: AuthenticateCallback<StrategyNames> // optional custom callback to process the result of the strategy invocations
+    readonly authenticator: Authenticator,
+    strategyOrStrategies: StrategyOrStrategies,
+    options?: AuthenticateOptions,
+    readonly callback?: AuthenticateCallback<StrategyOrStrategies>
   ) {
     this.options = options || {}
 
     // Cast `name` to an array, allowing authentication to pass through a chain of strategies.  The first strategy to succeed, redirect, or error will halt the chain.  Authentication failures will proceed through each strategy in series, ultimately failing if all strategies fail.
     // This is typically used on API endpoints to allow clients to authenticate using their preferred choice of Basic, Digest, token-based schemes, etc. It is not feasible to construct a chain of multiple strategies that involve redirection (for example both Facebook and Twitter), since the first one to redirect will halt the chain.
     if (Array.isArray(strategyOrStrategies)) {
-      this.strategies = strategyOrStrategies as string[]
+      this.strategies = strategyOrStrategies.map((stringOrInstance: string | Strategy) =>
+        this.getStrategy(stringOrInstance)
+      )
       this.isMultiStrategy = false
     } else {
-      this.strategies = [strategyOrStrategies as string]
+      this.strategies = [this.getStrategy(strategyOrStrategies as string | Strategy)]
       this.isMultiStrategy = false
     }
   }
@@ -102,12 +111,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
     return this.onAllFailed(failures, request, reply)
   }
 
-  attemptStrategy(failures: FailureObject[], name: string, request: FastifyRequest, reply: FastifyReply) {
-    const prototype = this.authenticator.strategy(name)
-    if (!prototype) {
-      throw new Error(`Unknown authentication strategy ${name}!`)
-    }
-
+  attemptStrategy(failures: FailureObject[], prototype: AnyStrategy, request: FastifyRequest, reply: FastifyReply) {
     const strategy = Object.create(prototype) as Strategy
 
     // This is a messed up way of adapting passport's API to fastify's async world. We create a promise that the strategy's per-call functions close over and resolve/reject with the result of the strategy. This augmentation business is a key part of how Passport strategies expect to work.
@@ -118,7 +122,7 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
        * Strategies should call this function to successfully authenticate a user.  `user` should be an object supplied by the application after it has been given an opportunity to verify credentials.  `info` is an optional argument containing additional user information.  This is useful for third-party authentication strategies to pass profile details.
        */
       strategy.success = (user: any, info: { type?: string; message?: string }) => {
-        request.log.debug({ strategy: name }, 'passport strategy success')
+        request.log.debug({ strategy: strategy.name }, 'passport strategy success')
         if (this.callback) {
           return resolve(this.callback(request, reply, null, user, info))
         }
@@ -300,6 +304,20 @@ export class AuthenticationRoute<StrategyNames extends string | string[]> {
       return { type, message: input }
     } else {
       return input
+    }
+  }
+
+  private getStrategy(nameOrInstance: string | Strategy): AnyStrategy {
+    if (typeof nameOrInstance === 'string') {
+      const prototype = this.authenticator.strategy(nameOrInstance)
+      if (!prototype) {
+        throw new Error(
+          `Unknown authentication strategy ${nameOrInstance}, no strategy with this name has been registered.`
+        )
+      }
+      return prototype
+    } else {
+      return nameOrInstance
     }
   }
 }

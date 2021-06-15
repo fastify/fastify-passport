@@ -74,11 +74,13 @@ A hook that **must be added**. Sets up a `fastify-passport` instance's hooks.
 
 A hook that **must be added**. Sets up `fastify-passport`'s connector with `fastify-secure-session` to store authentication in the session.
 
-### authenticate(name, options)
+### authenticate(strategy: string | Strategy | (string | Strategy)[], options: AuthenticateOptions, callback?: AuthenticateCallback)
 
 Returns a hook that authenticates requests, in other words, validates users and then signs them in. `authenticate` is intended for use as a `preValidation` hook on a particular route like `/login`.
 
-Applies the `name`ed strategy (or strategies) to the incoming request, in order to authenticate the request. If authentication is successful, the user will be logged in and populated at `request.user` and a session will be established by default. If authentication fails, an unauthorized response will be sent.
+Applies the given strategy (or strategies) to the incoming request, in order to authenticate the request. Strategies are usually registered ahead of time using `.use`, and then passed to `.authenticate` by name. If authentication is successful, the user will be logged in and populated at `request.user` and a session will be established by default. If authentication fails, an unauthorized response will be sent.
+
+Strategies or arrays of strategies can also be passed as instances. This is useful when using a temporary strategy you only intend to use once for one user and don't want to register into the global list of available strategies.
 
 Options:
 
@@ -125,9 +127,19 @@ fastify.get(
 
 Examples:
 
-- `fastifyPassport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' });`
-- `fastifyPassport.authenticate('basic', { session: false });`
-- `fastifyPassport.authenticate('twitter');`
+```js
+// create a request handler that uses the facebook strategy
+fastifyPassport.use(new FacebookStrategy('facebook', {
+  // options for the facebook strategy, see https://www.npmjs.com/package/passport-facebook
+})))
+fastifyPassport.authenticate('facebook');
+
+// create a request handler to test against the strategy named local, and automatically redirect when it succeeds or fails
+fastifyPassport.authenticate('local', { successRedirect: '/', failureRedirect: '/login' });
+
+// create a request handler that won't use any user information stored in the secure session
+fastifyPassport.authenticate('basic', { session: false });
+```
 
 Note that if a callback is supplied, it becomes the application's responsibility to log-in the user, establish a session, and otherwise perform the desired operations.
 
@@ -155,11 +167,32 @@ fastify.get(
 )
 ```
 
-Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, should not really be used together in the same `authenticate` call. This is because `fastify-passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
+Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, shouldn't really be used together in the same `authenticate` call. This is because `fastify-passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
 
-### authorize(name, options)
+Multiple strategies can also be passed as instances if you only intend to use them for that route handler or for that request.
 
-Returns a hook that will authorize a third-party account using the given `strategy` name, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it does not modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
+```js
+// use an `authenticate` call can test incoming requests against multiple strategies without registering them for use elsewhere
+fastify.get(
+  '/',
+  {
+    preValidation: fastifyPassport.authenticate([new BearerTokenStrategy(), new BasicAuthStrategy()], {
+      authInfo: false,
+    }),
+  },
+  async (request, reply, err, user, info, status) => {
+    if (err !== null) {
+      console.warn(err)
+    } else if (user) {
+      console.log(`Hello ${user.name}!`)
+    }
+  }
+)
+```
+
+### authorize(strategy: string | Strategy | (string | Strategy)[], options: AuthenticateOptions = {}, callback?: AuthenticateCallback)
+
+Returns a hook that will authorize a third-party account using the given `strategy`, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it doesn't modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
 
 This function is particularly useful when connecting third-party accounts to the local account of a user that is currently authenticated.
 
@@ -169,7 +202,9 @@ Examples:
 fastifyPassport.authorize('twitter-authz', { failureRedirect: '/account' })
 ```
 
-### use([name], strategy)
+`.authorize` allows the use of multiple strategies by passing an array of strategy names, and allows the use of already instantiated Strategy instances by passing the instance as the strategy, or an array of instances.
+
+### use(name?: string, strategy: Strategy)
 
 Utilize the given `strategy` with optional `name`, overridding the strategy's default name.
 
@@ -181,7 +216,7 @@ fastifyPassport.use(new TwitterStrategy(...));
 fastifyPassport.use('api', new http.Strategy(...));
 ```
 
-### unuse(name)
+### unuse(name: string)
 
 Un-utilize the `strategy` with given `name`.
 
@@ -322,6 +357,7 @@ Differences:
 - `serializeUser` renamed to `registerUserSerializer` and always takes an async function with the signature `(user: User, request: FastifyRequest) => Promise<SerializedUser>`
 - `deserializeUser` renamed to `registerUserDeserializer` and always takes an async function with the signature `(serialized: SerializedUser, request: FastifyRequest) => Promise<User>`
 - `transformAuthInfo` renamed to `registerAuthInfoTransformer` and always takes an async function with the signature `(info: any, request: FastifyRequest) => Promise<any>`
+- `.authenticate` and `.authorize` accept strategy instances in addition to strategy names. This allows for using one time strategy instances (say for testing given user credentials) without adding them to the global list of registered strategies.
 
 ## License
 

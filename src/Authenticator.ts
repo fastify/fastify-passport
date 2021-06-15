@@ -1,5 +1,5 @@
 import { SecureSessionManager } from './session-managers/SecureSessionManager'
-import { AnyStrategy, SessionStrategy } from './strategies'
+import { AnyStrategy, SessionStrategy, Strategy } from './strategies'
 import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from 'fastify'
 import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
@@ -131,23 +131,23 @@ export class Authenticator {
    * @api public
    */
 
-  public authenticate<StrategyName extends string | string[]>(
-    strategy: StrategyName,
-    callback?: AuthenticateCallback<StrategyName>
+  public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategy: StrategyOrStrategies,
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   ): RouteHandlerMethod
-  public authenticate<StrategyName extends string | string[]>(
-    strategy: StrategyName,
+  public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
   ): RouteHandlerMethod
-  public authenticate<StrategyName extends string | string[]>(
-    strategy: StrategyName,
+  public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
-    callback?: AuthenticateCallback<StrategyName>
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   ): RouteHandlerMethod
-  public authenticate<StrategyName extends string | string[]>(
-    strategyOrStrategies: StrategyName,
-    optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
-    callback?: AuthenticateCallback<StrategyName>
+  public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategyOrStrategies: StrategyOrStrategies,
+    optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   ): RouteHandlerMethod {
     let options
     if (typeof optionsOrCallback == 'function') {
@@ -177,20 +177,23 @@ export class Authenticator {
    * @api public
    */
 
-  public authorize<StrategyName extends string | string[]>(
-    strategy: StrategyName,
-    callback?: AuthenticateCallback<StrategyName>
+  public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategy: StrategyOrStrategies,
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   )
-  public authorize<StrategyName extends string | string[]>(strategy: StrategyName, options?: AuthenticateOptions)
-  public authorize<StrategyName extends string | string[]>(
-    strategy: StrategyName,
+  public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategy: StrategyOrStrategies,
+    options?: AuthenticateOptions
+  )
+  public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
-    callback?: AuthenticateCallback<StrategyName>
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   )
-  public authorize<StrategyName extends string | string[]>(
-    strategyOrStrategies: StrategyName,
-    optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyName>,
-    callback?: AuthenticateCallback<StrategyName>
+  public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
+    strategyOrStrategies: StrategyOrStrategies,
+    optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   ) {
     let options
     if (typeof optionsOrCallback == 'function') {
