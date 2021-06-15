@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Authenticator = exports.Strategy = void 0;
+const Authenticator_1 = require("./Authenticator");
+require("./type-extensions");
+const passport = new Authenticator_1.Authenticator();
+module.exports = exports = passport;
+exports.default = passport;
+var strategies_1 = require("./strategies");
+Object.defineProperty(exports, "Strategy", { enumerable: true, get: function () { return strategies_1.Strategy; } });
+var Authenticator_2 = require("./Authenticator");
+Object.defineProperty(exports, "Authenticator", { enumerable: true, get: function () { return Authenticator_2.Authenticator; } });
