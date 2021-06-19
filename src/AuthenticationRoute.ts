@@ -96,7 +96,13 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
 
     for (const nameOrInstance of this.strategies) {
       try {
-        return await this.attemptStrategy(failures, this.getStrategy(nameOrInstance), request, reply)
+        return await this.attemptStrategy(
+          failures,
+          this.getStrategyName(nameOrInstance),
+          this.getStrategy(nameOrInstance),
+          request,
+          reply
+        )
       } catch (e) {
         if (e == Unhandled) {
           continue
@@ -109,7 +115,13 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     return this.onAllFailed(failures, request, reply)
   }
 
-  attemptStrategy(failures: FailureObject[], prototype: AnyStrategy, request: FastifyRequest, reply: FastifyReply) {
+  attemptStrategy(
+    failures: FailureObject[],
+    name: string,
+    prototype: AnyStrategy,
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) {
     const strategy = Object.create(prototype) as Strategy
 
     // This is a messed up way of adapting passport's API to fastify's async world. We create a promise that the strategy's per-call functions close over and resolve/reject with the result of the strategy. This augmentation business is a key part of how Passport strategies expect to work.
@@ -120,7 +132,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        * Strategies should call this function to successfully authenticate a user.  `user` should be an object supplied by the application after it has been given an opportunity to verify credentials.  `info` is an optional argument containing additional user information.  This is useful for third-party authentication strategies to pass profile details.
        */
       strategy.success = (user: any, info: { type?: string; message?: string }) => {
-        request.log.debug({ strategy: strategy.name }, 'passport strategy success')
+        request.log.debug({ strategy: name }, 'passport strategy success')
         if (this.callback) {
           return resolve(this.callback(request, reply, null, user, info))
         }
@@ -172,6 +184,8 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        * Strategies should call this function to fail an authentication attempt.
        */
       strategy.fail = function (challengeOrStatus?: string | number | undefined, status?: number) {
+        request.log.trace({ strategy: name }, 'passport strategy failed')
+
         let challenge
         if (typeof challengeOrStatus === 'number') {
           status = challengeOrStatus
@@ -191,6 +205,8 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        * Strategies should call this function to redirect the user (via their user agent) to a third-party website for authentication.
        */
       strategy.redirect = (url: string, status?: number) => {
+        request.log.trace({ strategy: name, url }, 'passport strategy redirecting')
+
         void reply.status(status || 302)
         void reply.redirect(url)
         resolve()
@@ -201,7 +217,11 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        *
        * Under most circumstances, Strategies should not need to call this function.  It exists primarily to allow previous authentication state to be restored, for example from an HTTP session.
        */
-      strategy.pass = () => resolve()
+      strategy.pass = () => {
+        request.log.trace({ strategy: name }, 'passport strategy passed')
+
+        resolve()
+      }
 
       /**
        * Internal error while performing authentication.
@@ -209,6 +229,8 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        * Strategies should call this function when an internal error occurs during the process of performing authentication; for example, if the user directory is not available.
        */
       strategy.error = (err: Error) => {
+        request.log.trace({ strategy: name, err }, 'passport strategy errored')
+
         if (this.callback) {
           return resolve(this.callback(request, reply, err))
         }
@@ -216,11 +238,14 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
         reject(err)
       }
 
+      request.log.trace({ strategy: name }, 'attempting passport strategy authentication')
       strategy.authenticate(request, this.options)
     })
   }
 
   async onAllFailed(failures: FailureObject[], request: FastifyRequest, reply: FastifyReply) {
+    request.log.trace('all passport strategies failed')
+
     if (this.callback) {
       if (this.isMultiStrategy) {
         const challenges = failures.map((f) => f.challenge)
@@ -302,6 +327,16 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
       return { type, message: input }
     } else {
       return input
+    }
+  }
+
+  private getStrategyName(nameOrInstance: string | Strategy): string {
+    if (typeof nameOrInstance === 'string') {
+      return nameOrInstance
+    } else if (nameOrInstance.name) {
+      return nameOrInstance.name
+    } else {
+      return nameOrInstance.constructor.name
     }
   }
 
