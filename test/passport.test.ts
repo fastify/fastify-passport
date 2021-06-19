@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import got from 'got'
 import Authenticator from '../src/Authenticator'
-import { getTestServer, getConfiguredTestServer, TestStrategy } from './helpers'
+import { getTestServer, getConfiguredTestServer, TestStrategy, getRegisteredTestServer } from './helpers'
 import { AddressInfo } from 'net'
 import { Strategy } from '../src/strategies'
 
@@ -596,4 +596,51 @@ test(`should not log the user in when passed a callback`, async () => {
   })
 
   expect(response.statusCode).toEqual(401)
+})
+
+test(`should allow registering strategies after creating routes referring to those strategies by name`, async () => {
+  const { server, fastifyPassport } = getRegisteredTestServer()
+
+  server.get(
+    '/',
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    async (request, reply) => {
+      void reply.send(request.session.get('messages'))
+    }
+  )
+
+  server.post(
+    '/login',
+    {
+      preValidation: fastifyPassport.authenticate('test', {
+        successRedirect: '/',
+        successMessage: 'welcome',
+        authInfo: false,
+      }),
+    },
+    () => {}
+  )
+
+  // register the test strategy late (after the above .authenticate calls)
+  fastifyPassport.use(new TestStrategy('test'))
+
+  const loginResponse = await server.inject({
+    method: 'POST',
+    url: '/login',
+    payload: { login: 'test', password: 'test' },
+  })
+
+  expect(loginResponse.statusCode).toEqual(302)
+  expect(loginResponse.headers.location).toEqual('/')
+
+  const homeResponse = await server.inject({
+    url: '/',
+    headers: {
+      cookie: loginResponse.headers['set-cookie'],
+    },
+    method: 'GET',
+  })
+
+  expect(homeResponse.body).toEqual('["welcome"]')
+  expect(homeResponse.statusCode).toEqual(200)
 })
