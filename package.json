@@ -55,7 +55,7 @@
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",
     "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-prettier": "^3.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint": "^7.16.0",
     "fastify-secure-session": "^2.2.0",
     "fastify": "^3.9.2",
