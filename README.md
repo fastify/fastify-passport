@@ -17,6 +17,10 @@ Beta. `fastify-passport` is still a relatively new project. There may be incompa
 npm install fastify-passport
 ```
 
+## Google OAuth2 Tutorial
+[![Google OAuth2 Tutorial Passport](https://img.youtube.com/vi/XRcQQWU0XOM/0.jpg)](https://youtu.be/XRcQQWU0XOM)
+
+
 ## Example
 
 ```js
