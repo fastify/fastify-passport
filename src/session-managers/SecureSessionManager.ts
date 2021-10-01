@@ -20,14 +20,25 @@ export class SecureSessionManager {
 
   async logIn(request: FastifyRequest, user: any) {
     const object = await this.serializeUser(user, request)
-    request.session.set(this.key, object)
+    if (typeof request.session.set === 'function') {
+      request.session.set(this.key, object)
+    } else {
+      request.session[this.key] = object
+    }
   }
 
   async logOut(request: FastifyRequest) {
-    request.session.set(this.key, undefined)
+    if (typeof request.session.set === 'function') {
+      request.session.set(this.key, undefined)
+    } else {
+      request.session[this.key] = undefined
+    }
   }
 
   getUserFromSession(request: FastifyRequest) {
-    return request.session.get(this.key)
+    if (typeof request.session.get === 'function') {
+      return request.session.get(this.key)
+    }
+    return request.session[this.key]
   }
 }
