@@ -1,4 +1,5 @@
 import { getConfiguredTestServer } from './helpers'
+import { getConfiguredFastifyTestServer } from './fastifySessionHelpers'
 
 describe('Request decorators', () => {
   test('logIn allows logging in an arbitrary user', async () => {
@@ -98,5 +99,21 @@ describe('Request decorators', () => {
     })
 
     expect(retry.statusCode).toEqual(401)
+  })
+
+  test('logIn allow to assign a serializeUser value to a request.session.passport property directly', async () => {
+    const { server } = getConfiguredFastifyTestServer()
+    server.post('/force-login', async (request: any, reply) => {
+      await request.logIn('force logged in user')
+      void reply.send(JSON.parse(request.session.passport))
+    })
+
+    const login = await server.inject({
+      method: 'POST',
+      url: '/force-login',
+    })
+
+    expect(login.statusCode).toEqual(200)
+    expect(login.body).toEqual('force logged in user')
   })
 })
