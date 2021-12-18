@@ -12,10 +12,16 @@ type FailureObject = {
   type?: string
 }
 
+const getSessionData = (request: FastifyRequest, key: string) =>
+  request.session.get ? request.session.get(key) : request.session[key]
+
+const setSessionData = (request: FastifyRequest, key: string, value: any) =>
+  request.session.set ? request.session.set(key, value) : (request.session[key] = value)
+
 const addMessage = (request: FastifyRequest, message: string) => {
-  const existing = request.session.get('messages')
+  const existing = getSessionData(request, 'messages')
   const messages = existing ? [...existing, message] : [message]
-  request.session.set('messages', messages)
+  setSessionData(request, 'messages', messages)
 }
 
 export interface AuthenticateOptions {
@@ -152,9 +158,9 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
             const complete = () => {
               if (this.options.successReturnToOrRedirect) {
                 let url = this.options.successReturnToOrRedirect
-                if (request.session && request.session.get('returnTo')) {
-                  url = request.session.get('returnTo')
-                  request.session.set('returnTo', undefined)
+                if (request.session && getSessionData(request, 'returnTo')) {
+                  url = getSessionData(request, 'returnTo')
+                  setSessionData(request, 'returnTo', undefined)
                 }
 
                 void reply.redirect(url)
