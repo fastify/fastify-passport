@@ -1,8 +1,8 @@
 import { FastifyRequest } from 'fastify'
-import { SerializeFunction } from '../Authenticator'
+import { SerializeFunction, SessionManagement } from '../Authenticator'
 
 /** Class for storing passport data in the session using `@fastify/session` */
-export class SessionManager {
+export class SessionManager implements SessionManagement {
   key: string
   serializeUser: SerializeFunction
 

@@ -12,11 +12,21 @@ type FailureObject = {
   type?: string
 }
 
-const getSessionData = (request: FastifyRequest, key: string) =>
-  request.session.get ? request.session.get(key) : request.session[key]
+const getSessionData = (request: FastifyRequest, key: string) => {
+  if (request.session.get && typeof request.session.get === 'function') {
+    return request.session.get(key)
+  } else {
+    return request.session[key]
+  }
+}
 
-const setSessionData = (request: FastifyRequest, key: string, value: any) =>
-  request.session.set ? request.session.set(key, value) : (request.session[key] = value)
+const setSessionData = (request: FastifyRequest, key: string, value: any) => {
+  if (request.session.set && typeof request.session.set === 'function') {
+    request.session.set(key, value)
+  } else {
+    request.session[key] = value
+  }
+}
 
 const addMessage = (request: FastifyRequest, message: string) => {
   const existing = getSessionData(request, 'messages')

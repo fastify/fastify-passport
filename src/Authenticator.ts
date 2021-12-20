@@ -24,12 +24,20 @@ export interface AuthenticatorOptions {
   sessionPlugin?: string
 }
 
+export interface SessionManagement {
+  key?: string
+  serializeUser?: SerializeFunction
+  logIn(request: FastifyRequest, user: any)
+  logOut(request: FastifyRequest)
+  getUserFromSession(request: FastifyRequest)
+}
+
 export class Authenticator {
   // a Fastify-instance wide unique string identifying this instance of fastify-passport (default: "passport")
   public key: string
   // the key on the request at which to store the deserialized user value (default: "user")
   public userProperty: string
-  public sessionManager: SecureSessionManager | SessionManager
+  public sessionManager: SessionManagement
 
   private strategies: { [k: string]: AnyStrategy } = {}
   private serializers: SerializeFunction<any, any>[] = []

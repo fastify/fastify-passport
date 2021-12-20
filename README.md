@@ -50,7 +50,7 @@ server.post(
 server.listen(0)
 ```
 
-Alternatively, `@fastify/session` is also supported and works out of the box for session storage.  
+Alternatively, `@fastify/session`(https://github.com/fastify/session) is also supported and works out of the box for session storage.  
 Here's an example:
 
 ```js
@@ -72,6 +72,12 @@ server.register(fastifyPassport.initialize())
 // register an example strategy for fastifyPassport to authenticate users using
 fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
 ```
+
+## Difference between `fastify-secure-session` and `@fastify/session`
+`fastify-secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session.
+There are mainly two differences:
+- `fastify-secure-session` uses the stateless approach and stores the whole session in an encrypted cookie. `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
+- With `fastify-secure-session` you update the session using `.get`, `.set` and `.delete` methods whereas with `@fastify-session` you mutate the session values directly. e.g.`request.session[key] = value`
 
 ## Session Serialization
 
