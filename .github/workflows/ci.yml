@@ -20,14 +20,14 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v2
 
       - name: Use Node.js
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
 
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -44,7 +44,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: fastify/github-action-merge-dependabot@v2.6.0
+      - uses: fastify/github-action-merge-dependabot@v2.7.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
