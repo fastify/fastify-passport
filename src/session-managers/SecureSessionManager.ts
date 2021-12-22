@@ -1,9 +1,9 @@
 /// <reference types="fastify-secure-session" />
 import { FastifyRequest } from 'fastify'
-import { SerializeFunction, SessionManagement } from '../Authenticator'
+import { SerializeFunction } from '../Authenticator'
 
-/** Class for storing passport data in the session using `fastify-secure-session` */
-export class SecureSessionManager implements SessionManagement {
+/** Class for storing passport data in the session using `fastify-secure-session` or `@fastify/session` */
+export class SecureSessionManager {
   key: string
   serializeUser: SerializeFunction
 

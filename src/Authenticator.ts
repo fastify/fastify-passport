@@ -1,5 +1,4 @@
 import { SecureSessionManager } from './session-managers/SecureSessionManager'
-import { SessionManager } from './session-managers/SessionManager'
 import { AnyStrategy, SessionStrategy, Strategy } from './strategies'
 import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from 'fastify'
 import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from './AuthenticationRoute'
@@ -21,15 +20,6 @@ export type InfoTransformerFunction = (info: any) => Promise<any>
 export interface AuthenticatorOptions {
   key?: string
   userProperty?: string
-  sessionPlugin?: string
-}
-
-export interface SessionManagement {
-  key?: string
-  serializeUser?: SerializeFunction
-  logIn(request: FastifyRequest, user: any)
-  logOut(request: FastifyRequest)
-  getUserFromSession(request: FastifyRequest)
 }
 
 export class Authenticator {
@@ -37,7 +27,7 @@ export class Authenticator {
   public key: string
   // the key on the request at which to store the deserialized user value (default: "user")
   public userProperty: string
-  public sessionManager: SessionManagement
+  public sessionManager: SecureSessionManager
 
   private strategies: { [k: string]: AnyStrategy } = {}
   private serializers: SerializeFunction<any, any>[] = []
@@ -49,11 +39,7 @@ export class Authenticator {
     this.userProperty = options.userProperty || 'user'
 
     this.use(new SessionStrategy(this.deserializeUser.bind(this)))
-    if (options.sessionPlugin === '@fastify/session') {
-      this.sessionManager = new SessionManager({ key: this.key }, this.serializeUser.bind(this))
-    } else {
-      this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this))
-    }
+    this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this))
   }
 
   use(strategy: AnyStrategy): this

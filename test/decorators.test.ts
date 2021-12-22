@@ -1,4 +1,4 @@
-import { getConfiguredTestServer } from './helpers'
+import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 describe('Request decorators', () => {
   test('logIn allows logging in an arbitrary user', async () => {
@@ -33,7 +33,33 @@ describe('Request decorators', () => {
   })
 
   test('logIn allows logging in an arbitrary user for the duration of the request if session=false', async () => {
+    if (process.env.SESSION_PLUGIN !== 'fastify-secure-session') return
+
     const { server } = getConfiguredTestServer()
+    server.post('/force-login', async (request, reply) => {
+      await request.logIn({ name: 'force logged in user' }, { session: false })
+      void reply.send((request.user as any).name)
+    })
+
+    const login = await server.inject({
+      method: 'POST',
+      url: '/force-login',
+    })
+
+    expect(login.statusCode).toEqual(200)
+    expect(login.body).toEqual('force logged in user')
+    expect(login.headers['set-cookie']).toBeUndefined() // no user added to session
+  })
+
+  test('logIn allows logging in an arbitrary user for the duration of the request if session=false', async () => {
+    if (process.env.SESSION_PLUGIN !== '@fastify/session') return
+
+    const sessionOptions = {
+      secret: 'a secret with minimum length of 32 characters',
+      cookie: { secure: false },
+      saveUninitialized: false,
+    }
+    const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
     server.post('/force-login', async (request, reply) => {
       await request.logIn({ name: 'force logged in user' }, { session: false })
       void reply.send((request.user as any).name)

@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import fastify, { FastifyInstance } from 'fastify'
 import fastifySecureSession from 'fastify-secure-session'
+import fastifyCookie from 'fastify-cookie'
+import fastifySession from '@fastify/session'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
@@ -70,10 +72,24 @@ export class TestBrowserSession {
   }
 }
 
+const loadSessionPlugins = (server: FastifyInstance, sessionOptions: any = null) => {
+  if (process.env.SESSION_PLUGIN === '@fastify/session') {
+    void server.register(fastifyCookie)
+    const options = sessionOptions || {
+      secret: 'a secret with minimum length of 32 characters',
+      cookie: { secure: false },
+    }
+    void server.register(fastifySession, options)
+  } else {
+    void server.register(fastifySecureSession, sessionOptions || { key: SecretKey })
+  }
+}
+
 /** Create a fastify instance with a few simple setup bits added, but without fastify-passport registered or any strategies set up. */
-export const getTestServer = () => {
+export const getTestServer = (sessionOptions: any = null) => {
   const server = fastify()
-  void server.register(fastifySecureSession, { key: SecretKey })
+  loadSessionPlugins(server, sessionOptions)
+
   server.setErrorHandler((error, request, reply) => {
     console.error(error)
     void reply.status(500)
@@ -83,12 +99,12 @@ export const getTestServer = () => {
 }
 
 /** Create a fastify instance with fastify-passport plugin registered but with no strategies registered yet. */
-export const getRegisteredTestServer = () => {
+export const getRegisteredTestServer = (sessionOptions: any = null) => {
   const fastifyPassport = new Authenticator()
   fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user))
   fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
-  const server = getTestServer()
+  const server = getTestServer(sessionOptions)
   void server.register(fastifyPassport.initialize())
   void server.register(fastifyPassport.secureSession())
 
@@ -96,8 +112,12 @@ export const getRegisteredTestServer = () => {
 }
 
 /** Create a fastify instance with fastify-passport plugin registered and the given strategy registered with it. */
-export const getConfiguredTestServer = (name = 'test', strategy = new TestStrategy('test')) => {
-  const { fastifyPassport, server } = getRegisteredTestServer()
+export const getConfiguredTestServer = (
+  name = 'test',
+  strategy = new TestStrategy('test'),
+  sessionOptions: any = null
+) => {
+  const { fastifyPassport, server } = getRegisteredTestServer(sessionOptions)
   fastifyPassport.use(name, strategy)
   return { fastifyPassport, server }
 }

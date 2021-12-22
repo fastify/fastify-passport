@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-/// <reference types="fastify-secure-session" />
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
 import { Strategy } from '../src/strategies'
 import { TestThirdPartyStrategy } from './authorize.test'

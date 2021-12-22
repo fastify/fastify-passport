@@ -61,7 +61,7 @@ import fastifySession from '@fastify/session'
 const server = fastify()
 
 // setup an Authenticator instance which uses @fastify/session
-const fastifyPassport = new Authenticator({ sessionPlugin: '@fastify/session' })
+const fastifyPassport = new Authenticator()
 
 server.register(fastifyCookie)
 server.register(fastifySession, { secret: 'secret with minimum length of 32 characters' })
@@ -74,10 +74,7 @@ fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use so
 ```
 
 ## Difference between `fastify-secure-session` and `@fastify/session`
-`fastify-secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session.
-There are mainly two differences:
-- `fastify-secure-session` uses the stateless approach and stores the whole session in an encrypted cookie. `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
-- With `fastify-secure-session` you update the session using `.get`, `.set` and `.delete` methods whereas with `@fastify-session` you mutate the session values directly. e.g.`request.session[key] = value`
+`fastify-secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session. The main difference is that `fastify-secure-session` uses the stateless approach and stores the whole session in an encrypted cookie whereas `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
 
 ## Session Serialization
 
@@ -339,7 +336,7 @@ declare module 'fastify' {
 
 `fastify-passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It is important to register each instance of `fastify-passport` in a different Fastify plugin context so that the decorators `fastify-passport` like `request.logIn` and `request.logOut` do not collide.
 
-To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they do not collide when decorating your fastify instance or storing things in the session. Optionally, You can also configure the fastify-passport instance to use `@fastify/session` as the session manager by using the `sessionPlugin` option.
+To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they do not collide when decorating your fastify instance or storing things in the session.
 
 ```typescript
 import { Authenticator } from 'fastify-passport'
