@@ -50,7 +50,7 @@ server.post(
 server.listen(0)
 ```
 
-Alternatively, `@fastify/session`(https://github.com/fastify/session) is also supported and works out of the box for session storage.  
+Alternatively, [`@fastify/session`](https://github.com/fastify/session) is also supported and works out of the box for session storage.  
 Here's an example:
 
 ```js
