@@ -149,7 +149,7 @@ export class Authenticator {
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
   ): RouteHandlerMethod {
-    let options
+    let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback == 'function') {
       options = {}
       callback = optionsOrCallback
@@ -195,7 +195,7 @@ export class Authenticator {
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
   ) {
-    let options
+    let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback == 'function') {
       options = {}
       callback = optionsOrCallback

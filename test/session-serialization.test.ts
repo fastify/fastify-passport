@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { FastifyInstance } from 'fastify'
+import { FastifyRequest } from 'fastify/types/request'
 import Authenticator from '../src/Authenticator'
 import { getTestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
 
@@ -11,7 +12,7 @@ describe('Authenticator session serialization', () => {
     fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
     const user = { name: 'foobar' }
-    const request = {} as any
+    const request = {} as unknown as FastifyRequest
     expect(await fastifyPassport.deserializeUser(await fastifyPassport.serializeUser(user, request), request)).toEqual(
       user
     )

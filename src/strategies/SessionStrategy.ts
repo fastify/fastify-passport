@@ -46,7 +46,7 @@ export class SessionStrategy extends Strategy {
 
     if (sessionUser || sessionUser === 0) {
       void this.deserializeUser(sessionUser, request)
-        .catch((err) => this.error(err))
+        .catch((err: Error) => this.error(err))
         .then(async (user?: any) => {
           if (!user) {
             await request.passport.sessionManager.logOut(request)
