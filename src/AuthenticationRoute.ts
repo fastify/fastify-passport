@@ -82,7 +82,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
       this.strategies = strategyOrStrategies
       this.isMultiStrategy = false
     } else {
-      this.strategies = [strategyOrStrategies as string | Strategy]
+      this.strategies = [strategyOrStrategies]
       this.isMultiStrategy = false
     }
   }
