@@ -128,7 +128,7 @@ test(`should throw error if pauseStream is being used`, async () => {
   void server.register(
     fastifyPassport.secureSession({
       pauseStream: true,
-    } as any)
+    })
   )
   server.get('/', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
     request.session.get('messages')

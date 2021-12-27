@@ -31,6 +31,7 @@ export interface AuthenticateOptions {
   successReturnToOrRedirect?: string
   authInfo?: boolean
   session?: boolean
+  pauseStream?: boolean
 }
 
 export type SingleStrategyCallback = (
@@ -295,7 +296,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
   }
 
   applyFlashOrMessage(event: 'success' | 'failure', request: FastifyRequest, result?: FlashObject) {
-    const flashOption = this.options[event + 'Flash']
+    const flashOption = this.options[`${event}Flash`]
     const level = event == 'success' ? 'success' : 'error'
 
     if (flashOption) {
@@ -311,7 +312,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
       }
     }
 
-    const messageOption = this.options[event + 'Message']
+    const messageOption = this.options[`${event}Message`]
     if (messageOption) {
       const message = typeof messageOption === 'boolean' ? this.toFlashObject(result, level)?.message : messageOption
       if (message) {

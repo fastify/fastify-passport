@@ -1,10 +1,10 @@
-import { getConfiguredTestServer } from './helpers'
+import { getConfiguredTestServer, TestStrategy } from './helpers'
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 
 test('should initiate oauth with the google strategy from npm', async () => {
-  const strategy = new GoogleStrategy(
+  const strategy: TestStrategy = new GoogleStrategy(
     {
       clientID: '384163122467-cq6dolrp53at1a3pa8j0f4stpa5gvouh.apps.googleusercontent.com',
       clientSecret: 'o15Chw0KIaXtx_2wRGxNdNSy',
@@ -31,7 +31,7 @@ test('should initiate oauth with the google strategy from npm', async () => {
 })
 
 test('should initiate oauth with the facebook strategy from npm', async () => {
-  const strategy = new FacebookStrategy(
+  const strategy: TestStrategy = new FacebookStrategy(
     {
       clientID: 'foobar',
       clientSecret: 'baz',
@@ -58,7 +58,7 @@ test('should initiate oauth with the facebook strategy from npm', async () => {
 })
 
 test('should initiate oauth with the github strategy from npm', async () => {
-  const strategy = new GitHubStrategy(
+  const strategy: TestStrategy = new GitHubStrategy(
     {
       clientID: 'foobar',
       clientSecret: 'baz',
