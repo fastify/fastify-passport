@@ -4,6 +4,7 @@ import Authenticator from '../src/Authenticator'
 import { getTestServer, getConfiguredTestServer, TestStrategy, getRegisteredTestServer } from './helpers'
 import { AddressInfo } from 'net'
 import { Strategy } from '../src/strategies'
+import { AuthenticateOptions } from '../src/AuthenticationRoute'
 
 const suite = (sessionPluginName) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -130,7 +131,7 @@ const suite = (sessionPluginName) => {
       void server.register(
         fastifyPassport.secureSession({
           pauseStream: true,
-        } as any)
+        } as AuthenticateOptions)
       )
       server.get('/', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
         request.session.get('messages')
