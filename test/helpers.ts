@@ -7,6 +7,7 @@ import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
 import * as parseCookies from 'set-cookie-parser'
+import { IncomingMessage } from 'http'
 
 const SecretKey = fs.readFileSync(__dirname + '/secure.key')
 
@@ -64,7 +65,7 @@ export class TestBrowserSession {
 
     const result = await this.server.inject(opts)
     if (result.statusCode < 500) {
-      for (const { name, value } of parseCookies(result as any, { decodeValues: false })) {
+      for (const { name, value } of parseCookies(result as unknown as IncomingMessage, { decodeValues: false })) {
         this.cookies[name] = value
       }
     }

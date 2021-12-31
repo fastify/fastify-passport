@@ -53,9 +53,9 @@
     "@types/passport": "^1.0.5",
     "@types/semver": "^7.3.4",
     "@types/set-cookie-parser": "^2.4.0",
-    "@typescript-eslint/eslint-plugin": "^4.11.1",
-    "@typescript-eslint/parser": "^4.11.1",
-    "eslint": "^7.16.0",
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
+    "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "fastify": "^3.9.2",
@@ -69,8 +69,8 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.4",
     "set-cookie-parser": "^2.4.6",
-    "ts-jest": "^27.0.4",
-    "typescript": "^4.1.3"
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.5.4"
   },
   "files": [
     "dist"

@@ -162,43 +162,41 @@ const suite = (sessionPluginName) => {
       expect(response.statusCode).toEqual(500)
     })
 
-    test(`should execute successFlash if logged in`, async () => {
-      const { server, fastifyPassport } = getConfiguredTestServer()
-      server.get(
-        '/',
-        { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-        async (request, reply) => reply.flash('success')
+    test(`should throw error if pauseStream is being used`, async () => {
+      jest.spyOn(console, 'error').mockImplementation(jest.fn())
+      const fastifyPassport = new Authenticator()
+      fastifyPassport.use('test', new TestStrategy('test'))
+      fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user))
+      fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
+
+      const server = getTestServer()
+      void server.register(fastifyPassport.initialize())
+      void server.register(
+        fastifyPassport.secureSession({
+          pauseStream: true,
+        })
+      )
+      server.get('/', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
+        request.session.get('messages')
       )
       server.post(
         '/login',
         {
           preValidation: fastifyPassport.authenticate('test', {
             successRedirect: '/',
-            successFlash: 'welcome',
+            successMessage: 'welcome',
             authInfo: false,
           }),
         },
         () => {}
       )
 
-      const login = await server.inject({
+      const response = await server.inject({
         method: 'POST',
         payload: { login: 'test', password: 'test' },
         url: '/login',
       })
-      expect(login.statusCode).toEqual(302)
-      expect(login.headers.location).toEqual('/')
-
-      const response = await server.inject({
-        url: '/',
-        headers: {
-          cookie: login.headers['set-cookie'],
-        },
-        method: 'GET',
-      })
-
-      expect(response.body).toEqual('["welcome"]')
-      expect(response.statusCode).toEqual(200)
+      expect(response.statusCode).toEqual(500)
     })
 
     test(`should execute successFlash=true if logged in`, async () => {
