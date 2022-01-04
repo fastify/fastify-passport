@@ -47,6 +47,7 @@
     "fastify": "^3.0.3"
   },
   "devDependencies": {
+    "@fastify/session": "^6.3.0",
     "@types/jest": "^27.0.0",
     "@types/node": "^17.0.0",
     "@types/passport": "^1.0.5",
@@ -54,11 +55,11 @@
     "@types/set-cookie-parser": "^2.4.0",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
+    "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint": "^8.5.0",
-    "fastify-secure-session": "^3.0.0",
     "fastify": "^3.9.2",
+    "fastify-secure-session": "^3.0.0",
     "got": "^11.8.1",
     "jest": "^27.0.6",
     "passport-facebook": "^3.0.0",

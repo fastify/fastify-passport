@@ -122,7 +122,6 @@ dist
 .DS_Store
 
 # lock files
-package-lock.json
 yarn.lock
 
 # editor files

@@ -13,7 +13,7 @@ type FailureObject = {
 }
 
 const addMessage = (request: FastifyRequest, message: string) => {
-  const existing = request.session.get('messages')
+  const existing: any = request.session.get('messages')
   const messages = existing ? [...existing, message] : [message]
   request.session.set('messages', messages)
 }

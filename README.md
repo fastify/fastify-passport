@@ -50,6 +50,32 @@ server.post(
 server.listen(0)
 ```
 
+Alternatively, [`@fastify/session`](https://github.com/fastify/session) is also supported and works out of the box for session storage.  
+Here's an example:
+
+```js
+import { Authenticator } from 'fastify-passport'
+import fastifyCookie from 'fastify-cookie'
+import fastifySession from '@fastify/session'
+
+const server = fastify()
+
+// setup an Authenticator instance which uses @fastify/session
+const fastifyPassport = new Authenticator()
+
+server.register(fastifyCookie)
+server.register(fastifySession, { secret: 'secret with minimum length of 32 characters' })
+
+// initialize fastify-passport
+server.register(fastifyPassport.initialize())
+
+// register an example strategy for fastifyPassport to authenticate users using
+fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
+```
+
+## Difference between `fastify-secure-session` and `@fastify/session`
+`fastify-secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session. The main difference is that `fastify-secure-session` uses the stateless approach and stores the whole session in an encrypted cookie whereas `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
+
 ## Session Serialization
 
 In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `fastify-passport` implements this pattern by storing sessions using `fastify-secure-cookie`, and serializing/deserializing user objects to and from the session referenced by the cookie. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
