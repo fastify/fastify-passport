@@ -85,7 +85,7 @@ In a typical web application, the credentials used to authenticate a user will o
 fastifyPassport.registerUserSerializer(async (user, request) => user.id);
 
 // ... and then a deserializer that will fetch that user from the database when a request with an id in the session arrives
-fastifyPassport.registerUserDeserializer(async (id, request) {
+fastifyPassport.registerUserDeserializer(async (id, request) => {
   return await User.findById(id);
 });
 ```
@@ -270,7 +270,7 @@ fastifyPassport.registerUserSerializer(async (user, request) => user.id)
 Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
-fastifyPassport.registerUserDeserializer(async (id, request) {
+fastifyPassport.registerUserDeserializer(async (id, request) => {
   return await User.findById(id);
 });
 ```
@@ -279,7 +279,7 @@ Deserializers can throw the string `"pass"` if they do not apply to the current 
 
 ```js
 // register a deserializer for database users
-fastifyPassport.registerUserDeserializer(async (id, request) {
+fastifyPassport.registerUserDeserializer(async (id, request) => {
   if (id.startsWith("db-")) {
     return await User.findById(id);
   } else {
@@ -288,7 +288,7 @@ fastifyPassport.registerUserDeserializer(async (id, request) {
 });
 
 // register a deserializer for redis users
-fastifyPassport.registerUserDeserializer(async (id, request) {
+fastifyPassport.registerUserDeserializer(async (id, request) => {
   if (id.startsWith("redis-")) {
     return await redis.get(id);
   } else {
