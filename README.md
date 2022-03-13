@@ -85,7 +85,7 @@ In a typical web application, the credentials used to authenticate a user will o
 fastifyPassport.registerUserSerializer(async (user, request) => user.id);
 
 // ... and then a deserializer that will fetch that user from the database when a request with an id in the session arrives
-fastifyPassport.registerUserDeserializer(async (id, request) {
+fastifyPassport.registerUserDeserializer(async (id, request) => {
   return await User.findById(id);
 });
 ```
