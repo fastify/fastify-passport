@@ -66,8 +66,9 @@ const fastifyPassport = new Authenticator()
 server.register(fastifyCookie)
 server.register(fastifySession, { secret: 'secret with minimum length of 32 characters' })
 
-// initialize fastify-passport
+// initialize fastify-passport and connect it to the secure-session storage. Note: both of these plugins are mandatory.
 server.register(fastifyPassport.initialize())
+server.register(fastifyPassport.secureSession())
 
 // register an example strategy for fastifyPassport to authenticate users using
 fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
