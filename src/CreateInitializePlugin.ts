@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin'
 import { logIn, logOut, isAuthenticated, isUnauthenticated } from './decorators'
 import Authenticator from './Authenticator'
-import flash = require('fastify-flash')
+import flash = require('@fastify/flash')
 
 export function CreateInitializePlugin(passport: Authenticator) {
   return fp(async (fastify) => {
