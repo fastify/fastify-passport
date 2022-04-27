@@ -1,38 +1,38 @@
-# fastify-passport
+# @fastify/passport
 
 ![CI](https://github.com/fastify/fastify-passport/workflows/CI/badge.svg)
-[![NPM version](https://img.shields.io/npm/v/fastify-passport.svg?style=flat)](https://www.npmjs.com/package/fastify-passport)
+[![NPM version](https://img.shields.io/npm/v/fastify-passport.svg?style=flat)](https://www.npmjs.com/package/@fastify/passport)
 [![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-passport/badge.svg)](https://snyk.io/test/github/fastify/fastify-passport)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier)
 
-`fastify-passport` is a port of [`passport`](http://www.passportjs.org/) for the Fastify ecosystem. It lets you use Passport strategies to authenticate requests and protect Fastify routes!
+`@fastify/passport` is a port of [`passport`](http://www.passportjs.org/) for the Fastify ecosystem. It lets you use Passport strategies to authenticate requests and protect Fastify routes!
 
 ## Status
 
-Beta. `fastify-passport` is still a relatively new project. There may be incompatibilities with express-based `passport` deployments, and bugs. Please report any issues so we can correct them!
+Beta. `@fastify/passport` is still a relatively new project. There may be incompatibilities with express-based `passport` deployments, and bugs. Please report any issues so we can correct them!
 
 ## Installation
 
 ```shell
-npm install fastify-passport
+npm install @fastify/passport
 ```
 
 ## Google OAuth2 Video tutorial
 
-The community created this fast introduction to `fastify-passport`:
+The community created this fast introduction to `@fastify/passport`:
 [![Google OAuth2 Tutorial Passport](https://img.youtube.com/vi/XRcQQWU0XOM/0.jpg)](https://youtu.be/XRcQQWU0XOM)
 
 
 ## Example
 
 ```js
-import fastifyPassport from 'fastify-passport'
-import fastifySecureSession from 'fastify-secure-session'
+import fastifyPassport from '@fastify/passport'
+import fastifySecureSession from '@fastify/secure-session'
 
 const server = fastify()
-// set up secure sessions for fastify-passport to store data in
+// set up secure sessions for @fastify/passport to store data in
 server.register(fastifySecureSession, { key: fs.readFileSync(path.join(__dirname, 'secret-key')) })
-// initialize fastify-passport and connect it to the secure-session storage. Note: both of these plugins are mandatory.
+// initialize @fastify/passport and connect it to the secure-session storage. Note: both of these plugins are mandatory.
 server.register(fastifyPassport.initialize())
 server.register(fastifyPassport.secureSession())
 
@@ -60,8 +60,8 @@ Alternatively, [`@fastify/session`](https://github.com/fastify/session) is also 
 Here's an example:
 
 ```js
-import { Authenticator } from 'fastify-passport'
-import fastifyCookie from 'fastify-cookie'
+import { Authenticator } from '@fastify/passport'
+import fastifyCookie from '@fastify/cookie'
 import fastifySession from '@fastify/session'
 
 const server = fastify()
@@ -72,7 +72,7 @@ const fastifyPassport = new Authenticator()
 server.register(fastifyCookie)
 server.register(fastifySession, { secret: 'secret with minimum length of 32 characters' })
 
-// initialize fastify-passport and connect it to the secure-session storage. Note: both of these plugins are mandatory.
+// initialize @fastify/passport and connect it to the secure-session storage. Note: both of these plugins are mandatory.
 server.register(fastifyPassport.initialize())
 server.register(fastifyPassport.secureSession())
 
@@ -80,12 +80,12 @@ server.register(fastifyPassport.secureSession())
 fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
 ```
 
-## Difference between `fastify-secure-session` and `@fastify/session`
-`fastify-secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session. The main difference is that `fastify-secure-session` uses the stateless approach and stores the whole session in an encrypted cookie whereas `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
+## Difference between `@fastify/secure-session` and `@fastify/session`
+`@fastify/secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session. The main difference is that `@fastify/secure-session` uses the stateless approach and stores the whole session in an encrypted cookie whereas `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
 
 ## Session Serialization
 
-In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `fastify-passport` implements this pattern by storing sessions using `fastify-secure-cookie`, and serializing/deserializing user objects to and from the session referenced by the cookie. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `@fastify/passport` implements this pattern by storing sessions using `@fastify/secure-session`, and serializing/deserializing user objects to and from the session referenced by the cookie. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 // register a serializer that stores the user object's id in the session ...
@@ -101,11 +101,11 @@ fastifyPassport.registerUserDeserializer(async (id, request) => {
 
 ### initialize()
 
-A hook that **must be added**. Sets up a `fastify-passport` instance's hooks.
+A hook that **must be added**. Sets up a `@fastify/passport` instance's hooks.
 
 ### secureSession()
 
-A hook that **must be added**. Sets up `fastify-passport`'s connector with `fastify-secure-session` to store authentication in the session.
+A hook that **must be added**. Sets up `@fastify/passport`'s connector with `@fastify/secure-session` to store authentication in the session.
 
 ### authenticate(strategy: string | Strategy | (string | Strategy)[], options: AuthenticateOptions, callback?: AuthenticateCallback)
 
@@ -178,7 +178,7 @@ Note that if a callback is supplied, it becomes the application's responsibility
 
 #### Multiple Strategies
 
-`fastify-passport` supports authenticating with a list of strategies, and will try each in order until one passes. Pass an array of strategy names to `authenticate` for this:
+`@fastify/passport` supports authenticating with a list of strategies, and will try each in order until one passes. Pass an array of strategy names to `authenticate` for this:
 
 ```js
 // somewhere before several strategies are registered
@@ -200,7 +200,7 @@ fastify.get(
 )
 ```
 
-Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, shouldn't really be used together in the same `authenticate` call. This is because `fastify-passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
+Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, shouldn't really be used together in the same `authenticate` call. This is because `@fastify/passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
 
 Multiple strategies can also be passed as instances if you only intend to use them for that route handler or for that request.
 
@@ -265,7 +265,7 @@ fastifyPassport.unuse('legacy-api')
 
 ### registerUserSerializer(serializer: (user, request) => Promise<SerializedUser>)
 
-Registers an async user serializer function for taking a high level User object from your application and serializing it for storage into the session. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+Registers an async user serializer function for taking a high level User object from your application and serializing it for storage into the session. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 // register a serializer that stores the user object's id in the session ...
@@ -274,7 +274,7 @@ fastifyPassport.registerUserSerializer(async (user, request) => user.id)
 
 ### registerUserDeserializer(deserializer: (serializedUser, request) => Promise<User>)
 
-Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `fastify-passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 fastifyPassport.registerUserDeserializer(async (id, request) => {
@@ -282,7 +282,7 @@ fastifyPassport.registerUserDeserializer(async (id, request) => {
 });
 ```
 
-Deserializers can throw the string `"pass"` if they do not apply to the current session and the next deserializer should be tried. This is useful if you are using `fastify-passport` to store two different kinds of user objects. An example:
+Deserializers can throw the string `"pass"` if they do not apply to the current session and the next deserializer should be tried. This is useful if you are using `@fastify/passport` to store two different kinds of user objects. An example:
 
 ```js
 // register a deserializer for database users
@@ -304,14 +304,14 @@ fastifyPassport.registerUserDeserializer(async (id, request) => {
 });
 ```
 
-Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row cannot be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `fastify-passport`'s behaviour in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behaviour of the original `passport` module.
+Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row cannot be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `@fastify/passport`'s behaviour in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behaviour of the original `passport` module.
 
 Therefore, a deserializer can return several things:
 
 - if a deserializer returns an object, that object is assumed to be a successfully deserialized user
-- if a deserializer returns `undefined`, `fastify-passport` interprets that as an erroneously missing user, and throws an error because the user could not be deserialized.
-- if a deserializer returns `null` or `false`, `fastify-passport` interprets that as a missing but expected user, and resets the session to log the user out
-- if a deserializer throws the string `"pass"`, `fastify-passport` will try the next deserializer if it exists, or throw an error because the user could not be deserialized.
+- if a deserializer returns `undefined`, `@fastify/passport` interprets that as an erroneously missing user, and throws an error because the user could not be deserialized.
+- if a deserializer returns `null` or `false`, `@fastify/passport` interprets that as a missing but expected user, and resets the session to log the user out
+- if a deserializer throws the string `"pass"`, `@fastify/passport` will try the next deserializer if it exists, or throw an error because the user could not be deserialized.
 
 ### Request#isUnauthenticated()
 
@@ -319,7 +319,7 @@ Test if request is unauthenticated.
 
 ## Using with TypeScript
 
-`fastify-passport` is written in TypeScript, so it includes type definitions for all of it's API. You can also strongly type the `FastifyRequest.user` property using TypeScript declaration merging. You must re-declare the `PassportUser` interface in the `fastify` module within your own code to add the properties you expect to be assigned by the strategy when authenticating:
+`@fastify/passport` is written in TypeScript, so it includes type definitions for all of it's API. You can also strongly type the `FastifyRequest.user` property using TypeScript declaration merging. You must re-declare the `PassportUser` interface in the `fastify` module within your own code to add the properties you expect to be assigned by the strategy when authenticating:
 
 ```typescript
 declare module 'fastify' {
@@ -341,12 +341,12 @@ declare module 'fastify' {
 
 ## Using multiple instances
 
-`fastify-passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It is important to register each instance of `fastify-passport` in a different Fastify plugin context so that the decorators `fastify-passport` like `request.logIn` and `request.logOut` do not collide.
+`@fastify/passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It is important to register each instance of `@fastify/passport` in a different Fastify plugin context so that the decorators `@fastify/passport` like `request.logIn` and `request.logOut` do not collide.
 
-To register fastify-passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they do not collide when decorating your fastify instance or storing things in the session.
+To register @fastify/passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they do not collide when decorating your fastify instance or storing things in the session.
 
 ```typescript
-import { Authenticator } from 'fastify-passport'
+import { Authenticator } from '@fastify/passport'
 
 const server = fastify()
 
@@ -379,11 +379,11 @@ server.get(
 
 **Note**: Each `Authenticator` instance's initialize plugin and session plugin must be registered separately.
 
-It is important to note that using multiple `fastify-passport` instances is not necessary if you want to use multiple strategies to login the same type of user. `fastify-passport` supports multiple strategies by passing an array to any `.authenticate` call.
+It is important to note that using multiple `@fastify/passport` instances is not necessary if you want to use multiple strategies to login the same type of user. `@fastify/passport` supports multiple strategies by passing an array to any `.authenticate` call.
 
 # Differences from Passport.js
 
-`fastify-passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatabilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
+`@fastify/passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatabilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
 
 Differences:
 
