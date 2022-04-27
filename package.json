@@ -1,6 +1,6 @@
 {
   "name": "@fastify/passport",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple, unobtrusive authentication for Fastify.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
