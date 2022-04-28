@@ -123,9 +123,16 @@ export const getRegisteredTestServer = (sessionOptions: SessionOptions = null) =
 export const getConfiguredTestServer = (
   name = 'test',
   strategy = new TestStrategy('test'),
-  sessionOptions: SessionOptions = null
+  sessionOptions: SessionOptions = null,
+  customStrategy: any = null
 ) => {
   const { fastifyPassport, server } = getRegisteredTestServer(sessionOptions)
-  fastifyPassport.use(name, strategy)
+
+  if (customStrategy) {
+    fastifyPassport.use(name, customStrategy)
+  } else {
+    fastifyPassport.use(name, strategy)
+  }
+
   return { fastifyPassport, server }
 }

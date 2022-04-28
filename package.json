@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@fastify/cookie": "^6.0.0",
+    "fastify-secure-session": "3.1.0",
     "@fastify/secure-session": "^4.0.0",
     "@fastify/session": "^8.0.0",
     "@types/jest": "^27.0.0",
@@ -63,6 +64,7 @@
     "fastify": "^3.9.2",
     "got": "^11.8.1",
     "jest": "^27.0.6",
+    "openid-client": "^5.1.5",
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth": "^2.0.0",
