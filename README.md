@@ -1,7 +1,7 @@
 # @fastify/passport
 
 ![CI](https://github.com/fastify/fastify-passport/workflows/CI/badge.svg)
-[![NPM version](https://img.shields.io/npm/v/fastify-passport.svg?style=flat)](https://www.npmjs.com/package/@fastify/passport)
+[![NPM version](https://img.shields.io/npm/v/@fastify/passport.svg?style=flat)](https://www.npmjs.com/package/@fastify/passport)
 [![Known Vulnerabilities](https://snyk.io/test/github/fastify/fastify-passport/badge.svg)](https://snyk.io/test/github/fastify/fastify-passport)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier)
 
