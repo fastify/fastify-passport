@@ -12,36 +12,4 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        node-version: [12, 14, 16]
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Install
-        run: npm install --ignore-scripts --frozen-lockfile
-
-      - name: Run Tests & generate coverage
-        run: npm run test
-
-  automerge:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: write
-    steps:
-      - uses: fastify/github-action-merge-dependabot@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
+    uses: fastify/workflows/.github/workflows/plugins-ci.yml@v3
