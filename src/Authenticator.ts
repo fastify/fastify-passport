@@ -1,9 +1,9 @@
+import { FastifyPlugin, FastifyRequest, RouteHandlerMethod } from 'fastify'
+import fastifyPlugin from 'fastify-plugin'
+import { AuthenticateCallback, AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
+import { CreateInitializePlugin } from './CreateInitializePlugin'
 import { SecureSessionManager } from './session-managers/SecureSessionManager'
 import { AnyStrategy, SessionStrategy, Strategy } from './strategies'
-import { FastifyRequest, RouteHandlerMethod, FastifyPlugin } from 'fastify'
-import { AuthenticateOptions, AuthenticateCallback, AuthenticationRoute } from './AuthenticationRoute'
-import { CreateInitializePlugin } from './CreateInitializePlugin'
-import fastifyPlugin from 'fastify-plugin'
 
 export type SerializeFunction<User = any, SerializedUser = any> = (
   user: User,
@@ -209,7 +209,7 @@ export class Authenticator {
   }
 
   /**
-   * Hook or handler that will restore login state from a session managed by fastify-secure-session.
+   * Hook or handler that will restore login state from a session managed by @fastify/secure-session.
    *
    * Web applications typically use sessions to maintain login state between requests.  For example, a user will authenticate by entering credentials into a form which is submitted to the server.  If the credentials are valid, a login session is established by setting a cookie containing a session identifier in the user's web browser.  The web browser will send this cookie in subsequent requests to the server, allowing a session to be maintained.
    *

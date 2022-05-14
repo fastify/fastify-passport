@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
-import { getTestServer, TestBrowserSession } from './helpers'
 import { Authenticator } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
+import { getTestServer, TestBrowserSession } from './helpers'
 
 const suite = (sessionPluginName) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -255,4 +255,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')

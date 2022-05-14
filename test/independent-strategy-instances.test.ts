@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
 import { Strategy } from '../src/strategies'
 import { TestThirdPartyStrategy } from './authorize.test'
+import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
 
 class WelcomeStrategy extends Strategy {
   authenticate(request: any, _options?: { pauseStream?: boolean }) {
@@ -175,4 +175,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')

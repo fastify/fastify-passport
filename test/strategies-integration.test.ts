@@ -1,7 +1,7 @@
-import { getConfiguredTestServer, TestStrategy } from './helpers'
-import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as GitHubStrategy } from 'passport-github2'
+import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
+import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const suite = (sessionPluginName) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -89,4 +89,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')

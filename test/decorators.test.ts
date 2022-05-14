@@ -3,7 +3,7 @@ import { getConfiguredTestServer, TestStrategy } from './helpers'
 const suite = (sessionPluginName) => {
   describe(`${sessionPluginName} tests`, () => {
     const sessionOnlyTest = sessionPluginName === '@fastify/session' ? test : test.skip
-    const secureSessionOnlyTest = sessionPluginName === 'fastify-secure-session' ? test : test.skip
+    const secureSessionOnlyTest = sessionPluginName === '@fastify/secure-session' ? test : test.skip
 
     describe('Request decorators', () => {
       test('logIn allows logging in an arbitrary user', async () => {
@@ -137,4 +137,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')
