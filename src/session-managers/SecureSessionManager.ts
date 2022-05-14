@@ -2,7 +2,7 @@
 import { FastifyRequest } from 'fastify'
 import { SerializeFunction } from '../Authenticator'
 
-/** Class for storing passport data in the session using `fastify-secure-session` or `@fastify/session` */
+/** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
 export class SecureSessionManager {
   key: string
   serializeUser: SerializeFunction

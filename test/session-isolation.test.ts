@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { getConfiguredTestServer, TestBrowserSession, generateTestUser } from './helpers'
+import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
 
 const { server, fastifyPassport } = getConfiguredTestServer()
 
@@ -180,4 +180,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')

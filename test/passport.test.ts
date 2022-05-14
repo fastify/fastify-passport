@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import got from 'got'
-import Authenticator from '../src/Authenticator'
-import { getTestServer, getConfiguredTestServer, TestStrategy, getRegisteredTestServer } from './helpers'
 import { AddressInfo } from 'net'
-import { Strategy } from '../src/strategies'
 import { AuthenticateOptions } from '../src/AuthenticationRoute'
+import Authenticator from '../src/Authenticator'
+import { Strategy } from '../src/strategies'
+import { getConfiguredTestServer, getRegisteredTestServer, getTestServer, TestStrategy } from './helpers'
 
 const suite = (sessionPluginName) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -651,4 +651,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')

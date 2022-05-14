@@ -1,5 +1,5 @@
-import { getConfiguredTestServer, generateTestUser } from './helpers'
 import { Strategy } from '../src'
+import { generateTestUser, getConfiguredTestServer } from './helpers'
 
 export class TestThirdPartyStrategy extends Strategy {
   authenticate(_request: any, _options?: { pauseStream?: boolean }) {
@@ -32,4 +32,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')

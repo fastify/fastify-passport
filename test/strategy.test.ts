@@ -22,4 +22,4 @@ const suite = (sessionPluginName) => {
 }
 
 suite('@fastify/session')
-suite('fastify-secure-session')
+suite('@fastify/secure-session')
