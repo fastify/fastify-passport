@@ -3,7 +3,7 @@ import { SecureSessionManager } from '../src/session-managers/SecureSessionManag
 
 describe('SecureSessionManager', () => {
   test('should throw an Error if no parameter was passed', () => {
-    // @ts-expect-error expecting atleast a paramet
+    // @ts-expect-error expecting atleast a parameter
     expect(() => new SecureSessionManager()).toThrow(
       'SecureSessionManager#constructor must have a valid serializeUser-function passed as a parameter'
     )

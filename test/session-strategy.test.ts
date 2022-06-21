@@ -3,7 +3,7 @@ import { SessionStrategy } from '../src/strategies/SessionStrategy'
 
 describe('SessionStrategy', () => {
   test('should throw an Error if no parameter was passed', () => {
-    // @ts-expect-error expecting atleast a paramet
+    // @ts-expect-error expecting atleast a parameter
     expect(() => new SessionStrategy()).toThrow(
       'SessionStrategy#constructor must have a valid deserializeUser-function passed as a parameter'
     )
