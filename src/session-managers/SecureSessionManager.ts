@@ -15,7 +15,8 @@ export class SecureSessionManager {
       this.key = 'passport'
     } else if (typeof serializeUser === 'function') {
       this.serializeUser = serializeUser
-      this.key = (options && typeof options === 'object' && options.key) || 'passport'
+      this.key =
+        (options && typeof options === 'object' && typeof options.key === 'string' && options.key) || 'passport'
     } else {
       throw new Error('SecureSessionManager#constructor must have a valid serializeUser-function passed as a parameter')
     }
