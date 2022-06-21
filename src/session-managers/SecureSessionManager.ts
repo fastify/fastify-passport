@@ -7,15 +7,19 @@ export class SecureSessionManager {
   key: string
   serializeUser: SerializeFunction
 
-  constructor(options: SerializeFunction | any, serializeUser?: SerializeFunction) {
+  constructor(serializeUser: SerializeFunction)
+  constructor(options: { key?: string }, serializeUser: SerializeFunction)
+  constructor(options: SerializeFunction | { key?: string }, serializeUser?: SerializeFunction) {
     if (typeof options === 'function') {
-      serializeUser = options
-      options = undefined
+      this.serializeUser = options
+      this.key = 'passport'
+    } else if (typeof serializeUser === 'function') {
+      this.serializeUser = serializeUser
+      this.key =
+        (options && typeof options === 'object' && typeof options.key === 'string' && options.key) || 'passport'
+    } else {
+      throw new Error('SecureSessionManager#constructor must have a valid serializeUser-function passed as a parameter')
     }
-    options = options || {}
-
-    this.key = options.key || 'passport'
-    this.serializeUser = serializeUser!
   }
 
   async logIn(request: FastifyRequest, user: any) {
