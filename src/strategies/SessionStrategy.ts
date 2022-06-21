@@ -13,12 +13,12 @@ export class SessionStrategy extends Strategy {
   constructor(options: DeserializeFunction | any, deserializeUser?: DeserializeFunction) {
     super('session')
     if (typeof options === 'function') {
-      deserializeUser = options
-      options = undefined
+      this.deserializeUser = options
+    } else if (typeof deserializeUser === 'function') {
+      this.deserializeUser = deserializeUser
+    } else {
+      throw new Error('SessionStrategy#constructor must have a valid deserializeUser-function passed as a parameter')
     }
-    options = options || {}
-
-    this.deserializeUser = deserializeUser!
   }
 
   /**
