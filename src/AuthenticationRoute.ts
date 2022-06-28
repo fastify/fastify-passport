@@ -29,6 +29,7 @@ export interface AuthenticateOptions {
   successMessage?: boolean | string
   assignProperty?: string
   successReturnToOrRedirect?: string
+  state?: string
   authInfo?: boolean
   session?: boolean
   pauseStream?: boolean

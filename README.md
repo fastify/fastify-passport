@@ -130,6 +130,7 @@ Options:
 - `failureFlash` True to flash failure messages or a string to use as a flash
   message for failures (overrides any from the strategy itself).
 - `assignProperty` Assign the object provided by the verify callback to given property
+- `state` Pass any provided state through to the strategy (e.g. for Google Oauth)
 
 An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled. The callback has the following signature:
 
