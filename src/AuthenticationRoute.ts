@@ -4,6 +4,7 @@ import AuthenticationError from './errors'
 import Authenticator from './Authenticator'
 import { AnyStrategy, Strategy } from './strategies'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { types } from 'util'
 
 type FlashObject = { type?: string; message?: string }
 type FailureObject = {
@@ -225,12 +226,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
         resolve()
       }
 
-      /**
-       * Internal error while performing authentication.
-       *
-       * Strategies should call this function when an internal error occurs during the process of performing authentication; for example, if the user directory is not available.
-       */
-      strategy.error = (err: Error) => {
+      const error = (err: Error) => {
         request.log.trace({ strategy: name, err }, 'passport strategy errored')
 
         if (this.callback) {
@@ -240,8 +236,23 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
         reject(err)
       }
 
+      /**
+       * Internal error while performing authentication.
+       *
+       * Strategies should call this function when an internal error occurs during the process of performing authentication; for example, if the user directory is not available.
+       */
+      strategy.error = error
+
       request.log.trace({ strategy: name }, 'attempting passport strategy authentication')
-      strategy.authenticate(request, this.options)
+
+      try {
+        const result = strategy.authenticate(request, this.options)
+        if (types.isPromise(result)) {
+          void result.catch(error)
+        }
+      } catch (err) {
+        error(err as Error)
+      }
     })
   }
 
