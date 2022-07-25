@@ -13,7 +13,7 @@ Beta. `@fastify/passport` is still a relatively new project. There may be incomp
 ## Installation
 
 ```shell
-npm install @fastify/passport
+npm i @fastify/passport
 ```
 
 ## Google OAuth2 Video tutorial
