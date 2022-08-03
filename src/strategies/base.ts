@@ -52,7 +52,7 @@ export class Strategy {
    * @param {Number} status
    * @api public
    */
-  fail!: ((challenge?: any, status?: number) => void) | ((status?: number) => void)
+  fail!: ((challenge?: any, status?: number) => void) & ((status?: number) => void)
 
   /**
    * Redirect to `url` with optional `status`, defaulting to 302.
