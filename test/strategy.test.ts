@@ -49,6 +49,40 @@ const suite = (sessionPluginName) => {
       expect(response.statusCode).toEqual(500)
       expect(JSON.parse(response.body).message).toEqual('the strategy threw an error')
     })
+
+    test('should be able to fail with a failure flash message', async () => {
+      class ErrorStrategy extends Strategy {
+        async authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+          await Promise.resolve()
+          this.fail({ message: 'The strategy failed with an error message' }, 401)
+        }
+      }
+
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
+      server.get(
+        '/',
+        { preValidation: fastifyPassport.authenticate('test', { failureFlash: true }) },
+        async () => 'hello world!'
+      )
+
+      const response = await server.inject({ method: 'GET', url: '/' })
+      expect(response.statusCode).toEqual(401)
+    })
+
+    test('should be able to fail without a failure flash message', async () => {
+      class ErrorStrategy extends Strategy {
+        async authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+          await Promise.resolve()
+          this.fail(401)
+        }
+      }
+
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
+      server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
+
+      const response = await server.inject({ method: 'GET', url: '/' })
+      expect(response.statusCode).toEqual(401)
+    })
   })
 }
 
