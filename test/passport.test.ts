@@ -380,7 +380,7 @@ const suite = (sessionPluginName) => {
         () => {}
       )
 
-      await server.listen(0)
+      await server.listen()
       server.server.unref()
 
       const port = (server.server.address() as AddressInfo).port
