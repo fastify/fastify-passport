@@ -9,7 +9,7 @@
     "lint": "eslint \"*/**/*.{js,ts,tsx}\"",
     "lint:fix": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\" && eslint \"*/**/*.{js,ts,tsx}\" --quiet --fix",
     "prepublishOnly": "npm run build",
-    "test": "npm run build && npm run test:unit && npm run lint",
+    "test": "npm run build && npm run test:unit",
     "test:unit": "jest"
   },
   "repository": {
