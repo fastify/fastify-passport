@@ -1,4 +1,4 @@
-import { FastifyPlugin, FastifyRequest, RouteHandlerMethod } from 'fastify'
+import { FastifyPluginAsync, FastifyRequest, RouteHandlerMethod } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 import { AuthenticateCallback, AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
@@ -62,7 +62,7 @@ export class Authenticator {
     return this
   }
 
-  public initialize(): FastifyPlugin {
+  public initialize(): FastifyPluginAsync {
     return CreateInitializePlugin(this)
   }
 
@@ -232,7 +232,7 @@ export class Authenticator {
    *
    * @return {Function} middleware
    */
-  public secureSession(options?: AuthenticateOptions): FastifyPlugin {
+  public secureSession(options?: AuthenticateOptions): FastifyPluginAsync {
     return fastifyPlugin(async (fastify) => {
       fastify.addHook('preValidation', new AuthenticationRoute(this, 'session', options).handler)
     })
