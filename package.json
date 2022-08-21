@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rimraf ./dist && mkdir dist && tsc --outDir dist && git rev-parse HEAD > BUILD_SHA",
+    "build": "rimraf ./dist && tsc",
     "lint": "eslint \"*/**/*.{js,ts,tsx}\"",
     "lint:fix": "prettier --loglevel warn --write \"src/**/*.{ts,tsx}\" && eslint \"*/**/*.{js,ts,tsx}\" --quiet --fix",
     "prepublishOnly": "npm run build",
@@ -44,6 +44,7 @@
     "@fastify/cookie": "^7.0.0",
     "@fastify/secure-session": "^5.0.0",
     "@fastify/session": "^9.0.0",
+    "@tsconfig/node14": "^1.0.3",
     "@types/jest": "^27.0.0",
     "@types/node": "^18.0.0",
     "@types/passport": "^1.0.5",

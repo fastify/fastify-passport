@@ -1,12 +1,11 @@
 {
+  "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "node",
     "declaration": true,
-    "target": "es2017",
-    "module": "commonjs",
+    "outDir": "dist",
     "pretty": true,
     "noEmitOnError": true,
-    "strict": true,
     "noImplicitAny": false,
     "removeComments": true,
     "noUnusedLocals": true,

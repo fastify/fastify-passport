@@ -6,7 +6,7 @@ import fastifySession from '@fastify/session'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
-import * as parseCookies from 'set-cookie-parser'
+import parseCookies from 'set-cookie-parser'
 import { IncomingMessage } from 'http'
 import { FastifyRegisterOptions } from 'fastify/types/register'
 import FastifySessionPlugin from '@fastify/session'
@@ -99,7 +99,6 @@ export const getTestServer = (sessionOptions: SessionOptions = null) => {
   loadSessionPlugins(server, sessionOptions)
 
   server.setErrorHandler((error, request, reply) => {
-    console.error(error)
     void reply.status(500)
     void reply.send(error)
   })
