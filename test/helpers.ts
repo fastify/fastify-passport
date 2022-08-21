@@ -99,6 +99,7 @@ export const getTestServer = (sessionOptions: SessionOptions = null) => {
   loadSessionPlugins(server, sessionOptions)
 
   server.setErrorHandler((error, request, reply) => {
+    console.error(error)
     void reply.status(500)
     void reply.send(error)
   })
