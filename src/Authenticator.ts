@@ -1,4 +1,4 @@
-import { FastifyPlugin, FastifyReply, FastifyRequest, RouteHandlerMethod } from 'fastify'
+import { FastifyPlugin, FastifyRequest, RouteHandlerMethod } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 import { AuthenticateCallback, AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
@@ -180,21 +180,21 @@ export class Authenticator {
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): (request: FastifyRequest, reply: FastifyReply) => Promise<void>
+  ): RouteHandlerMethod
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
-  ): (request: FastifyRequest, reply: FastifyReply) => Promise<void>
+  ): RouteHandlerMethod
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): (request: FastifyRequest, reply: FastifyReply) => Promise<void>
+  ): RouteHandlerMethod
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategyOrStrategies: StrategyOrStrategies,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): (request: FastifyRequest, reply: FastifyReply) => Promise<void> {
+  ): RouteHandlerMethod {
     let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback == 'function') {
       options = {}
