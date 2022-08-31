@@ -1,3 +1,5 @@
+import { RouteHandlerMethod } from 'fastify'
+import { expectType } from 'tsd'
 import { Strategy } from '../src'
 import { generateTestUser, getConfiguredTestServer } from './helpers'
 
@@ -13,7 +15,7 @@ const suite = (sessionPluginName) => {
       test(`should return 401 Unauthorized if not logged in`, async () => {
         const { server, fastifyPassport } = getConfiguredTestServer()
         fastifyPassport.use(new TestThirdPartyStrategy('third-party'))
-
+        expectType<RouteHandlerMethod>(fastifyPassport.authorize('third-party'))
         server.get('/', { preValidation: fastifyPassport.authorize('third-party') }, async (request) => {
           const user = request.user as any
           expect(user).toBeFalsy()

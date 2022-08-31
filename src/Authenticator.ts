@@ -180,21 +180,21 @@ export class Authenticator {
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  )
+  ): RouteHandlerMethod
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
-  )
+  ): RouteHandlerMethod
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  )
+  ): RouteHandlerMethod
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategyOrStrategies: StrategyOrStrategies,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ) {
+  ): RouteHandlerMethod {
     let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback == 'function') {
       options = {}
