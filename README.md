@@ -383,7 +383,7 @@ It is important to note that using multiple `@fastify/passport` instances is not
 
 # Differences from Passport.js
 
-`@fastify/passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatabilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
+`@fastify/passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatibilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
 
 Differences:
 
