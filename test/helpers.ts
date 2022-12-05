@@ -2,14 +2,13 @@ import * as fs from 'fs'
 import fastify, { FastifyInstance } from 'fastify'
 import fastifySecureSession, { SecureSessionPluginOptions } from '@fastify/secure-session'
 import fastifyCookie from '@fastify/cookie'
-import fastifySession from '@fastify/session'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
 import * as parseCookies from 'set-cookie-parser'
 import { IncomingMessage } from 'http'
 import { FastifyRegisterOptions } from 'fastify/types/register'
-import FastifySessionPlugin from '@fastify/session'
+import { fastifySession, FastifySessionOptions } from '@fastify/session'
 
 const SecretKey = fs.readFileSync(__dirname + '/secure.key')
 
@@ -75,12 +74,12 @@ export class TestBrowserSession {
   }
 }
 
-type SessionOptions = FastifyRegisterOptions<FastifySessionPlugin.Options | SecureSessionPluginOptions> | null
+type SessionOptions = FastifyRegisterOptions<FastifySessionOptions | SecureSessionPluginOptions> | null
 
 const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOptions = null) => {
   if (process.env.SESSION_PLUGIN === '@fastify/session') {
     void server.register(fastifyCookie)
-    const options = <FastifyRegisterOptions<FastifySessionPlugin.Options>>(sessionOptions || {
+    const options = <FastifyRegisterOptions<FastifySessionOptions>>(sessionOptions || {
       secret: 'a secret with minimum length of 32 characters',
       cookie: { secure: false },
     })
