@@ -42,8 +42,9 @@
   },
   "devDependencies": {
     "@fastify/cookie": "^8.0.0",
+    "@fastify/csrf-protection": "^6.2.0",
     "@fastify/secure-session": "^6.0.0",
-    "@fastify/session": "^10.0.0",
+    "@fastify/session": "^10.2.0",
     "@types/jest": "^27.0.0",
     "@types/node": "^18.0.0",
     "@types/passport": "^1.0.5",
