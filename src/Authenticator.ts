@@ -20,6 +20,8 @@ export type InfoTransformerFunction = (info: any) => Promise<any>
 export interface AuthenticatorOptions {
   key?: string
   userProperty?: string
+  clearSessionOnLogin?: boolean
+  clearSessionIgnoreFields?: string[]
 }
 
 export class Authenticator {
@@ -33,13 +35,24 @@ export class Authenticator {
   private serializers: SerializeFunction<any, any>[] = []
   private deserializers: DeserializeFunction<any, any>[] = []
   private infoTransformers: InfoTransformerFunction[] = []
+  private clearSessionOnLogin: boolean
+  private clearSessionIgnoreFields: string[]
 
   constructor(options: AuthenticatorOptions = {}) {
     this.key = options.key || 'passport'
     this.userProperty = options.userProperty || 'user'
 
     this.use(new SessionStrategy(this.deserializeUser.bind(this)))
-    this.sessionManager = new SecureSessionManager({ key: this.key }, this.serializeUser.bind(this))
+    this.clearSessionOnLogin = options.clearSessionOnLogin ?? true
+    this.clearSessionIgnoreFields = ['passport', 'session', ...(options.clearSessionIgnoreFields || [])]
+    this.sessionManager = new SecureSessionManager(
+      {
+        key: this.key,
+        clearSessionOnLogin: this.clearSessionOnLogin,
+        clearSessionIgnoreFields: this.clearSessionIgnoreFields,
+      },
+      this.serializeUser.bind(this)
+    )
   }
 
   use(strategy: AnyStrategy): this

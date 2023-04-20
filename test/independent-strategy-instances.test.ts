@@ -18,7 +18,7 @@ class WelcomeStrategy extends Strategy {
 const suite = (sessionPluginName) => {
   describe(`${sessionPluginName} tests`, () => {
     test(`should allow passing a specific Strategy instance to an authenticate call`, async () => {
-      const { server, fastifyPassport } = getRegisteredTestServer()
+      const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] })
       server.get(
         '/',
         {

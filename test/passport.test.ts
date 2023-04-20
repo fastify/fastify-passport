@@ -24,7 +24,9 @@ const suite = (sessionPluginName) => {
     })
 
     test(`should allow login, and add successMessage to session upon logged in`, async () => {
-      const { server, fastifyPassport } = getConfiguredTestServer()
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new TestStrategy('test'), null, {
+        clearSessionIgnoreFields: ['messages'],
+      })
 
       server.get(
         '/',
@@ -79,7 +81,9 @@ const suite = (sessionPluginName) => {
         }
       }
 
-      const { server, fastifyPassport } = getConfiguredTestServer('test', new WelcomeStrategy('test'))
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new WelcomeStrategy('test'), null, {
+        clearSessionIgnoreFields: ['messages'],
+      })
       server.get(
         '/',
         {
@@ -121,7 +125,7 @@ const suite = (sessionPluginName) => {
 
     test(`should throw error if pauseStream is being used`, async () => {
       jest.spyOn(console, 'error').mockImplementation(jest.fn())
-      const fastifyPassport = new Authenticator()
+      const fastifyPassport = new Authenticator({ clearSessionIgnoreFields: ['messages'] })
       fastifyPassport.use('test', new TestStrategy('test'))
       fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user))
       fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
@@ -164,7 +168,9 @@ const suite = (sessionPluginName) => {
     })
 
     test(`should execute successFlash if logged in`, async () => {
-      const { server, fastifyPassport } = getConfiguredTestServer()
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new TestStrategy('test'), null, {
+        clearSessionIgnoreFields: ['flash'],
+      })
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
@@ -299,7 +305,9 @@ const suite = (sessionPluginName) => {
     })
 
     test(`should redirect to the returnTo set in the session upon login`, async () => {
-      const { server, fastifyPassport } = getConfiguredTestServer()
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new TestStrategy('test'), null, {
+        clearSessionIgnoreFields: ['returnTo'],
+      })
       server.addHook('preValidation', async (request, _reply) => {
         request.session.set('returnTo', '/success')
       })
@@ -602,7 +610,7 @@ const suite = (sessionPluginName) => {
     })
 
     test(`should allow registering strategies after creating routes referring to those strategies by name`, async () => {
-      const { server, fastifyPassport } = getRegisteredTestServer()
+      const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] })
 
       server.get(
         '/',
