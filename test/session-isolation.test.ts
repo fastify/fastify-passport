@@ -1,38 +1,44 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
 
-const { server, fastifyPassport } = getConfiguredTestServer()
+function createServer() {
+  const { server, fastifyPassport } = getConfiguredTestServer()
 
-server.get(
-  '/protected',
-  { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-  async () => 'hello!'
-)
-server.get('/my-id', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
-  String((request.user as any).id)
-)
-server.post(
-  '/login',
-  { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-  async () => 'success'
-)
+  server.get(
+    '/protected',
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    async () => 'hello!'
+  )
+  server.get('/my-id', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
+    String((request.user as any).id)
+  )
+  server.post(
+    '/login',
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    async () => 'success'
+  )
 
-server.post('/force-login', async (request, reply) => {
-  await request.logIn(generateTestUser())
-  void reply.send('logged in')
-})
+  server.post('/force-login', async (request, reply) => {
+    await request.logIn(generateTestUser())
+    void reply.send('logged in')
+  })
 
-server.post(
-  '/logout',
-  { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-  async (request, reply) => {
-    await request.logout()
-    void reply.send('logged out')
-  }
-)
+  server.post(
+    '/logout',
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    async (request, reply) => {
+      await request.logout()
+      void reply.send('logged out')
+    }
+  )
+  return server
+}
 
 const suite = (sessionPluginName) => {
+  process.env.SESSION_PLUGIN = sessionPluginName
+  const server = createServer()
   describe(`${sessionPluginName} tests`, () => {
+    const sessionOnlyTest = sessionPluginName === '@fastify/session' ? test : test.skip
     describe('session isolation', () => {
       let userA, userB, userC
 
@@ -175,8 +181,22 @@ const suite = (sessionPluginName) => {
         // expect each returned ID to be unique
         expect(Array.from(new Set(ids)).sort()).toEqual(ids.sort())
       })
+
+      sessionOnlyTest('should regenerate session on login', async () => {
+        expect(userA.cookies['sessionId']).toBeUndefined()
+        await userA.inject({ method: 'GET', url: '/protected' })
+        expect(userA.cookies['sessionId']).not.toBeUndefined()
+        const prevSessionId = userA.cookies.sessionId
+        await userA.inject({
+          method: 'POST',
+          url: '/login',
+          payload: { login: 'test', password: 'test' },
+        })
+        expect(userA.cookies.sessionId).not.toBe(prevSessionId)
+      })
     })
   })
+  delete process.env.SESSION_PLUGIN
 }
 
 suite('@fastify/session')
