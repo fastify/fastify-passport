@@ -83,7 +83,7 @@ fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use so
 ## Session cleanup on logIn
 
 For security reasons the session is cleaned after login. You can manage this configuration at your own risk by using
-`clearSessionOnLogin (default: true)` and `clearSessionIgnoreFields (default: ['passport', 'session'])`
+`clearSessionOnLogin (default: true)` and `clearSessionIgnoreFields (default: ['session'])`
 
 ## Difference between `@fastify/secure-session` and `@fastify/session`
 `@fastify/secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session. The main difference is that `@fastify/secure-session` uses the stateless approach and stores the whole session in an encrypted cookie whereas `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
