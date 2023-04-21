@@ -44,7 +44,7 @@ export class Authenticator {
 
     this.use(new SessionStrategy(this.deserializeUser.bind(this)))
     this.clearSessionOnLogin = options.clearSessionOnLogin ?? true
-    this.clearSessionIgnoreFields = ['passport', 'session', ...(options.clearSessionIgnoreFields || [])]
+    this.clearSessionIgnoreFields = ['session', ...(options.clearSessionIgnoreFields || [])]
     this.sessionManager = new SecureSessionManager(
       {
         key: this.key,
