@@ -3,7 +3,7 @@ import fastify, { FastifyInstance } from 'fastify'
 import fastifySecureSession, { SecureSessionPluginOptions } from '@fastify/secure-session'
 import fastifyCookie from '@fastify/cookie'
 import fastifySession from '@fastify/session'
-import Authenticator from '../src/Authenticator'
+import Authenticator, { AuthenticatorOptions } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
 import * as parseCookies from 'set-cookie-parser'
@@ -98,8 +98,7 @@ export const getTestServer = (sessionOptions: SessionOptions = null) => {
   const server = fastify()
   loadSessionPlugins(server, sessionOptions)
 
-  server.setErrorHandler((error, request, reply) => {
-    console.error(error)
+  server.setErrorHandler((error, _request, reply) => {
     void reply.status(500)
     void reply.send(error)
   })
@@ -107,8 +106,11 @@ export const getTestServer = (sessionOptions: SessionOptions = null) => {
 }
 
 /** Create a fastify instance with fastify-passport plugin registered but with no strategies registered yet. */
-export const getRegisteredTestServer = (sessionOptions: SessionOptions = null) => {
-  const fastifyPassport = new Authenticator()
+export const getRegisteredTestServer = (
+  sessionOptions: SessionOptions = null,
+  passportOptions: AuthenticatorOptions = {}
+) => {
+  const fastifyPassport = new Authenticator(passportOptions)
   fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user))
   fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
@@ -123,9 +125,10 @@ export const getRegisteredTestServer = (sessionOptions: SessionOptions = null) =
 export const getConfiguredTestServer = (
   name = 'test',
   strategy = new TestStrategy('test'),
-  sessionOptions: SessionOptions = null
+  sessionOptions: SessionOptions = null,
+  passportOptions: AuthenticatorOptions = {}
 ) => {
-  const { fastifyPassport, server } = getRegisteredTestServer(sessionOptions)
+  const { fastifyPassport, server } = getRegisteredTestServer(sessionOptions, passportOptions)
   fastifyPassport.use(name, strategy)
   return { fastifyPassport, server }
 }
