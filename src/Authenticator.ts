@@ -259,7 +259,7 @@ export class Authenticator {
    *
    * @api public
    */
-  registerUserSerializer<TUser, TID>(fn: SerializeFunction<TUser, TID>) {
+  registerUserSerializer<User, StoredUser>(fn: SerializeFunction<User, StoredUser>) {
     this.serializers.push(fn)
   }
 
@@ -285,7 +285,7 @@ export class Authenticator {
    *
    * @api public
    */
-  registerUserDeserializer<User, StoredUser>(fn: DeserializeFunction<User, StoredUser>) {
+  registerUserDeserializer<StoredUser, User>(fn: DeserializeFunction<StoredUser, User>) {
     this.deserializers.push(fn)
   }
 
