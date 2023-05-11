@@ -46,7 +46,7 @@
     "@fastify/secure-session": "^6.0.0",
     "@fastify/session": "^10.2.0",
     "@types/jest": "^27.0.0",
-    "@types/node": "^18.0.0",
+    "@types/node": "^20.1.2",
     "@types/passport": "^1.0.5",
     "@types/semver": "^7.3.4",
     "@types/set-cookie-parser": "^2.4.0",
