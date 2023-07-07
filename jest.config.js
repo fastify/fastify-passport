@@ -9,5 +9,6 @@ module.exports = {
   },
   moduleNameMapper: {
     'tiny-lru': require.resolve('tiny-lru')
-  }
+  },
+  collectCoverage: true
 };
