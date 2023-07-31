@@ -42,7 +42,7 @@ const suite = (sessionPluginName) => {
         const loginResponse = await server.inject({
           method: 'POST',
           url: '/login',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(loginResponse.statusCode).toEqual(302)
@@ -51,9 +51,9 @@ const suite = (sessionPluginName) => {
         const homeResponse = await server.inject({
           url: '/',
           headers: {
-            cookie: loginResponse.headers['set-cookie'],
+            cookie: loginResponse.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(homeResponse.body).toEqual('hello world!')
@@ -109,7 +109,7 @@ const suite = (sessionPluginName) => {
         const loginResponse = await server.inject({
           method: 'POST',
           url: '/login',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(loginResponse.statusCode).toEqual(302)
@@ -121,9 +121,9 @@ const suite = (sessionPluginName) => {
         const homeResponse = await server.inject({
           url: '/',
           headers: {
-            cookie: loginResponse.headers['set-cookie'],
+            cookie: loginResponse.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(homeResponse.statusCode).toEqual(500)
@@ -133,9 +133,9 @@ const suite = (sessionPluginName) => {
         const otherResponse = await server.inject({
           url: '/unprotected',
           headers: {
-            cookie: loginResponse.headers['set-cookie'],
+            cookie: loginResponse.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(otherResponse.statusCode).toEqual(500)
@@ -155,7 +155,7 @@ const suite = (sessionPluginName) => {
         const loginResponse = await server.inject({
           method: 'POST',
           url: '/login',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(loginResponse.statusCode).toEqual(302)
@@ -167,9 +167,9 @@ const suite = (sessionPluginName) => {
         const homeResponse = await server.inject({
           url: '/',
           headers: {
-            cookie: loginResponse.headers['set-cookie'],
+            cookie: loginResponse.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(homeResponse.statusCode).toEqual(401)
@@ -178,9 +178,9 @@ const suite = (sessionPluginName) => {
         const otherResponse = await server.inject({
           url: '/unprotected',
           headers: {
-            cookie: loginResponse.headers['set-cookie'],
+            cookie: loginResponse.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(otherResponse.statusCode).toEqual(200)

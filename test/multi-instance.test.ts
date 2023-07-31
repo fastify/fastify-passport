@@ -24,7 +24,7 @@ async function TestStrategyModule(instance: FastifyInstance, { namespace, clearS
   const authenticator = new Authenticator({
     key: `passport${namespace}`,
     userProperty: `user${namespace}`,
-    clearSessionOnLogin,
+    clearSessionOnLogin
   })
   authenticator.use(strategyName, new TestStrategy(strategyName))
   authenticator.registerUserSerializer<any, string>(async (user) => {
@@ -61,8 +61,8 @@ async function TestStrategyModule(instance: FastifyInstance, { namespace, clearS
     {
       preValidation: authenticator.authenticate(strategyName, {
         successRedirect: `/${namespace}`,
-        authInfo: false,
-      }),
+        authInfo: false
+      })
     },
     () => {
       return
@@ -109,7 +109,7 @@ const suite = (sessionPluginName) => {
         const loginResponse = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(loginResponse.statusCode).toEqual(302)
@@ -118,7 +118,7 @@ const suite = (sessionPluginName) => {
         // access protected route
         response = await session.inject({
           method: 'GET',
-          url: '/a',
+          url: '/a'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello a!')
@@ -126,14 +126,14 @@ const suite = (sessionPluginName) => {
         // access user data
         response = await session.inject({
           method: 'GET',
-          url: '/user/a',
+          url: '/user/a'
         })
         expect(response.statusCode).toEqual(200)
 
         // try to access route protected by other instance
         response = await session.inject({
           method: 'GET',
-          url: '/b',
+          url: '/b'
         })
         expect(response.statusCode).toEqual(401)
       })
@@ -143,7 +143,7 @@ const suite = (sessionPluginName) => {
         let response = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -153,7 +153,7 @@ const suite = (sessionPluginName) => {
         response = await session.inject({
           method: 'POST',
           url: '/login-b',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -162,7 +162,7 @@ const suite = (sessionPluginName) => {
         // access a protected route
         response = await session.inject({
           method: 'GET',
-          url: '/a',
+          url: '/a'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello a!')
@@ -170,7 +170,7 @@ const suite = (sessionPluginName) => {
         // access b protected route
         response = await session.inject({
           method: 'GET',
-          url: '/b',
+          url: '/b'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello b!')
@@ -181,7 +181,7 @@ const suite = (sessionPluginName) => {
         let response = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -191,7 +191,7 @@ const suite = (sessionPluginName) => {
         response = await session.inject({
           method: 'POST',
           url: '/login-b',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -200,21 +200,21 @@ const suite = (sessionPluginName) => {
         // logout a
         response = await session.inject({
           method: 'POST',
-          url: '/logout-a',
+          url: '/logout-a'
         })
         expect(response.statusCode).toEqual(200)
 
         // try to access route protected by now logged out instance
         response = await session.inject({
           method: 'GET',
-          url: '/a',
+          url: '/a'
         })
         expect(response.statusCode).toEqual(401)
 
         // access b protected route which should still be logged in
         response = await session.inject({
           method: 'GET',
-          url: '/b',
+          url: '/b'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello b!')
@@ -225,7 +225,7 @@ const suite = (sessionPluginName) => {
         let response = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -235,7 +235,7 @@ const suite = (sessionPluginName) => {
         response = await session.inject({
           method: 'POST',
           url: '/login-b',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -243,14 +243,14 @@ const suite = (sessionPluginName) => {
 
         response = await session.inject({
           method: 'GET',
-          url: '/user/a',
+          url: '/user/a'
         })
         expect(response.statusCode).toEqual(200)
         const userA = JSON.parse(response.body)
 
         response = await session.inject({
           method: 'GET',
-          url: '/user/b',
+          url: '/user/b'
         })
         expect(response.statusCode).toEqual(200)
         const userB = JSON.parse(response.body)
@@ -287,7 +287,7 @@ const suite = (sessionPluginName) => {
         const loginResponse = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(loginResponse.statusCode).toEqual(302)
@@ -296,7 +296,7 @@ const suite = (sessionPluginName) => {
         // access protected route
         response = await session.inject({
           method: 'GET',
-          url: '/a',
+          url: '/a'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello a!')
@@ -304,14 +304,14 @@ const suite = (sessionPluginName) => {
         // access user data
         response = await session.inject({
           method: 'GET',
-          url: '/user/a',
+          url: '/user/a'
         })
         expect(response.statusCode).toEqual(200)
 
         // try to access route protected by other instance
         response = await session.inject({
           method: 'GET',
-          url: '/b',
+          url: '/b'
         })
         expect(response.statusCode).toEqual(401)
       })
@@ -321,7 +321,7 @@ const suite = (sessionPluginName) => {
         let response = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -331,7 +331,7 @@ const suite = (sessionPluginName) => {
         response = await session.inject({
           method: 'POST',
           url: '/login-b',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -340,7 +340,7 @@ const suite = (sessionPluginName) => {
         // access a protected route (/a) was invalidated after login /b
         response = await session.inject({
           method: 'GET',
-          url: '/a',
+          url: '/a'
         })
         expect(response.statusCode).toEqual(401)
         expect(response.body).toEqual('Unauthorized')
@@ -348,7 +348,7 @@ const suite = (sessionPluginName) => {
         // access b protected route
         response = await session.inject({
           method: 'GET',
-          url: '/b',
+          url: '/b'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello b!')
@@ -359,7 +359,7 @@ const suite = (sessionPluginName) => {
         let response = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -369,7 +369,7 @@ const suite = (sessionPluginName) => {
         response = await session.inject({
           method: 'POST',
           url: '/login-b',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -378,21 +378,21 @@ const suite = (sessionPluginName) => {
         // logout a
         response = await session.inject({
           method: 'POST',
-          url: '/logout-a',
+          url: '/logout-a'
         })
         expect(response.statusCode).toEqual(401)
 
         // try to access route protected by now logged out instance
         response = await session.inject({
           method: 'GET',
-          url: '/a',
+          url: '/a'
         })
         expect(response.statusCode).toEqual(401)
 
         // access b protected route which should still be logged in
         response = await session.inject({
           method: 'GET',
-          url: '/b',
+          url: '/b'
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('hello b!')
@@ -403,14 +403,14 @@ const suite = (sessionPluginName) => {
         let response = await session.inject({
           method: 'POST',
           url: '/login-a',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
         expect(response.statusCode).toEqual(302)
         expect(response.headers.location).toEqual('/a')
 
         response = await session.inject({
           method: 'GET',
-          url: '/user/a',
+          url: '/user/a'
         })
         expect(response.statusCode).toEqual(200)
         const userA = JSON.parse(response.body)
@@ -419,7 +419,7 @@ const suite = (sessionPluginName) => {
         response = await session.inject({
           method: 'POST',
           url: '/login-b',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
 
         expect(response.statusCode).toEqual(302)
@@ -427,7 +427,7 @@ const suite = (sessionPluginName) => {
 
         response = await session.inject({
           method: 'GET',
-          url: '/user/b',
+          url: '/user/b'
         })
         expect(response.statusCode).toEqual(200)
         const userB = JSON.parse(response.body)

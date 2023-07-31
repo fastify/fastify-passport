@@ -46,7 +46,7 @@ const suite = (sessionPluginName: '@fastify/session' | '@fastify/secure-session'
         await user.inject({
           method: 'POST',
           url: '/login',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })

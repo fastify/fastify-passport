@@ -22,7 +22,7 @@ const suite = (sessionPluginName) => {
       server.get(
         '/',
         {
-          preValidation: fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false }),
+          preValidation: fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false })
         },
         async (request) => request.session.get('messages')
       )
@@ -32,8 +32,8 @@ const suite = (sessionPluginName) => {
           preValidation: fastifyPassport.authenticate(new WelcomeStrategy('welcome'), {
             successRedirect: '/',
             successMessage: true,
-            authInfo: false,
-          }),
+            authInfo: false
+          })
         },
         () => {}
       )
@@ -41,7 +41,7 @@ const suite = (sessionPluginName) => {
       const login = await server.inject({
         method: 'POST',
         payload: { login: 'welcomeuser', password: 'test' },
-        url: '/login',
+        url: '/login'
       })
       expect(login.statusCode).toEqual(302)
       expect(login.headers.location).toEqual('/')
@@ -49,9 +49,9 @@ const suite = (sessionPluginName) => {
       const response = await server.inject({
         url: '/',
         headers: {
-          cookie: login.headers['set-cookie'],
+          cookie: login.headers['set-cookie']
         },
-        method: 'GET',
+        method: 'GET'
       })
 
       expect(response.body).toEqual('["welcome from strategy"]')
@@ -64,8 +64,8 @@ const suite = (sessionPluginName) => {
         '/',
         {
           preValidation: fastifyPassport.authenticate([new WelcomeStrategy('welcome'), new TestStrategy('test')], {
-            authInfo: false,
-          }),
+            authInfo: false
+          })
         },
         async (request) => `messages: ${request.session.get('messages')}`
       )
@@ -75,8 +75,8 @@ const suite = (sessionPluginName) => {
           preValidation: fastifyPassport.authenticate([new WelcomeStrategy('welcome'), new TestStrategy('test')], {
             successRedirect: '/',
             successMessage: true,
-            authInfo: false,
-          }),
+            authInfo: false
+          })
         },
         () => {}
       )
@@ -84,7 +84,7 @@ const suite = (sessionPluginName) => {
       const login = await server.inject({
         method: 'POST',
         payload: { login: 'test', password: 'test' },
-        url: '/login',
+        url: '/login'
       })
       expect(login.statusCode).toEqual(302)
       expect(login.headers.location).toEqual('/')
@@ -92,9 +92,9 @@ const suite = (sessionPluginName) => {
       const response = await server.inject({
         url: '/',
         headers: {
-          cookie: login.headers['set-cookie'],
+          cookie: login.headers['set-cookie']
         },
-        method: 'GET',
+        method: 'GET'
       })
 
       expect(response.body).toEqual('messages: undefined')
@@ -107,8 +107,8 @@ const suite = (sessionPluginName) => {
         '/',
         {
           preValidation: fastifyPassport.authenticate([new WelcomeStrategy('welcome'), 'test'], {
-            authInfo: false,
-          }),
+            authInfo: false
+          })
         },
         async (request) => `messages: ${request.session.get('messages')}`
       )
@@ -118,8 +118,8 @@ const suite = (sessionPluginName) => {
           preValidation: fastifyPassport.authenticate([new WelcomeStrategy('welcome'), 'test'], {
             successRedirect: '/',
             successMessage: true,
-            authInfo: false,
-          }),
+            authInfo: false
+          })
         },
         () => {}
       )
@@ -127,7 +127,7 @@ const suite = (sessionPluginName) => {
       const login = await server.inject({
         method: 'POST',
         payload: { login: 'test', password: 'test' },
-        url: '/login',
+        url: '/login'
       })
       expect(login.statusCode).toEqual(302)
       expect(login.headers.location).toEqual('/')
@@ -135,9 +135,9 @@ const suite = (sessionPluginName) => {
       const response = await server.inject({
         url: '/',
         headers: {
-          cookie: login.headers['set-cookie'],
+          cookie: login.headers['set-cookie']
         },
-        method: 'GET',
+        method: 'GET'
       })
 
       expect(response.body).toEqual('messages: undefined')

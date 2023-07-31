@@ -74,7 +74,7 @@ const suite = (sessionPluginName) => {
         let response = await userA.inject({
           method: 'POST',
           url: '/login',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
         expect(response.statusCode).toEqual(200)
         expect(response.body).toEqual('success')
@@ -101,7 +101,7 @@ const suite = (sessionPluginName) => {
             let response = await user.inject({
               method: 'POST',
               url: '/login',
-              payload: { login: 'test', password: 'test' },
+              payload: { login: 'test', password: 'test' }
             })
             expect(response.statusCode).toEqual(200)
             expect(response.body).toEqual('success')
@@ -130,7 +130,7 @@ const suite = (sessionPluginName) => {
             let response = await user.inject({
               method: 'POST',
               url: '/login',
-              payload: { login: 'test', password: 'test' },
+              payload: { login: 'test', password: 'test' }
             })
             expect(response.statusCode).toEqual(200)
             expect(response.body).toEqual('success')
@@ -143,13 +143,13 @@ const suite = (sessionPluginName) => {
 
         let response = await userB.inject({
           url: '/logout',
-          method: 'POST',
+          method: 'POST'
         })
         expect(response.statusCode).toEqual(200)
 
         response = await userB.inject({
           url: '/protected',
-          method: 'GET',
+          method: 'GET'
         })
         expect(response.statusCode).toEqual(401)
 
@@ -190,7 +190,7 @@ const suite = (sessionPluginName) => {
         await userA.inject({
           method: 'POST',
           url: '/login',
-          payload: { login: 'test', password: 'test' },
+          payload: { login: 'test', password: 'test' }
         })
         expect(userA.cookies.sessionId).not.toBe(prevSessionId)
       })

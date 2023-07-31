@@ -9,7 +9,7 @@ export function CreateInitializePlugin(passport: Authenticator) {
     fastify.decorateRequest('passport', {
       getter() {
         return passport
-      },
+      }
     })
     fastify.decorateRequest('logIn', logIn)
     fastify.decorateRequest('login', logIn)
