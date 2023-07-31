@@ -10,7 +10,7 @@ export class SessionStrategy extends Strategy {
 
   constructor(deserializeUser: DeserializeFunction)
   constructor(options: any, deserializeUser: DeserializeFunction)
-  constructor(options: DeserializeFunction | any, deserializeUser?: DeserializeFunction) {
+  constructor(options: any, deserializeUser?: DeserializeFunction) {
     super('session')
     if (typeof options === 'function') {
       this.deserializeUser = options
