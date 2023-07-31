@@ -48,7 +48,7 @@ export class Authenticator {
       {
         key: this.key,
         clearSessionOnLogin: this.clearSessionOnLogin,
-        clearSessionIgnoreFields: this.clearSessionIgnoreFields,
+        clearSessionIgnoreFields: this.clearSessionIgnoreFields
       },
       this.serializeUser.bind(this)
     )

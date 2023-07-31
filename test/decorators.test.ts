@@ -20,7 +20,7 @@ const suite = (sessionPluginName) => {
 
         const login = await server.inject({
           method: 'POST',
-          url: '/force-login',
+          url: '/force-login'
         })
 
         expect(login.statusCode).toEqual(200)
@@ -28,9 +28,9 @@ const suite = (sessionPluginName) => {
         const response = await server.inject({
           url: '/',
           headers: {
-            cookie: login.headers['set-cookie'],
+            cookie: login.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(response.statusCode).toEqual(200)
@@ -48,7 +48,7 @@ const suite = (sessionPluginName) => {
 
           const login = await server.inject({
             method: 'POST',
-            url: '/force-login',
+            url: '/force-login'
           })
 
           expect(login.statusCode).toEqual(200)
@@ -63,7 +63,7 @@ const suite = (sessionPluginName) => {
           const sessionOptions = {
             secret: 'a secret with minimum length of 32 characters',
             cookie: { secure: false },
-            saveUninitialized: false,
+            saveUninitialized: false
           }
           const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
           server.post('/force-login', async (request, reply) => {
@@ -73,7 +73,7 @@ const suite = (sessionPluginName) => {
 
           const login = await server.inject({
             method: 'POST',
-            url: '/force-login',
+            url: '/force-login'
           })
 
           expect(login.statusCode).toEqual(200)
@@ -106,7 +106,7 @@ const suite = (sessionPluginName) => {
         const login = await server.inject({
           method: 'POST',
           payload: { login: 'test', password: 'test' },
-          url: '/login',
+          url: '/login'
         })
         expect(login.statusCode).toEqual(302)
         expect(login.headers.location).toEqual('/')
@@ -114,9 +114,9 @@ const suite = (sessionPluginName) => {
         const logout = await server.inject({
           url: '/logout',
           headers: {
-            cookie: login.headers['set-cookie'],
+            cookie: login.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(logout.statusCode).toEqual(200)
@@ -125,9 +125,9 @@ const suite = (sessionPluginName) => {
         const retry = await server.inject({
           url: '/',
           headers: {
-            cookie: logout.headers['set-cookie'],
+            cookie: logout.headers['set-cookie']
           },
-          method: 'GET',
+          method: 'GET'
         })
 
         expect(retry.statusCode).toEqual(401)

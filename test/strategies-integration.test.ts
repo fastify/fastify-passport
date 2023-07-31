@@ -11,7 +11,7 @@ const suite = (sessionPluginName) => {
         {
           clientID: '384163122467-cq6dolrp53at1a3pa8j0f4stpa5gvouh.apps.googleusercontent.com',
           clientSecret: 'o15Chw0KIaXtx_2wRGxNdNSy',
-          callbackURL: 'http://www.example.com/auth/google/callback',
+          callbackURL: 'http://www.example.com/auth/google/callback'
         },
         () => fail()
       )
@@ -38,7 +38,7 @@ const suite = (sessionPluginName) => {
         {
           clientID: 'foobar',
           clientSecret: 'baz',
-          callbackURL: 'http://www.example.com/auth/facebook/callback',
+          callbackURL: 'http://www.example.com/auth/facebook/callback'
         },
         () => fail()
       )
@@ -65,7 +65,7 @@ const suite = (sessionPluginName) => {
         {
           clientID: 'foobar',
           clientSecret: 'baz',
-          callbackURL: 'http://www.example.com/auth/facebook/callback',
+          callbackURL: 'http://www.example.com/auth/facebook/callback'
         },
         () => fail()
       )
@@ -93,12 +93,12 @@ const suite = (sessionPluginName) => {
       const client = new issuer.Client({
         client_id: 'identifier',
         client_secret: 'secure',
-        redirect_uris: ['http://www.example.com/auth/openid-client/callback'],
+        redirect_uris: ['http://www.example.com/auth/openid-client/callback']
       })
 
       const strategy = new OpenIdStrategy(
         {
-          client,
+          client
         },
         () => fail()
       ) as TestStrategy

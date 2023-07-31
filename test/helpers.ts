@@ -29,7 +29,10 @@ export class TestStrategy extends Strategy {
 }
 
 export class TestDatabaseStrategy extends Strategy {
-  constructor(name: string, readonly database: Record<string, { id: string; login: string; password: string }> = {}) {
+  constructor(
+    name: string,
+    readonly database: Record<string, { id: string; login: string; password: string }> = {}
+  ) {
     super(name)
   }
 
@@ -81,7 +84,7 @@ const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOpti
     void server.register(fastifyCookie)
     const options = <FastifyRegisterOptions<FastifySessionOptions>>(sessionOptions || {
       secret: 'a secret with minimum length of 32 characters',
-      cookie: { secure: false },
+      cookie: { secure: false }
     })
     void server.register(fastifySession, options)
   } else {
