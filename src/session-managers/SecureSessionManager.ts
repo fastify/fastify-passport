@@ -35,11 +35,13 @@ export class SecureSessionManager {
 
   async logIn(request: FastifyRequest, user: any) {
     const object = await this.serializeUser(user, request)
-
+    // Keep track of regenerate call to prevent multiple invocations
+    let regenerateCalled = false;
     if (this.clearSessionOnLogin && object) {
       // Handle @fastify/session to prevent token/CSRF fixation
       if (request.session.regenerate) {
         await request.session.regenerate(this.clearSessionIgnoreFields)
+        regenerateCalled = true;
       } else {
         const currentFields = request.session.data() || {}
         // Handle @fastify/secure-session against CSRF fixation
@@ -55,7 +57,7 @@ export class SecureSessionManager {
     }
 
     // Handle sessions using @fastify/session
-    if (request.session.regenerate) {
+    if (request.session.regenerate && regenerateCalled !== true) {
       // regenerate session to guard against session fixation
       await request.session.regenerate()
     }
