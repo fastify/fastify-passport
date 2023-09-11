@@ -35,31 +35,28 @@ export class SecureSessionManager {
 
   async logIn(request: FastifyRequest, user: any) {
     const object = await this.serializeUser(user, request)
-    // Keep track of regenerate call to prevent multiple invocations
-    let regenerateCalled = false;
-    if (this.clearSessionOnLogin && object) {
-      // Handle @fastify/session to prevent token/CSRF fixation
-      if (request.session.regenerate) {
+    const clearSessionOnLogin = this.clearSessionOnLogin ?? object
+
+    // Handle @fastify/session to prevent token/CSRF fixation
+    if (request.session.regenerate) {
+      if (clearSessionOnLogin) {
         await request.session.regenerate(this.clearSessionIgnoreFields)
-        regenerateCalled = true;
       } else {
-        const currentFields = request.session.data() || {}
-        // Handle @fastify/secure-session against CSRF fixation
-        // TODO: This is quite hacky. The best option would be having a regenerate method
-        // on secure-session as well
-        for (const field of Object.keys(currentFields)) {
-          if (this.clearSessionIgnoreFields.includes(field)) {
-            continue
-          }
-          request.session.set(field, undefined)
-        }
+        await request.session.regenerate()
       }
     }
 
-    // Handle sessions using @fastify/session
-    if (request.session.regenerate && regenerateCalled !== true) {
-      // regenerate session to guard against session fixation
-      await request.session.regenerate()
+    if (clearSessionOnLogin && !request.session.regenerate) {
+      const currentFields = request.session.data() || {}
+      // Handle @fastify/secure-session against CSRF fixation
+      // TODO: This is quite hacky. The best option would be having a regenerate method
+      // on secure-session as well
+      for (const field of Object.keys(currentFields)) {
+        if (this.clearSessionIgnoreFields.includes(field)) {
+          continue
+        }
+        request.session.set(field, undefined)
+      }
     }
     request.session.set(this.key, object)
   }
