@@ -7,8 +7,5 @@ module.exports = {
       tsconfig: 'tsconfig.test.json',
     }]
   },
-  moduleNameMapper: {
-    'tiny-lru': require.resolve('tiny-lru')
-  },
   collectCoverage: true
 };
