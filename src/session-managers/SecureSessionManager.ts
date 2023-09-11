@@ -36,28 +36,25 @@ export class SecureSessionManager {
   async logIn(request: FastifyRequest, user: any) {
     const object = await this.serializeUser(user, request)
 
-    if (this.clearSessionOnLogin && object) {
-      // Handle @fastify/session to prevent token/CSRF fixation
-      if (request.session.regenerate) {
+    // Handle @fastify/session to prevent token/CSRF fixation
+    if (request.session.regenerate) {
+      if (this.clearSessionOnLogin && object) {
         await request.session.regenerate(this.clearSessionIgnoreFields)
       } else {
-        const currentFields = request.session.data() || {}
-        // Handle @fastify/secure-session against CSRF fixation
-        // TODO: This is quite hacky. The best option would be having a regenerate method
-        // on secure-session as well
-        for (const field of Object.keys(currentFields)) {
-          if (this.clearSessionIgnoreFields.includes(field)) {
-            continue
-          }
-          request.session.set(field, undefined)
-        }
+        await request.session.regenerate()
       }
     }
-
-    // Handle sessions using @fastify/session
-    if (request.session.regenerate) {
-      // regenerate session to guard against session fixation
-      await request.session.regenerate()
+    // Handle @fastify/secure-session against CSRF fixation
+    // TODO: This is quite hacky. The best option would be having a regenerate method
+    // on secure-session as well
+    else if (this.clearSessionOnLogin && object) {
+      const currentFields = request.session.data() || {}
+      for (const field of Object.keys(currentFields)) {
+        if (this.clearSessionIgnoreFields.includes(field)) {
+          continue
+        }
+        request.session.set(field, undefined)
+      }
     }
     request.session.set(this.key, object)
   }

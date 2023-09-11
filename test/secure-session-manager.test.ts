@@ -1,3 +1,4 @@
+import { FastifyRequest } from 'fastify'
 import { SerializeFunction } from '../src/Authenticator'
 import { SecureSessionManager } from '../src/session-managers/SecureSessionManager'
 
@@ -42,5 +43,28 @@ describe('SecureSessionManager', () => {
     // @ts-expect-error key has to be of type string
     const sessionManager = new SecureSessionManager({ key: 1 }, ((id) => id) as unknown as SerializeFunction)
     expect(sessionManager.key).toBe('passport')
+  })
+
+  test('should only call request.session.regenerate once if a function', async () => {
+    const sessionManger = new SecureSessionManager({}, ((id) => id) as unknown as SerializeFunction)
+    const user = { id: 'test' }
+    const request = {
+      session: { regenerate: jest.fn(() => {}), set: () => {}, data: () => {} }
+    } as unknown as FastifyRequest
+    await sessionManger.logIn(request, user)
+    expect(request.session.regenerate).toHaveBeenCalledTimes(1)
+  })
+
+  test('should call request.session.regenerate function if clearSessionOnLogin is false', async () => {
+    const sessionManger = new SecureSessionManager(
+      { clearSessionOnLogin: false },
+      ((id) => id) as unknown as SerializeFunction
+    )
+    const user = { id: 'test' }
+    const request = {
+      session: { regenerate: jest.fn(() => {}), set: () => {}, data: () => {} }
+    } as unknown as FastifyRequest
+    await sessionManger.logIn(request, user)
+    expect(request.session.regenerate).toHaveBeenCalledTimes(1)
   })
 })
