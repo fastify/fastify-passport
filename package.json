@@ -55,7 +55,7 @@
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "fastify": "^4.19.1",
+    "fastify": "^4.23.0",
     "got": "^11.8.1",
     "jest": "^29.5.0",
     "openid-client": "^5.1.6",
