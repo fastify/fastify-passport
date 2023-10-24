@@ -88,7 +88,7 @@ const suite = (sessionPluginName) => {
     })
 
     test('should initiate oauth with the openid-client strategy from npm', async () => {
-      const issuer = new OpenIdIssuer({ issuer: 'test_issuer', authorization_endpoint: 'www.example.com' })
+      const issuer = new OpenIdIssuer({ issuer: 'test_issuer', authorization_endpoint: 'http://www.example.com' })
 
       const client = new issuer.Client({
         client_id: 'identifier',
