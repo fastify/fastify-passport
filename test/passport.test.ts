@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import got from 'got'
+import { fetch } from 'undici'
 import { AddressInfo } from 'net'
 import { AuthenticateOptions } from '../src/AuthenticationRoute'
 import Authenticator from '../src/Authenticator'
@@ -392,25 +392,28 @@ const suite = (sessionPluginName) => {
       server.server.unref()
 
       const port = (server.server.address() as AddressInfo).port
-      const login = await got('http://localhost:' + port + '/login', {
+      const login = await fetch('http://localhost:' + port + '/login', {
         method: 'POST',
-        json: { login: 'test', password: 'test' },
-        followRedirect: false
-      })
-      expect(login.statusCode).toEqual(302)
-      expect(login.headers.location).toEqual('/')
-      const cookies = login.headers['set-cookie']!
-      expect(cookies).toHaveLength(1)
-
-      const home = await got({
-        url: 'http://localhost:' + port,
+        body: '{"login":"test","password": "test"}',
         headers: {
-          cookie: cookies[0]
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
-        method: 'GET'
+        redirect: 'manual'
+      })
+      expect(login.status).toEqual(302)
+      expect(login.headers.get('location')).toEqual('/')
+      const cookie = login.headers.get('set-cookie')!
+      expect(typeof cookie === 'string').toStrictEqual(true)
+
+      const home = await fetch('http://localhost:' + port, {
+        method: 'GET',
+        headers: {
+          cookie
+        }
       })
 
-      expect(home.statusCode).toEqual(200)
+      expect(home.status).toEqual(200)
     })
 
     test(`should execute failureRedirect if failed to log in`, async () => {
