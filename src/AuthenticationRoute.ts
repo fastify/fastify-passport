@@ -334,7 +334,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
   }
 
   toFlashObject(input: string | FlashObject | undefined, type: string) {
-    if (typeof input == 'undefined') {
+    if (input === undefined) {
       return
     } else if (typeof input == 'string') {
       return { type, message: input }
