@@ -40,7 +40,7 @@ export class SecureSessionManager {
     // Handle @fastify/session to prevent token/CSRF fixation
     if (request.session.regenerate) {
       if (this.clearSessionOnLogin && object) {
-        let keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
+        const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
           keepSessionInfoKeys.push(...(Object.keys(request.session) || []))
         }

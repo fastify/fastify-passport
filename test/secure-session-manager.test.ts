@@ -107,6 +107,6 @@ describe('SecureSessionManager', () => {
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: false })
     expect(request.session.set).toHaveBeenCalledTimes(1)
-    expect(request.session.set).toHaveBeenCalledWith('passport', { 'id': 'test' })
+    expect(request.session.set).toHaveBeenCalledWith('passport', { id: 'test' })
   })
 })
