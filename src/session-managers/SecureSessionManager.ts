@@ -42,7 +42,7 @@ export class SecureSessionManager {
       if (this.clearSessionOnLogin && object) {
         const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
-          keepSessionInfoKeys.push(...(Object.keys(request.session) || []))
+          keepSessionInfoKeys.push(...(Object.keys(request.session)))
         }
         await request.session.regenerate(keepSessionInfoKeys)
       } else {
