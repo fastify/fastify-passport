@@ -1,5 +1,6 @@
 /// <reference types="@fastify/secure-session" />
 import { FastifyRequest } from 'fastify'
+import { AuthenticateOptions } from '../AuthenticationRoute'
 import { SerializeFunction } from '../Authenticator'
 
 /** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
@@ -33,13 +34,17 @@ export class SecureSessionManager {
     }
   }
 
-  async logIn(request: FastifyRequest, user: any) {
+  async logIn(request: FastifyRequest, user: any, options?: AuthenticateOptions) {
     const object = await this.serializeUser(user, request)
 
     // Handle @fastify/session to prevent token/CSRF fixation
     if (request.session.regenerate) {
       if (this.clearSessionOnLogin && object) {
-        await request.session.regenerate(this.clearSessionIgnoreFields)
+        const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
+        if (options?.keepSessionInfo) {
+          keepSessionInfoKeys.push(...Object.keys(request.session))
+        }
+        await request.session.regenerate(keepSessionInfoKeys)
       } else {
         await request.session.regenerate()
       }
@@ -50,7 +55,7 @@ export class SecureSessionManager {
     else if (this.clearSessionOnLogin && object) {
       const currentFields = request.session.data() || {}
       for (const field of Object.keys(currentFields)) {
-        if (this.clearSessionIgnoreFields.includes(field)) {
+        if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
         request.session.set(field, undefined)

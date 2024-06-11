@@ -81,8 +81,10 @@ fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use so
 
 ## Session cleanup on logIn
 
-For security reasons the session is cleaned after login. You can manage this configuration at your own risk by using
-`clearSessionOnLogin (default: true)` and `clearSessionIgnoreFields (default: ['passport', 'session'])`
+For security reasons the session is cleaned after login. You can manage this configuration at your own risk by:
+1) Include `keepSessionInfo` true option when perform the passport `.authenticate` call;
+2) Include `keepSessionInfo` true option when perform the request `.login` call;
+3) Using `clearSessionOnLogin (default: true)` and `clearSessionIgnoreFields (default: ['passport', 'session'])`.
 
 ## Difference between `@fastify/secure-session` and `@fastify/session`
 `@fastify/secure-session` and `@fastify/session` are both session plugins for Fastify which are capable of encrypting/decrypting the session. The main difference is that `@fastify/secure-session` uses the stateless approach and stores the whole session in an encrypted cookie whereas `@fastify/session` uses the stateful approach for sessions and stores them in a session store.
@@ -136,6 +138,7 @@ Options:
   message for failures (overrides any from the strategy itself).
 - `assignProperty` Assign the object provided by the verify callback to given property
 - `state` Pass any provided state through to the strategy (e.g. for Google Oauth)
+- `keepSessionInfo` True to save existing session properties after authentication
 
 An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled. The callback has the following signature:
 

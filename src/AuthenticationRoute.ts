@@ -34,6 +34,7 @@ export interface AuthenticateOptions {
   authInfo?: boolean
   session?: boolean
   pauseStream?: boolean
+  keepSessionInfo?: boolean
 }
 
 export type SingleStrategyCallback = (
