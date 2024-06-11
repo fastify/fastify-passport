@@ -1,6 +1,6 @@
 {
   "name": "@fastify/passport",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Simple, unobtrusive authentication for Fastify.",
   "main": "dist/index.js",
   "type": "commonjs",
@@ -66,7 +66,7 @@
     "rimraf": "^5.0.5",
     "set-cookie-parser": "^2.6.0",
     "ts-jest": "^29.1.2",
-    "tsd": "^0.30.7",
+    "tsd": "^0.31.0",
     "typescript": "~5.4.3"
   },
   "files": [

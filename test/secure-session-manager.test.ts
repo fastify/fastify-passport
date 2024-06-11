@@ -67,4 +67,46 @@ describe('SecureSessionManager', () => {
     await sessionManger.logIn(request, user)
     expect(request.session.regenerate).toHaveBeenCalledTimes(1)
   })
+
+  test('should call request.session.regenerate function with all properties from session if keepSessionInfo is true', async () => {
+    const sessionManger = new SecureSessionManager(
+      { clearSessionOnLogin: true },
+      ((id) => id) as unknown as SerializeFunction
+    )
+    const user = { id: 'test' }
+    const request = {
+      session: { regenerate: jest.fn(() => {}), set: () => {}, data: () => {}, sessionValue: 'exist' }
+    } as unknown as FastifyRequest
+    await sessionManger.logIn(request, user, { keepSessionInfo: true })
+    expect(request.session.regenerate).toHaveBeenCalledTimes(1)
+    expect(request.session.regenerate).toHaveBeenCalledWith(['session', 'regenerate', 'set', 'data', 'sessionValue'])
+  })
+
+  test('should call request.session.regenerate function with default properties from session if keepSessionInfo is false', async () => {
+    const sessionManger = new SecureSessionManager(
+      { clearSessionOnLogin: true },
+      ((id) => id) as unknown as SerializeFunction
+    )
+    const user = { id: 'test' }
+    const request = {
+      session: { regenerate: jest.fn(() => {}), set: () => {}, data: () => {}, sessionValue: 'exist' }
+    } as unknown as FastifyRequest
+    await sessionManger.logIn(request, user, { keepSessionInfo: false })
+    expect(request.session.regenerate).toHaveBeenCalledTimes(1)
+    expect(request.session.regenerate).toHaveBeenCalledWith(['session'])
+  })
+
+  test('should call session.set function if no regenerate function provided and keepSessionInfo is true', async () => {
+    const sessionManger = new SecureSessionManager(
+      { clearSessionOnLogin: true },
+      ((id) => id) as unknown as SerializeFunction
+    )
+    const user = { id: 'test' }
+    const request = {
+      session: { set: jest.fn(), data: () => {}, sessionValue: 'exist' }
+    } as unknown as FastifyRequest
+    await sessionManger.logIn(request, user, { keepSessionInfo: false })
+    expect(request.session.set).toHaveBeenCalledTimes(1)
+    expect(request.session.set).toHaveBeenCalledWith('passport', { id: 'test' })
+  })
 })
