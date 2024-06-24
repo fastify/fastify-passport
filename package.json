@@ -67,7 +67,7 @@
     "set-cookie-parser": "^2.4.6",
     "ts-jest": "^29.1.1",
     "tsd": "^0.31.0",
-    "typescript": "~5.4.2"
+    "typescript": "~5.5.2"
   },
   "files": [
     "dist"
