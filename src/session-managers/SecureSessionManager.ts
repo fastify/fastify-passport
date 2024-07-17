@@ -53,7 +53,7 @@ export class SecureSessionManager {
     // TODO: This is quite hacky. The best option would be having a regenerate method
     // on secure-session as well
     else if (this.clearSessionOnLogin && object) {
-      const currentFields = request.session.data() || {}
+      const currentFields = typeof request.session.data === 'object' ? request.session.data || {} : request.session.data() || {}
       for (const field of Object.keys(currentFields)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
