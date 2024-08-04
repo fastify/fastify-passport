@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+import { test, describe, mock } from 'node:test'
+import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
 import { FastifyRequest } from 'fastify/types/request'
-import Authenticator from '../src/Authenticator'
+import Authenticator from '../Authenticator'
 import { getTestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     describe('Authenticator session serialization', () => {
       test('it should roundtrip a user', async () => {
@@ -15,9 +16,10 @@ const suite = (sessionPluginName) => {
 
         const user = { name: 'foobar' }
         const request = {} as unknown as FastifyRequest
-        expect(
-          await fastifyPassport.deserializeUser(await fastifyPassport.serializeUser(user, request), request)
-        ).toEqual(user)
+        assert.deepStrictEqual(
+          await fastifyPassport.deserializeUser(await fastifyPassport.serializeUser(user, request), request),
+          user
+        )
       })
 
       const setupSerializationTestServer = async (fastifyPassport: Authenticator) => {
@@ -45,8 +47,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(loginResponse.statusCode).toEqual(302)
-        expect(loginResponse.headers.location).toEqual('/')
+        assert.strictEqual(loginResponse.statusCode, 302)
+        assert.strictEqual(loginResponse.headers.location, '/')
 
         const homeResponse = await server.inject({
           url: '/',
@@ -56,8 +58,8 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(homeResponse.body).toEqual('hello world!')
-        expect(homeResponse.statusCode).toEqual(200)
+        assert.strictEqual(homeResponse.body, 'hello world!')
+        assert.strictEqual(homeResponse.statusCode, 200)
       }
 
       test('should allow multiple user serializers and deserializers', async () => {
@@ -96,7 +98,8 @@ const suite = (sessionPluginName) => {
       })
 
       test('should throw if user deserializers return undefined', async () => {
-        jest.spyOn(console, 'error').mockImplementation(jest.fn())
+        // jest.spyOn(console, 'error').mockImplementation(jest.fn())
+        console.error = mock.fn()
         const fastifyPassport = new Authenticator()
         const strategy = new TestDatabaseStrategy('test', { '1': { id: '1', login: 'test', password: 'test' } })
         fastifyPassport.use('test', strategy)
@@ -112,8 +115,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(loginResponse.statusCode).toEqual(302)
-        expect(loginResponse.headers.location).toEqual('/')
+        assert.strictEqual(loginResponse.statusCode, 302)
+        assert.strictEqual(loginResponse.headers.location, '/')
 
         // user id 1 is logged in now, simulate deleting them from the database while logged in
         delete strategy.database['1']
@@ -126,8 +129,11 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(homeResponse.statusCode).toEqual(500)
-        expect(homeResponse.body).toContain('Failed to deserialize user out of session')
+        assert.strictEqual(homeResponse.statusCode, 500)
+        assert.strictEqual(
+          JSON.parse(homeResponse.body)?.message,
+          'Failed to deserialize user out of session. Tried 1 serializers.'
+        )
 
         // can't serve other requests either because the secure session decode fails, which would populate request.user even for unauthenticated requests
         const otherResponse = await server.inject({
@@ -138,8 +144,11 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(otherResponse.statusCode).toEqual(500)
-        expect(otherResponse.body).toContain('Failed to deserialize user out of session')
+        assert.strictEqual(otherResponse.statusCode, 500)
+        assert.strictEqual(
+          JSON.parse(otherResponse.body)?.message,
+          'Failed to deserialize user out of session. Tried 1 serializers.'
+        )
       })
 
       test('should deny access if user deserializers return null for logged in sessions', async () => {
@@ -158,8 +167,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(loginResponse.statusCode).toEqual(302)
-        expect(loginResponse.headers.location).toEqual('/')
+        assert.strictEqual(loginResponse.statusCode, 302)
+        assert.strictEqual(loginResponse.headers.location, '/')
 
         // user id 1 is logged in now, simulate deleting them from the database while logged in
         delete strategy.database['1']
@@ -172,7 +181,7 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(homeResponse.statusCode).toEqual(401)
+        assert.strictEqual(homeResponse.statusCode, 401)
 
         // should still be able to serve unauthenticated requests just fine
         const otherResponse = await server.inject({
@@ -183,12 +192,12 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(otherResponse.statusCode).toEqual(200)
-        expect(otherResponse.body).toEqual('some content')
+        assert.strictEqual(otherResponse.statusCode, 200)
+        assert.strictEqual(otherResponse.body, 'some content')
       })
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

@@ -1,10 +1,12 @@
+import { test, describe } from 'node:test'
+import assert, { fail } from 'node:assert'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
 import { Issuer as OpenIdIssuer, Strategy as OpenIdStrategy } from 'openid-client'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test('should initiate oauth with the google strategy from npm', async () => {
       const strategy: TestStrategy = new GoogleStrategy(
@@ -30,7 +32,7 @@ const suite = (sessionPluginName) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(302)
+      assert.strictEqual(response.statusCode, 302)
     })
 
     test('should initiate oauth with the facebook strategy from npm', async () => {
@@ -57,7 +59,7 @@ const suite = (sessionPluginName) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(302)
+      assert.strictEqual(response.statusCode, 302)
     })
 
     test('should initiate oauth with the github strategy from npm', async () => {
@@ -84,7 +86,7 @@ const suite = (sessionPluginName) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(302)
+      assert.strictEqual(response.statusCode, 302)
     })
 
     test('should initiate oauth with the openid-client strategy from npm', async () => {
@@ -117,10 +119,10 @@ const suite = (sessionPluginName) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(302)
+      assert.strictEqual(response.statusCode, 302)
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

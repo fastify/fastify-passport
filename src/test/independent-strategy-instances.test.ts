@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-import { Strategy } from '../src/strategies'
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
+import { Strategy } from '../strategies'
 import { TestThirdPartyStrategy } from './authorize.test'
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
 
@@ -15,7 +16,7 @@ class WelcomeStrategy extends Strategy {
   }
 }
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test(`should allow passing a specific Strategy instance to an authenticate call`, async () => {
       const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] })
@@ -43,8 +44,8 @@ const suite = (sessionPluginName) => {
         payload: { login: 'welcomeuser', password: 'test' },
         url: '/login'
       })
-      expect(login.statusCode).toEqual(302)
-      expect(login.headers.location).toEqual('/')
+      assert.strictEqual(login.statusCode, 302)
+      assert.strictEqual(login.headers.location, '/')
 
       const response = await server.inject({
         url: '/',
@@ -54,8 +55,8 @@ const suite = (sessionPluginName) => {
         method: 'GET'
       })
 
-      expect(response.body).toEqual('["welcome from strategy"]')
-      expect(response.statusCode).toEqual(200)
+      assert.strictEqual(response.body, '["welcome from strategy"]')
+      assert.strictEqual(response.statusCode, 200)
     })
 
     test(`should allow passing a multiple specific Strategy instances to an authenticate call`, async () => {
@@ -86,8 +87,8 @@ const suite = (sessionPluginName) => {
         payload: { login: 'test', password: 'test' },
         url: '/login'
       })
-      expect(login.statusCode).toEqual(302)
-      expect(login.headers.location).toEqual('/')
+      assert.strictEqual(login.statusCode, 302)
+      assert.strictEqual(login.headers.location, '/')
 
       const response = await server.inject({
         url: '/',
@@ -97,8 +98,8 @@ const suite = (sessionPluginName) => {
         method: 'GET'
       })
 
-      expect(response.body).toEqual('messages: undefined')
-      expect(response.statusCode).toEqual(200)
+      assert.strictEqual(response.body, 'messages: undefined')
+      assert.strictEqual(response.statusCode, 200)
     })
 
     test(`should allow passing a mix of Strategy instances and strategy names`, async () => {
@@ -129,8 +130,8 @@ const suite = (sessionPluginName) => {
         payload: { login: 'test', password: 'test' },
         url: '/login'
       })
-      expect(login.statusCode).toEqual(302)
-      expect(login.headers.location).toEqual('/')
+      assert.strictEqual(login.statusCode, 302)
+      assert.strictEqual(login.headers.location, '/')
 
       const response = await server.inject({
         url: '/',
@@ -140,8 +141,8 @@ const suite = (sessionPluginName) => {
         method: 'GET'
       })
 
-      expect(response.body).toEqual('messages: undefined')
-      expect(response.statusCode).toEqual(200)
+      assert.strictEqual(response.body, 'messages: undefined')
+      assert.strictEqual(response.statusCode, 200)
     })
 
     test(`should allow passing specific instances to an authorize call`, async () => {
@@ -152,27 +153,27 @@ const suite = (sessionPluginName) => {
         { preValidation: fastifyPassport.authorize(new TestThirdPartyStrategy('third-party')) },
         async (request) => {
           const user = request.user as any
-          expect(user).toBeFalsy()
+          assert.ifError(user)
           const account = request.account as any
-          expect(account.id).toBeTruthy()
-          expect(account.name).toEqual('test')
+          assert.ok(account.id)
+          assert.strictEqual(account.name, 'test')
 
           return 'it worked'
         }
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(200)
+      assert.strictEqual(response.statusCode, 200)
     })
 
     test(`Strategy instances used during one authentication shouldn't be registered`, async () => {
       const { fastifyPassport } = getRegisteredTestServer()
       // build a handler with the welcome strategy
       fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false })
-      expect(fastifyPassport.strategy('welcome')).toBeUndefined()
+      assert.strictEqual(fastifyPassport.strategy('welcome'), undefined)
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

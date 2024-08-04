@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+import { test, describe, beforeEach } from 'node:test'
+import assert from 'node:assert'
 import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
 
 function createServer() {
@@ -34,7 +35,7 @@ function createServer() {
   return server
 }
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   process.env.SESSION_PLUGIN = sessionPluginName
   const server = createServer()
   describe(`${sessionPluginName} tests`, () => {
@@ -51,14 +52,14 @@ const suite = (sessionPluginName) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(401)
+            assert.strictEqual(response.statusCode, 401)
           })
         )
 
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(401)
+            assert.strictEqual(response.statusCode, 401)
           })
         )
       })
@@ -67,7 +68,7 @@ const suite = (sessionPluginName) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(401)
+            assert.strictEqual(response.statusCode, 401)
           })
         )
 
@@ -76,23 +77,23 @@ const suite = (sessionPluginName) => {
           url: '/login',
           payload: { login: 'test', password: 'test' }
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('success')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'success')
 
         response = await userA.inject({ method: 'GET', url: '/protected' })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello!')
 
         await Promise.all(
           [userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(401)
+            assert.strictEqual(response.statusCode, 401)
           })
         )
 
         response = await userA.inject({ method: 'GET', url: '/protected' })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello!')
       })
 
       test(`logging in each user should keep their sessions independent`, async () => {
@@ -103,25 +104,25 @@ const suite = (sessionPluginName) => {
               url: '/login',
               payload: { login: 'test', password: 'test' }
             })
-            expect(response.statusCode).toEqual(200)
-            expect(response.body).toEqual('success')
+            assert.strictEqual(response.statusCode, 200)
+            assert.strictEqual(response.body, 'success')
 
             response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(200)
-            expect(response.body).toEqual('hello!')
+            assert.strictEqual(response.statusCode, 200)
+            assert.strictEqual(response.body, 'hello!')
           })
         )
 
         const ids = await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/my-id' })
-            expect(response.statusCode).toEqual(200)
+            assert.strictEqual(response.statusCode, 200)
             return response.body
           })
         )
 
-        // expect each returned ID to be unique
-        expect(Array.from(new Set(ids)).sort()).toEqual(ids.sort())
+        // assert.deepStrictEqual each returned ID to be unique
+        assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
       })
 
       test(`logging out one user shouldn't log out the others`, async () => {
@@ -132,12 +133,12 @@ const suite = (sessionPluginName) => {
               url: '/login',
               payload: { login: 'test', password: 'test' }
             })
-            expect(response.statusCode).toEqual(200)
-            expect(response.body).toEqual('success')
+            assert.strictEqual(response.statusCode, 200)
+            assert.strictEqual(response.body, 'success')
 
             response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(200)
-            expect(response.body).toEqual('hello!')
+            assert.strictEqual(response.statusCode, 200)
+            assert.strictEqual(response.body, 'hello!')
           })
         )
 
@@ -145,19 +146,19 @@ const suite = (sessionPluginName) => {
           url: '/logout',
           method: 'POST'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
 
         response = await userB.inject({
           url: '/protected',
           method: 'GET'
         })
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.statusCode, 401)
 
         await Promise.all(
           [userA, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            expect(response.statusCode).toEqual(200)
-            expect(response.body).toEqual('hello!')
+            assert.strictEqual(response.statusCode, 200)
+            assert.strictEqual(response.body, 'hello!')
           })
         )
       })
@@ -166,38 +167,38 @@ const suite = (sessionPluginName) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'POST', url: '/force-login' })
-            expect(response.statusCode).toEqual(200)
+            assert.strictEqual(response.statusCode, 200)
           })
         )
 
         const ids = await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/my-id' })
-            expect(response.statusCode).toEqual(200)
+            assert.strictEqual(response.statusCode, 200)
             return response.body
           })
         )
 
-        // expect each returned ID to be unique
-        expect(Array.from(new Set(ids)).sort()).toEqual(ids.sort())
+        // assert.deepStrictEqual each returned ID to be unique
+        assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
       })
 
       sessionOnlyTest('should regenerate session on login', async () => {
-        expect(userA.cookies['sessionId']).toBeUndefined()
+        assert.strictEqual(userA.cookies['sessionId'], undefined)
         await userA.inject({ method: 'GET', url: '/protected' })
-        expect(userA.cookies['sessionId']).not.toBeUndefined()
+        assert.ok(userA.cookies['sessionId'])
         const prevSessionId = userA.cookies.sessionId
         await userA.inject({
           method: 'POST',
           url: '/login',
           payload: { login: 'test', password: 'test' }
         })
-        expect(userA.cookies.sessionId).not.toBe(prevSessionId)
+        assert.notStrictEqual(userA.cookies.sessionId, prevSessionId)
       })
     })
   })
   delete process.env.SESSION_PLUGIN
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')
