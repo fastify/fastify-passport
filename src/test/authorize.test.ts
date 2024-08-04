@@ -1,6 +1,8 @@
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
 import { RouteHandlerMethod } from 'fastify'
 import { expectType } from 'tsd'
-import { Strategy } from '../src'
+import { Strategy } from '../strategies'
 import { generateTestUser, getConfiguredTestServer } from './helpers'
 
 export class TestThirdPartyStrategy extends Strategy {
@@ -9,7 +11,7 @@ export class TestThirdPartyStrategy extends Strategy {
   }
 }
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     describe('.authorize', () => {
       test(`should return 401 Unauthorized if not logged in`, async () => {
@@ -18,20 +20,20 @@ const suite = (sessionPluginName) => {
         expectType<RouteHandlerMethod>(fastifyPassport.authorize('third-party'))
         server.get('/', { preValidation: fastifyPassport.authorize('third-party') }, async (request) => {
           const user = request.user as any
-          expect(user).toBeFalsy()
+          assert.ifError(user)
           const account = request.account as any
-          expect(account.id).toBeTruthy()
-          expect(account.name).toEqual('test')
+          assert.ok(account.id)
+          assert.strictEqual(account.name, 'test')
 
           return 'it worked'
         })
 
         const response = await server.inject({ method: 'GET', url: '/' })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
       })
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')
