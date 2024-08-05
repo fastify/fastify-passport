@@ -1,8 +1,8 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import Authenticator from '../Authenticator'
+import Authenticator from '../src/Authenticator'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
-import { Strategy } from '../strategies'
+import { Strategy } from '../src/strategies'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {

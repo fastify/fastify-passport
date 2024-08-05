@@ -5,12 +5,12 @@ import { join } from 'node:path'
 
 describe('Native ESM import', () => {
   test('should be able to use default export', () => {
-    const { status } = spawnSync('node', [join(__dirname, '../../../src/test/esm', 'default-esm-export.mjs')])
+    const { status } = spawnSync('node', [join(__dirname, '../../../test/esm', 'default-esm-export.mjs')])
     assert.strictEqual(status, 0)
   })
 
   test('should be able to use named export', () => {
-    const { status } = spawnSync('node', [join(__dirname, '../../../src/test/esm', 'named-esm-export.mjs')])
+    const { status } = spawnSync('node', [join(__dirname, '../../../test/esm', 'named-esm-export.mjs')])
 
     assert.strictEqual(status, 0)
   })
