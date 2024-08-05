@@ -2,7 +2,7 @@ import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
 import { FastifyRequest } from 'fastify/types/request'
-import Authenticator from '../Authenticator'
+import Authenticator from '../src/Authenticator'
 import { getTestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {

@@ -2,9 +2,9 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import got from 'got'
 import { AddressInfo } from 'net'
-import { AuthenticateOptions } from '../AuthenticationRoute'
-import Authenticator from '../Authenticator'
-import { Strategy } from '../strategies'
+import { AuthenticateOptions } from '../src/AuthenticationRoute'
+import Authenticator from '../src/Authenticator'
+import { Strategy } from '../src/strategies'
 import { getConfiguredTestServer, getRegisteredTestServer, getTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {

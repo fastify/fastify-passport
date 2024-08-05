@@ -2,7 +2,7 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { RouteHandlerMethod } from 'fastify'
 import { expectType } from 'tsd'
-import { Strategy } from '../strategies'
+import { Strategy } from '../src/strategies'
 import { generateTestUser, getConfiguredTestServer } from './helpers'
 
 export class TestThirdPartyStrategy extends Strategy {

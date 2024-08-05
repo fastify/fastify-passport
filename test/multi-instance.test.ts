@@ -1,8 +1,8 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
-import { Authenticator } from '../Authenticator'
-import { Strategy } from '../strategies'
+import { Authenticator } from '../src/Authenticator'
+import { Strategy } from '../src/strategies'
 import { getTestServer, TestBrowserSession } from './helpers'
 
 let counter: number

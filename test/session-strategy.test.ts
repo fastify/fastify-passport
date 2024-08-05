@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import { SerializeFunction } from '../Authenticator'
-import { SessionStrategy } from '../strategies/SessionStrategy'
+import { SerializeFunction } from '../src/Authenticator'
+import { SessionStrategy } from '../src/strategies/SessionStrategy'
 
 describe('SessionStrategy', () => {
   test('should throw an Error if no parameter was passed', () => {

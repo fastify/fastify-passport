@@ -1,8 +1,8 @@
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyRequest } from 'fastify'
-import { SerializeFunction } from '../Authenticator'
-import { SecureSessionManager } from '../session-managers/SecureSessionManager'
+import { SerializeFunction } from '../src/Authenticator'
+import { SecureSessionManager } from '../src/session-managers/SecureSessionManager'
 
 describe('SecureSessionManager', () => {
   test('should throw an Error if no parameter was passed', () => {
