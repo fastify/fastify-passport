@@ -13,7 +13,7 @@
     "noImplicitAny": false,
     "removeComments": true,
     "noUnusedLocals": true,
-    "rootDir": "./src",
+    "rootDir": ".",
     "resolveJsonModule": true,
     "newLine": "lf",
     "noFallthroughCasesInSwitch": true,
@@ -22,5 +22,5 @@
     "skipLibCheck": true,
     "lib": ["ESNext"]
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }
