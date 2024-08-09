@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     const sessionOnlyTest = sessionPluginName === '@fastify/session' ? test : test.skip
     const secureSessionOnlyTest = sessionPluginName === '@fastify/secure-session' ? test : test.skip
@@ -23,7 +26,7 @@ const suite = (sessionPluginName) => {
           url: '/force-login'
         })
 
-        expect(login.statusCode).toEqual(200)
+        assert.strictEqual(login.statusCode, 200)
 
         const response = await server.inject({
           url: '/',
@@ -33,8 +36,8 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('force logged in user')
+        assert.strictEqual(login.statusCode, 200)
+        assert.strictEqual(response.body, 'force logged in user')
       })
 
       secureSessionOnlyTest(
@@ -51,9 +54,9 @@ const suite = (sessionPluginName) => {
             url: '/force-login'
           })
 
-          expect(login.statusCode).toEqual(200)
-          expect(login.body).toEqual('force logged in user')
-          expect(login.headers['set-cookie']).toBeUndefined() // no user added to session
+          assert.strictEqual(login.statusCode, 200)
+          assert.strictEqual(login.body, 'force logged in user')
+          assert.strictEqual(login.headers['set-cookie'], undefined) // no user added to session
         }
       )
 
@@ -76,9 +79,9 @@ const suite = (sessionPluginName) => {
             url: '/force-login'
           })
 
-          expect(login.statusCode).toEqual(200)
-          expect(login.body).toEqual('force logged in user')
-          expect(login.headers['set-cookie']).toBeUndefined() // no user added to session
+          assert.strictEqual(login.statusCode, 200)
+          assert.strictEqual(login.body, 'force logged in user')
+          assert.strictEqual(login.headers['set-cookie'], undefined) // no user added to session
         }
       )
 
@@ -108,8 +111,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' },
           url: '/login'
         })
-        expect(login.statusCode).toEqual(302)
-        expect(login.headers.location).toEqual('/')
+        assert.strictEqual(login.statusCode, 302)
+        assert.strictEqual(login.headers.location, '/')
 
         const logout = await server.inject({
           url: '/logout',
@@ -119,8 +122,8 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(logout.statusCode).toEqual(200)
-        expect(logout.headers['set-cookie']).toBeDefined()
+        assert.strictEqual(logout.statusCode, 200)
+        assert.ok(logout.headers['set-cookie'])
 
         const retry = await server.inject({
           url: '/',
@@ -130,11 +133,11 @@ const suite = (sessionPluginName) => {
           method: 'GET'
         })
 
-        expect(retry.statusCode).toEqual(401)
+        assert.strictEqual(retry.statusCode, 401)
       })
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

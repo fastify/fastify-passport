@@ -1,10 +1,26 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "outDir": "dist",
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "declaration": true,
+    "target": "es2017",
+    "module": "commonjs",
+    "pretty": true,
+    "noEmitOnError": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "noUnusedLocals": true,
     "rootDir": ".",
+    "resolveJsonModule": true,
+    "newLine": "lf",
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "lib": ["ESNext"]
   },
-  "include": [
-    "src",
-    "test"
-  ]
+  "include": ["src", "test"]
 }

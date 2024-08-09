@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { test, describe, beforeEach } from 'node:test'
+import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
 import { Authenticator } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
@@ -79,7 +82,7 @@ async function TestStrategyModule(instance: FastifyInstance, { namespace, clearS
   )
 }
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     describe('multiple registered instances (clearSessionOnLogin: false)', () => {
       let server: FastifyInstance
@@ -98,12 +101,12 @@ const suite = (sessionPluginName) => {
 
       test('logging in with one instance should not log in the other instance', async () => {
         let response = await session.inject({ method: 'GET', url: '/a' })
-        expect(response.body).toEqual('Unauthorized')
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.body, 'Unauthorized')
+        assert.strictEqual(response.statusCode, 401)
 
         response = await session.inject({ method: 'GET', url: '/b' })
-        expect(response.body).toEqual('Unauthorized')
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.body, 'Unauthorized')
+        assert.strictEqual(response.statusCode, 401)
 
         // login a
         const loginResponse = await session.inject({
@@ -112,30 +115,30 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(loginResponse.statusCode).toEqual(302)
-        expect(loginResponse.headers.location).toEqual('/a')
+        assert.strictEqual(loginResponse.statusCode, 302)
+        assert.strictEqual(loginResponse.headers.location, '/a')
 
         // access protected route
         response = await session.inject({
           method: 'GET',
           url: '/a'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello a!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello a!')
 
         // access user data
         response = await session.inject({
           method: 'GET',
           url: '/user/a'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
 
         // try to access route protected by other instance
         response = await session.inject({
           method: 'GET',
           url: '/b'
         })
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.statusCode, 401)
       })
 
       test('simultaneous login should be possible', async () => {
@@ -146,8 +149,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/a')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/a')
 
         // login b
         response = await session.inject({
@@ -156,24 +159,24 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/b')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/b')
 
         // access a protected route
         response = await session.inject({
           method: 'GET',
           url: '/a'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello a!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello a!')
 
         // access b protected route
         response = await session.inject({
           method: 'GET',
           url: '/b'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello b!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello b!')
       })
 
       test('logging out with one instance should not log out the other instance', async () => {
@@ -184,8 +187,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/a')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/a')
 
         // login b
         response = await session.inject({
@@ -194,30 +197,30 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/b')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/b')
 
         // logout a
         response = await session.inject({
           method: 'POST',
           url: '/logout-a'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
 
         // try to access route protected by now logged out instance
         response = await session.inject({
           method: 'GET',
           url: '/a'
         })
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.statusCode, 401)
 
         // access b protected route which should still be logged in
         response = await session.inject({
           method: 'GET',
           url: '/b'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello b!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello b!')
       })
 
       test('user objects from different instances should be different', async () => {
@@ -228,8 +231,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/a')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/a')
 
         // login b
         response = await session.inject({
@@ -238,24 +241,24 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/b')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/b')
 
         response = await session.inject({
           method: 'GET',
           url: '/user/a'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
         const userA = JSON.parse(response.body)
 
         response = await session.inject({
           method: 'GET',
           url: '/user/b'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
         const userB = JSON.parse(response.body)
 
-        expect(userA.id).not.toEqual(userB.id)
+        assert.notStrictEqual(userA.id, userB.id)
       })
     })
 
@@ -276,12 +279,12 @@ const suite = (sessionPluginName) => {
 
       test('logging in with one instance should not log in the other instance', async () => {
         let response = await session.inject({ method: 'GET', url: '/a' })
-        expect(response.body).toEqual('Unauthorized')
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.body, 'Unauthorized')
+        assert.strictEqual(response.statusCode, 401)
 
         response = await session.inject({ method: 'GET', url: '/b' })
-        expect(response.body).toEqual('Unauthorized')
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.body, 'Unauthorized')
+        assert.strictEqual(response.statusCode, 401)
 
         // login a
         const loginResponse = await session.inject({
@@ -290,30 +293,30 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(loginResponse.statusCode).toEqual(302)
-        expect(loginResponse.headers.location).toEqual('/a')
+        assert.strictEqual(loginResponse.statusCode, 302)
+        assert.strictEqual(loginResponse.headers.location, '/a')
 
         // access protected route
         response = await session.inject({
           method: 'GET',
           url: '/a'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello a!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello a!')
 
         // access user data
         response = await session.inject({
           method: 'GET',
           url: '/user/a'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
 
         // try to access route protected by other instance
         response = await session.inject({
           method: 'GET',
           url: '/b'
         })
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.statusCode, 401)
       })
 
       test('simultaneous login should NOT be possible', async () => {
@@ -324,8 +327,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/a')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/a')
 
         // login b
         response = await session.inject({
@@ -334,24 +337,24 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/b')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/b')
 
         // access a protected route (/a) was invalidated after login /b
         response = await session.inject({
           method: 'GET',
           url: '/a'
         })
-        expect(response.statusCode).toEqual(401)
-        expect(response.body).toEqual('Unauthorized')
+        assert.strictEqual(response.statusCode, 401)
+        assert.strictEqual(response.body, 'Unauthorized')
 
         // access b protected route
         response = await session.inject({
           method: 'GET',
           url: '/b'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello b!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello b!')
       })
 
       test('logging out with one instance should log out the other instance', async () => {
@@ -362,8 +365,8 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/a')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/a')
 
         // login b
         response = await session.inject({
@@ -372,30 +375,30 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/b')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/b')
 
         // logout a
         response = await session.inject({
           method: 'POST',
           url: '/logout-a'
         })
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.statusCode, 401)
 
         // try to access route protected by now logged out instance
         response = await session.inject({
           method: 'GET',
           url: '/a'
         })
-        expect(response.statusCode).toEqual(401)
+        assert.strictEqual(response.statusCode, 401)
 
         // access b protected route which should still be logged in
         response = await session.inject({
           method: 'GET',
           url: '/b'
         })
-        expect(response.statusCode).toEqual(200)
-        expect(response.body).toEqual('hello b!')
+        assert.strictEqual(response.statusCode, 200)
+        assert.strictEqual(response.body, 'hello b!')
       })
 
       test('user objects from different instances should be different', async () => {
@@ -405,14 +408,14 @@ const suite = (sessionPluginName) => {
           url: '/login-a',
           payload: { login: 'test', password: 'test' }
         })
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/a')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/a')
 
         response = await session.inject({
           method: 'GET',
           url: '/user/a'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
         const userA = JSON.parse(response.body)
 
         // login b
@@ -422,21 +425,21 @@ const suite = (sessionPluginName) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        expect(response.statusCode).toEqual(302)
-        expect(response.headers.location).toEqual('/b')
+        assert.strictEqual(response.statusCode, 302)
+        assert.strictEqual(response.headers.location, '/b')
 
         response = await session.inject({
           method: 'GET',
           url: '/user/b'
         })
-        expect(response.statusCode).toEqual(200)
+        assert.strictEqual(response.statusCode, 200)
         const userB = JSON.parse(response.body)
 
-        expect(userA.id).not.toEqual(userB.id)
+        assert.notStrictEqual(userA.id, userB.id)
       })
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')
