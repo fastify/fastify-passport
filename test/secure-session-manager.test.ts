@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyRequest } from 'fastify'
@@ -7,7 +8,7 @@ import { SecureSessionManager } from '../src/session-managers/SecureSessionManag
 describe('SecureSessionManager', () => {
   test('should throw an Error if no parameter was passed', () => {
     assert.throws(
-      // @ts-ignore - strictEqual-error expecting atleast a parameter
+      // @ts-expect-error - strictEqual-error expecting atleast a parameter
       () => new SecureSessionManager(),
       (err) => {
         assert(err instanceof Error)
@@ -22,7 +23,7 @@ describe('SecureSessionManager', () => {
 
   test('should throw an Error if no serializeUser-function was passed as second parameter', () => {
     assert.throws(
-      // @ts-ignore - strictEqual-error expecting a function as second parameter
+      // @ts-expect-error - strictEqual-error expecting a function as second parameter
       () => new SecureSessionManager({}),
       (err) => {
         assert(err instanceof Error)
@@ -37,7 +38,7 @@ describe('SecureSessionManager', () => {
 
   test('should throw an Error if no serializeUser-function was passed as second parameter', () => {
     assert.throws(
-      // @ts-ignore - strictEqual-error expecting a function as second parameter
+      // @ts-expect-error - strictEqual-error expecting a function as second parameter
       () => new SecureSessionManager({}),
       (err) => {
         assert(err instanceof Error)
@@ -67,7 +68,7 @@ describe('SecureSessionManager', () => {
   })
 
   test('should ignore non-string keys', () => {
-    // @ts-ignore - strictEqual-error key has to be of type string
+    // @ts-expect-error - strictEqual-error key has to be of type string
     const sessionManager = new SecureSessionManager({ key: 1 }, ((id) => id) as unknown as SerializeFunction)
     assert.strictEqual(sessionManager.key, 'passport')
   })

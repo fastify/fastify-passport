@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { SerializeFunction } from '../src/Authenticator'
@@ -6,7 +7,7 @@ import { SessionStrategy } from '../src/strategies/SessionStrategy'
 describe('SessionStrategy', () => {
   test('should throw an Error if no parameter was passed', () => {
     assert.throws(
-      // @ts-ignore.strictEqual-error expecting atleast a parameter
+      // @ts-expect-error.strictEqual-error expecting atleast a parameter
       () => new SessionStrategy(),
       (err) => {
         assert(err instanceof Error)
@@ -21,7 +22,7 @@ describe('SessionStrategy', () => {
 
   test('should throw an Error if no deserializeUser-function was passed as second parameter', () => {
     assert.throws(
-      // @ts-ignore.strictEqual-error expecting a function as second parameter
+      // @ts-expect-error.strictEqual-error expecting a function as second parameter
       () => new SessionStrategy({}),
       (err) => {
         assert(err instanceof Error)
@@ -36,7 +37,7 @@ describe('SessionStrategy', () => {
 
   test('should throw an Error if no deserializeUser-function was passed as second parameter', () => {
     assert.throws(
-      // @ts-ignore.strictEqual-error expecting a function as second parameter
+      // @ts-expect-error.strictEqual-error expecting a function as second parameter
       () => new SessionStrategy({}),
       (err) => {
         assert(err instanceof Error)

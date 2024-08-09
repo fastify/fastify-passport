@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
