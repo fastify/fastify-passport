@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import Authenticator from '../src/Authenticator'
@@ -13,7 +14,7 @@ const testSuite = (sessionPluginName: string) => {
       fastifyPassport.unuse('test')
     })
 
-    test('should throw error if strategy has no name', (t) => {
+    test('should throw error if strategy has no name', () => {
       const fastifyPassport = new Authenticator()
       assert.throws(() => {
         fastifyPassport.use({} as Strategy)
