@@ -1,16 +1,18 @@
-import { spawnSync } from 'child_process'
-import { join } from 'path'
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
+import { spawnSync } from 'node:child_process'
+import { join } from 'node:path'
 
 describe('Native ESM import', () => {
-  it('should be able to use default export', () => {
-    const { status } = spawnSync('node', [join(__dirname, 'default-esm-export.mjs')])
-
-    expect(status).toBe(0)
+  test('should be able to use default export', () => {
+    const { status } = spawnSync('node', [join(__dirname, '../../../test/esm', 'default-esm-export.mjs')])
+    assert.strictEqual(status, 0)
   })
 
-  it('should be able to use named export', () => {
-    const { status } = spawnSync('node', [join(__dirname, 'named-esm-export.mjs')])
+  test('should be able to use named export', () => {
+    const { status } = spawnSync('node', [join(__dirname, '../../../test/esm', 'named-esm-export.mjs')])
 
-    expect(status).toBe(0)
+    assert.strictEqual(status, 0)
   })
 })

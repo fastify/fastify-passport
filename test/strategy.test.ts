@@ -1,9 +1,11 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Strategy } from '../src'
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
 import Authenticator from '../src/Authenticator'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { Strategy } from '../src/strategies'
 
-const suite = (sessionPluginName) => {
+const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test('should be able to unuse strategy', () => {
       const fastifyPassport = new Authenticator()
@@ -14,9 +16,9 @@ const suite = (sessionPluginName) => {
 
     test('should throw error if strategy has no name', () => {
       const fastifyPassport = new Authenticator()
-      expect(() => {
+      assert.throws(() => {
         fastifyPassport.use({} as Strategy)
-      }).toThrow()
+      })
     })
 
     test('should catch synchronous strategy errors and fail authentication', async () => {
@@ -30,8 +32,8 @@ const suite = (sessionPluginName) => {
       server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(500)
-      expect(JSON.parse(response.body).message).toEqual('the strategy threw an error')
+      assert.strictEqual(response.statusCode, 500)
+      assert.strictEqual(JSON.parse(response.body).message, 'the strategy threw an error')
     })
 
     test('should catch asynchronous strategy errors and fail authentication', async () => {
@@ -46,8 +48,8 @@ const suite = (sessionPluginName) => {
       server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(500)
-      expect(JSON.parse(response.body).message).toEqual('the strategy threw an error')
+      assert.strictEqual(response.statusCode, 500)
+      assert.strictEqual(JSON.parse(response.body).message, 'the strategy threw an error')
     })
 
     test('should be able to fail with a failure flash message', async () => {
@@ -66,7 +68,7 @@ const suite = (sessionPluginName) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(401)
+      assert.strictEqual(response.statusCode, 401)
     })
 
     test('should be able to fail without a failure flash message', async () => {
@@ -81,10 +83,10 @@ const suite = (sessionPluginName) => {
       server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      expect(response.statusCode).toEqual(401)
+      assert.strictEqual(response.statusCode, 401)
     })
   })
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

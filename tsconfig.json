@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
+    "outDir": "dist",
+    "sourceMap": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "declaration": true,
     "target": "es2017",
     "module": "commonjs",
@@ -10,12 +13,14 @@
     "noImplicitAny": false,
     "removeComments": true,
     "noUnusedLocals": true,
-    "lib": [
-      "esnext"
-    ],
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "newLine": "lf",
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "lib": ["ESNext"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
