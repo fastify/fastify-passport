@@ -39,8 +39,8 @@
   },
   "homepage": "http://passportjs.org/",
   "dependencies": {
-    "@fastify/flash": "^5.0.0",
-    "fastify-plugin": "^4.0.0"
+    "@fastify/flash": "^5.1.0",
+    "fastify-plugin": "^4.5.1"
   },
   "devDependencies": {
     "@fastify/cookie": "^10.0.0",
