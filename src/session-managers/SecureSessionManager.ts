@@ -58,13 +58,16 @@ export class SecureSessionManager {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
+        // @ts-expect-error we don't know the field
         request.session.set(field, undefined)
       }
     }
+    // @ts-expect-error we don't know the field
     request.session.set(this.key, object)
   }
 
   async logOut(request: FastifyRequest) {
+    // @ts-expect-error we don't know the field
     request.session.set(this.key, undefined)
     if (request.session.regenerate) {
       await request.session.regenerate()
