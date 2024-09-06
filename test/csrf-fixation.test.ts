@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import { test, describe, beforeEach } from 'node:test'
+import assert from 'node:assert'
 import { getConfiguredTestServer, TestBrowserSession } from './helpers'
 import fastifyCsrfProtection from '@fastify/csrf-protection'
 
@@ -22,7 +24,7 @@ function createServer(sessionPluginName: '@fastify/session' | '@fastify/secure-s
   return server
 }
 
-const suite = (sessionPluginName: '@fastify/session' | '@fastify/secure-session') => {
+const testSuite = (sessionPluginName: '@fastify/session' | '@fastify/secure-session') => {
   process.env.SESSION_PLUGIN = sessionPluginName
   const server = createServer(sessionPluginName)
   describe(`${sessionPluginName} tests`, () => {
@@ -36,12 +38,12 @@ const suite = (sessionPluginName: '@fastify/session' | '@fastify/secure-session'
       test(`should renegerate csrf token on login`, async () => {
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
-          expect(sess.body).toBe('')
+          assert.equal(sess.body, '')
         }
         await user.inject({ method: 'GET', url: '/csrf' })
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
-          expect(sess.body).not.toBe('')
+          assert.notEqual(sess.body, '')
         }
         await user.inject({
           method: 'POST',
@@ -50,7 +52,7 @@ const suite = (sessionPluginName: '@fastify/session' | '@fastify/secure-session'
         })
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
-          expect(sess.body).toBe('')
+          assert.equal(sess.body, '')
         }
       })
     })
@@ -58,5 +60,5 @@ const suite = (sessionPluginName: '@fastify/session' | '@fastify/secure-session'
   delete process.env.SESSION_PLUGIN
 }
 
-suite('@fastify/session')
-suite('@fastify/secure-session')
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

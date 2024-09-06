@@ -1,3 +1,3 @@
-import { Strategy } from '../../dist/index.js'
+import { Strategy } from '../../dist/src/index.js'
 
 class MS extends Strategy {}

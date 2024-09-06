@@ -1,16 +1,17 @@
-import * as fs from 'fs'
+import fs from 'node:fs'
+import { join } from 'node:path'
 import fastify, { FastifyInstance } from 'fastify'
 import fastifySecureSession, { SecureSessionPluginOptions } from '@fastify/secure-session'
 import fastifyCookie from '@fastify/cookie'
 import Authenticator, { AuthenticatorOptions } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
-import * as parseCookies from 'set-cookie-parser'
-import { IncomingMessage } from 'http'
+import parseCookies from 'set-cookie-parser'
+import { IncomingMessage } from 'node:http'
 import { FastifyRegisterOptions } from 'fastify/types/register'
 import { fastifySession, FastifySessionOptions } from '@fastify/session'
 
-const SecretKey = fs.readFileSync(__dirname + '/secure.key')
+const SecretKey = fs.readFileSync(join(__dirname, '../../test', 'secure.key'))
 
 let counter = 0
 export const generateTestUser = () => ({ name: 'test', id: String(counter++) })
