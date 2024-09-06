@@ -80,6 +80,7 @@ describe('SecureSessionManager', () => {
       session: { regenerate: mock.fn(() => {}), set: () => {}, data: () => {} }
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user)
+    // @ts-expect-error - regenerate is a mock function
     assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
   })
 
@@ -93,6 +94,7 @@ describe('SecureSessionManager', () => {
       session: { regenerate: mock.fn(() => {}), set: () => {}, data: () => {} }
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user)
+    // @ts-expect-error - regenerate is a mock function
     assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
     mock.reset()
   })
@@ -107,7 +109,9 @@ describe('SecureSessionManager', () => {
       session: { regenerate: mock.fn(() => {}), set: () => {}, data: () => {}, sessionValue: 'exist' }
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: true })
+    // @ts-expect-error - regenerate is a mock function
     assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
+    // @ts-expect-error - regenerate is a mock function
     assert.deepStrictEqual(request.session.regenerate.mock.calls[0].arguments, [
       ['session', 'regenerate', 'set', 'data', 'sessionValue']
     ])
@@ -124,7 +128,9 @@ describe('SecureSessionManager', () => {
       session: { regenerate: mock.fn(() => {}), set: () => {}, data: () => {}, sessionValue: 'exist' }
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: false })
+    // @ts-expect-error - regenerate is a mock function
     assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
+    // @ts-expect-error - regenerate is a mock function
     assert.deepStrictEqual(request.session.regenerate.mock.calls[0].arguments, [['session']])
   })
 

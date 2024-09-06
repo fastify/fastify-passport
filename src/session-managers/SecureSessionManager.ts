@@ -38,14 +38,17 @@ export class SecureSessionManager {
     const object = await this.serializeUser(user, request)
 
     // Handle @fastify/session to prevent token/CSRF fixation
+    // @ts-expect-error no idea why this does not get typed correctly
     if (request.session.regenerate) {
       if (this.clearSessionOnLogin && object) {
         const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
           keepSessionInfoKeys.push(...Object.keys(request.session))
         }
+        // @ts-expect-error no idea why this does not get typed correctly
         await request.session.regenerate(keepSessionInfoKeys)
       } else {
+        // @ts-expect-error no idea why this does not get typed correctly
         await request.session.regenerate()
       }
     }
@@ -69,7 +72,9 @@ export class SecureSessionManager {
   async logOut(request: FastifyRequest) {
     // @ts-expect-error we don't know the field
     request.session.set(this.key, undefined)
+    // @ts-expect-error no idea why this does not get typed correctly
     if (request.session.regenerate) {
+      // @ts-expect-error no idea why this does not get typed correctly
       await request.session.regenerate()
     }
   }
