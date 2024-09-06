@@ -15,8 +15,8 @@ type FailureObject = {
 
 declare module '@fastify/secure-session' {
   interface SessionData {
-    messages: string[];
-    returnTo: string | undefined;
+    messages: string[]
+    returnTo: string | undefined
   }
 }
 
@@ -165,7 +165,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
                 let url = this.options.successReturnToOrRedirect
                 const returnTo = request.session?.get('returnTo')
                 if (typeof returnTo === 'string') {
-                  url = returnTo 
+                  url = returnTo
                   request.session.set('returnTo', undefined)
                 }
 

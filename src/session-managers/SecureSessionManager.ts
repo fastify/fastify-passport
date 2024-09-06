@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /// <reference types="@fastify/secure-session" />
 import { FastifyRequest } from 'fastify'
 import { AuthenticateOptions } from '../AuthenticationRoute'
@@ -65,6 +66,7 @@ export class SecureSessionManager {
         request.session.set(field, undefined)
       }
     }
+    // eslint-disable @typescript-eslint/no-unsafe-argument
     // @ts-expect-error we don't know the field
     request.session.set(this.key, object)
   }
