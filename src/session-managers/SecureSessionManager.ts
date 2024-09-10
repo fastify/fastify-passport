@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { FastifyRequest } from 'fastify'
 import { AuthenticateOptions } from '../AuthenticationRoute'
 import { SerializeFunction } from '../Authenticator'
