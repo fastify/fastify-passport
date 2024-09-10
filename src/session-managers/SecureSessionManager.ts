@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-/// <reference types="@fastify/secure-session" />
 import { FastifyRequest } from 'fastify'
 import { AuthenticateOptions } from '../AuthenticationRoute'
 import { SerializeFunction } from '../Authenticator'
+import { FastifySessionObject } from '@fastify/session'
+import { Session } from '@fastify/secure-session'
+
+type Request = FastifyRequest & { session: FastifySessionObject | Session<any> }
 
 /** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
 export class SecureSessionManager {
@@ -35,21 +38,18 @@ export class SecureSessionManager {
     }
   }
 
-  async logIn(request: FastifyRequest, user: any, options?: AuthenticateOptions) {
+  async logIn(request: Request, user: any, options?: AuthenticateOptions) {
     const object = await this.serializeUser(user, request)
 
     // Handle @fastify/session to prevent token/CSRF fixation
-    // @ts-expect-error no idea why this does not get typed correctly
     if (request.session.regenerate) {
       if (this.clearSessionOnLogin && object) {
         const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
           keepSessionInfoKeys.push(...Object.keys(request.session))
         }
-        // @ts-expect-error no idea why this does not get typed correctly
         await request.session.regenerate(keepSessionInfoKeys)
       } else {
-        // @ts-expect-error no idea why this does not get typed correctly
         await request.session.regenerate()
       }
     }
@@ -57,31 +57,26 @@ export class SecureSessionManager {
     // TODO: This is quite hacky. The best option would be having a regenerate method
     // on secure-session as well
     else if (this.clearSessionOnLogin && object) {
-      const currentFields = request.session.data() || {}
+      const currentData = 'data' in request.session ? request.session.data() : undefined
+      const currentFields = currentData ?? {}
       for (const field of Object.keys(currentFields)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
-        // @ts-expect-error we don't know the field
         request.session.set(field, undefined)
       }
     }
-    // eslint-disable @typescript-eslint/no-unsafe-argument
-    // @ts-expect-error we don't know the field
     request.session.set(this.key, object)
   }
 
-  async logOut(request: FastifyRequest) {
-    // @ts-expect-error we don't know the field
+  async logOut(request: Request) {
     request.session.set(this.key, undefined)
-    // @ts-expect-error no idea why this does not get typed correctly
     if (request.session.regenerate) {
-      // @ts-expect-error no idea why this does not get typed correctly
       await request.session.regenerate()
     }
   }
 
-  getUserFromSession(request: FastifyRequest) {
+  getUserFromSession(request: Request) {
     return request.session.get(this.key)
   }
 }

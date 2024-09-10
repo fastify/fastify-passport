@@ -1,4 +1,3 @@
-/// <reference types="@fastify/secure-session" />
 import * as http from 'http'
 import AuthenticationError from './errors'
 import Authenticator from './Authenticator'

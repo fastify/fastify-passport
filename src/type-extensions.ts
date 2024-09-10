@@ -19,6 +19,10 @@ declare module 'fastify' {
    */
   interface PassportUser {}
 
+  interface ExpressSessionData {
+    [key: string]: any
+  }
+
   interface FastifyRequest {
     flash: ReturnType<typeof flashFactory>['request']
 
