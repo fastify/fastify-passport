@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { FastifyRequest } from 'fastify'
 import { AuthenticateOptions } from '../AuthenticationRoute'
 import { SerializeFunction } from '../Authenticator'
 import { FastifySessionObject } from '@fastify/session'
-import { Session } from '@fastify/secure-session'
+import { Session, SessionData } from '@fastify/secure-session'
 
-type Request = FastifyRequest & { session: FastifySessionObject | Session<any> }
+type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
 
 /** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
 export class SecureSessionManager {
@@ -57,7 +56,7 @@ export class SecureSessionManager {
     // TODO: This is quite hacky. The best option would be having a regenerate method
     // on secure-session as well
     else if (this.clearSessionOnLogin && object) {
-      const currentData = 'data' in request.session ? request.session.data() : undefined
+      const currentData: SessionData = request.session?.data() ?? {}
       const currentFields = currentData ?? {}
       for (const field of Object.keys(currentFields)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
