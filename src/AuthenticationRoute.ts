@@ -1,4 +1,3 @@
-/// <reference types="@fastify/secure-session" />
 import * as http from 'http'
 import AuthenticationError from './errors'
 import Authenticator from './Authenticator'
@@ -13,8 +12,15 @@ type FailureObject = {
   type?: string
 }
 
+declare module '@fastify/secure-session' {
+  interface SessionData {
+    messages: string[]
+    returnTo: string | undefined
+  }
+}
+
 const addMessage = (request: FastifyRequest, message: string) => {
-  const existing: any = request.session.get('messages')
+  const existing = request.session.get('messages')
   const messages = existing ? [...existing, message] : [message]
   request.session.set('messages', messages)
 }
@@ -156,8 +162,9 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
             const complete = () => {
               if (this.options.successReturnToOrRedirect) {
                 let url = this.options.successReturnToOrRedirect
-                if (request.session && request.session.get('returnTo')) {
-                  url = request.session.get('returnTo')
+                const returnTo = request.session?.get('returnTo')
+                if (typeof returnTo === 'string') {
+                  url = returnTo
                   request.session.set('returnTo', undefined)
                 }
 

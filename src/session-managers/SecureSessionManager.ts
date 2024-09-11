@@ -1,7 +1,10 @@
-/// <reference types="@fastify/secure-session" />
 import { FastifyRequest } from 'fastify'
 import { AuthenticateOptions } from '../AuthenticationRoute'
 import { SerializeFunction } from '../Authenticator'
+import { FastifySessionObject } from '@fastify/session'
+import { Session, SessionData } from '@fastify/secure-session'
+
+type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
 
 /** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
 export class SecureSessionManager {
@@ -34,7 +37,7 @@ export class SecureSessionManager {
     }
   }
 
-  async logIn(request: FastifyRequest, user: any, options?: AuthenticateOptions) {
+  async logIn(request: Request, user: any, options?: AuthenticateOptions) {
     const object = await this.serializeUser(user, request)
 
     // Handle @fastify/session to prevent token/CSRF fixation
@@ -53,8 +56,8 @@ export class SecureSessionManager {
     // TODO: This is quite hacky. The best option would be having a regenerate method
     // on secure-session as well
     else if (this.clearSessionOnLogin && object) {
-      const currentFields = request.session.data() || {}
-      for (const field of Object.keys(currentFields)) {
+      const currentData: SessionData = request.session?.data() ?? {}
+      for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
@@ -64,14 +67,14 @@ export class SecureSessionManager {
     request.session.set(this.key, object)
   }
 
-  async logOut(request: FastifyRequest) {
+  async logOut(request: Request) {
     request.session.set(this.key, undefined)
     if (request.session.regenerate) {
       await request.session.regenerate()
     }
   }
 
-  getUserFromSession(request: FastifyRequest) {
+  getUserFromSession(request: Request) {
     return request.session.get(this.key)
   }
 }
