@@ -57,8 +57,7 @@ export class SecureSessionManager {
     // on secure-session as well
     else if (this.clearSessionOnLogin && object) {
       const currentData: SessionData = request.session?.data() ?? {}
-      const currentFields = currentData ?? {}
-      for (const field of Object.keys(currentFields)) {
+      for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
