@@ -2,7 +2,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import got from 'got'
-import { AddressInfo } from 'net'
+import { AddressInfo } from 'node:net'
 import { AuthenticateOptions } from '../src/AuthenticationRoute'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
