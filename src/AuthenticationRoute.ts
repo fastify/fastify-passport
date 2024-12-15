@@ -1,9 +1,9 @@
-import * as http from 'http'
+import * as http from 'node:http'
 import AuthenticationError from './errors'
 import Authenticator from './Authenticator'
 import { AnyStrategy, Strategy } from './strategies'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { types } from 'util'
+import { types } from 'node:util'
 
 type FlashObject = { type?: string; message?: string }
 type FailureObject = {
