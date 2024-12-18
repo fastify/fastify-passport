@@ -51,7 +51,7 @@
     "@types/passport": "^1.0.5",
     "@types/set-cookie-parser": "^2.4.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^6.2.1",
+    "@typescript-eslint/parser": "^8.18.0",
     "borp": "^0.19.0",
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^9.0.0",
