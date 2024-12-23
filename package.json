@@ -8,8 +8,8 @@
   "scripts": {
     "build": "rimraf ./dist && tsc && git rev-parse HEAD > BUILD_SHA",
     "build:test": "tsc --project tsconfig.test.json",
-    "lint": "npx eslint",
-    "lint:fix": "npx eslint --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "prepublishOnly": "npm run build",
     "test": "npm run build:test && npm run test:unit",
     "test:unit": "borp --coverage"
