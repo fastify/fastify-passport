@@ -1,33 +1,32 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-import { test, describe } from 'node:test'
-import assert from 'node:assert'
-import { Strategy } from '../src/strategies'
-import { TestThirdPartyStrategy } from './authorize.test'
-import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
+import { test, describe } from 'node:test';
+import assert from 'node:assert';
+import { Strategy } from '../src/strategies';
+import { TestThirdPartyStrategy } from './authorize.test';
+import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers';
 
 class WelcomeStrategy extends Strategy {
-  authenticate(request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: any, _options?: { pauseStream?: boolean }) {
     if (request.isAuthenticated()) {
-      return this.pass()
+      return this.pass();
     }
     if (request.body && request.body.login === 'welcomeuser' && request.body.password === 'test') {
-      return this.success({ name: 'test' }, { message: 'welcome from strategy' })
+      return this.success({ name: 'test' }, { message: 'welcome from strategy' });
     }
-    this.fail()
+    this.fail();
   }
 }
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
-    test(`should allow passing a specific Strategy instance to an authenticate call`, async () => {
-      const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] })
+    test('should allow passing a specific Strategy instance to an authenticate call', async () => {
+      const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] });
       server.get(
         '/',
         {
           preValidation: fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false })
         },
         async (request) => request.session.get('messages')
-      )
+      );
       server.post(
         '/login',
         {
@@ -38,15 +37,15 @@ const testSuite = (sessionPluginName: string) => {
           })
         },
         () => {}
-      )
+      );
 
       const login = await server.inject({
         method: 'POST',
         payload: { login: 'welcomeuser', password: 'test' },
         url: '/login'
-      })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
+      });
+      assert.strictEqual(login.statusCode, 302);
+      assert.strictEqual(login.headers.location, '/');
 
       const response = await server.inject({
         url: '/',
@@ -54,14 +53,14 @@ const testSuite = (sessionPluginName: string) => {
           cookie: login.headers['set-cookie']
         },
         method: 'GET'
-      })
+      });
 
-      assert.strictEqual(response.body, '["welcome from strategy"]')
-      assert.strictEqual(response.statusCode, 200)
-    })
+      assert.strictEqual(response.body, '["welcome from strategy"]');
+      assert.strictEqual(response.statusCode, 200);
+    });
 
-    test(`should allow passing a multiple specific Strategy instances to an authenticate call`, async () => {
-      const { server, fastifyPassport } = getRegisteredTestServer()
+    test('should allow passing a multiple specific Strategy instances to an authenticate call', async () => {
+      const { server, fastifyPassport } = getRegisteredTestServer();
       server.get(
         '/',
         {
@@ -70,7 +69,7 @@ const testSuite = (sessionPluginName: string) => {
           })
         },
         async (request) => `messages: ${request.session.get('messages')}`
-      )
+      );
       server.post(
         '/login',
         {
@@ -81,15 +80,15 @@ const testSuite = (sessionPluginName: string) => {
           })
         },
         () => {}
-      )
+      );
 
       const login = await server.inject({
         method: 'POST',
         payload: { login: 'test', password: 'test' },
         url: '/login'
-      })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
+      });
+      assert.strictEqual(login.statusCode, 302);
+      assert.strictEqual(login.headers.location, '/');
 
       const response = await server.inject({
         url: '/',
@@ -97,14 +96,14 @@ const testSuite = (sessionPluginName: string) => {
           cookie: login.headers['set-cookie']
         },
         method: 'GET'
-      })
+      });
 
-      assert.strictEqual(response.body, 'messages: undefined')
-      assert.strictEqual(response.statusCode, 200)
-    })
+      assert.strictEqual(response.body, 'messages: undefined');
+      assert.strictEqual(response.statusCode, 200);
+    });
 
-    test(`should allow passing a mix of Strategy instances and strategy names`, async () => {
-      const { server, fastifyPassport } = getConfiguredTestServer()
+    test('should allow passing a mix of Strategy instances and strategy names', async () => {
+      const { server, fastifyPassport } = getConfiguredTestServer();
       server.get(
         '/',
         {
@@ -113,7 +112,7 @@ const testSuite = (sessionPluginName: string) => {
           })
         },
         async (request) => `messages: ${request.session.get('messages')}`
-      )
+      );
       server.post(
         '/login',
         {
@@ -124,15 +123,15 @@ const testSuite = (sessionPluginName: string) => {
           })
         },
         () => {}
-      )
+      );
 
       const login = await server.inject({
         method: 'POST',
         payload: { login: 'test', password: 'test' },
         url: '/login'
-      })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
+      });
+      assert.strictEqual(login.statusCode, 302);
+      assert.strictEqual(login.headers.location, '/');
 
       const response = await server.inject({
         url: '/',
@@ -140,41 +139,41 @@ const testSuite = (sessionPluginName: string) => {
           cookie: login.headers['set-cookie']
         },
         method: 'GET'
-      })
+      });
 
-      assert.strictEqual(response.body, 'messages: undefined')
-      assert.strictEqual(response.statusCode, 200)
-    })
+      assert.strictEqual(response.body, 'messages: undefined');
+      assert.strictEqual(response.statusCode, 200);
+    });
 
-    test(`should allow passing specific instances to an authorize call`, async () => {
-      const { server, fastifyPassport } = getConfiguredTestServer()
+    test('should allow passing specific instances to an authorize call', async () => {
+      const { server, fastifyPassport } = getConfiguredTestServer();
 
       server.get(
         '/',
         { preValidation: fastifyPassport.authorize(new TestThirdPartyStrategy('third-party')) },
         async (request) => {
-          const user = request.user as any
-          assert.ifError(user)
-          const account = request.account as any
-          assert.ok(account.id)
-          assert.strictEqual(account.name, 'test')
+          const user = request.user as any;
+          assert.ifError(user);
+          const account = request.account as any;
+          assert.ok(account.id);
+          assert.strictEqual(account.name, 'test');
 
-          return 'it worked'
+          return 'it worked';
         }
-      )
+      );
 
-      const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 200)
-    })
+      const response = await server.inject({ method: 'GET', url: '/' });
+      assert.strictEqual(response.statusCode, 200);
+    });
 
-    test(`Strategy instances used during one authentication shouldn't be registered`, async () => {
-      const { fastifyPassport } = getRegisteredTestServer()
+    test('Strategy instances used during one authentication shouldn\'t be registered', async () => {
+      const { fastifyPassport } = getRegisteredTestServer();
       // build a handler with the welcome strategy
-      fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false })
-      assert.strictEqual(fastifyPassport.strategy('welcome'), undefined)
-    })
-  })
-}
+      fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false });
+      assert.strictEqual(fastifyPassport.strategy('welcome'), undefined);
+    });
+  });
+};
 
-testSuite('@fastify/session')
-testSuite('@fastify/secure-session')
+testSuite('@fastify/session');
+testSuite('@fastify/secure-session');
