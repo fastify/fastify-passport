@@ -1,10 +1,10 @@
-import { test, describe } from 'node:test';
-import assert, { fail } from 'node:assert';
-import { Strategy as FacebookStrategy } from 'passport-facebook';
-import { Strategy as GitHubStrategy } from 'passport-github2';
-import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { Issuer as OpenIdIssuer, Strategy as OpenIdStrategy } from 'openid-client';
-import { getConfiguredTestServer, TestStrategy } from './helpers';
+import { test, describe } from 'node:test'
+import assert, { fail } from 'node:assert'
+import { Strategy as FacebookStrategy } from 'passport-facebook'
+import { Strategy as GitHubStrategy } from 'passport-github2'
+import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
+import { Issuer as OpenIdIssuer, Strategy as OpenIdStrategy } from 'openid-client'
+import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -16,24 +16,24 @@ const testSuite = (sessionPluginName: string) => {
           callbackURL: 'http://www.example.com/auth/google/callback'
         },
         () => fail()
-      );
+      )
 
-      const { server, fastifyPassport } = getConfiguredTestServer('google', strategy);
+      const { server, fastifyPassport } = getConfiguredTestServer('google', strategy)
 
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('google', { authInfo: false }) },
         async () => 'hello world!'
-      );
+      )
       server.post(
         '/login',
         { preValidation: fastifyPassport.authenticate('google', { authInfo: false }) },
         async () => 'hello'
-      );
+      )
 
-      const response = await server.inject({ method: 'GET', url: '/' });
-      assert.strictEqual(response.statusCode, 302);
-    });
+      const response = await server.inject({ method: 'GET', url: '/' })
+      assert.strictEqual(response.statusCode, 302)
+    })
 
     test('should initiate oauth with the facebook strategy from npm', async () => {
       const strategy: TestStrategy = new FacebookStrategy(
@@ -43,24 +43,24 @@ const testSuite = (sessionPluginName: string) => {
           callbackURL: 'http://www.example.com/auth/facebook/callback'
         },
         () => fail()
-      );
+      )
 
-      const { server, fastifyPassport } = getConfiguredTestServer('facebook', strategy);
+      const { server, fastifyPassport } = getConfiguredTestServer('facebook', strategy)
 
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('facebook', { authInfo: false }) },
         async () => 'hello world!'
-      );
+      )
       server.post(
         '/login',
         { preValidation: fastifyPassport.authenticate('facebook', { authInfo: false }) },
         async () => 'hello'
-      );
+      )
 
-      const response = await server.inject({ method: 'GET', url: '/' });
-      assert.strictEqual(response.statusCode, 302);
-    });
+      const response = await server.inject({ method: 'GET', url: '/' })
+      assert.strictEqual(response.statusCode, 302)
+    })
 
     test('should initiate oauth with the github strategy from npm', async () => {
       const strategy: TestStrategy = new GitHubStrategy(
@@ -70,59 +70,59 @@ const testSuite = (sessionPluginName: string) => {
           callbackURL: 'http://www.example.com/auth/facebook/callback'
         },
         () => fail()
-      );
+      )
 
-      const { server, fastifyPassport } = getConfiguredTestServer('github', strategy);
+      const { server, fastifyPassport } = getConfiguredTestServer('github', strategy)
 
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('github', { authInfo: false }) },
         async () => 'hello world!'
-      );
+      )
       server.post(
         '/login',
         { preValidation: fastifyPassport.authenticate('github', { authInfo: false }) },
         async () => 'hello'
-      );
+      )
 
-      const response = await server.inject({ method: 'GET', url: '/' });
-      assert.strictEqual(response.statusCode, 302);
-    });
+      const response = await server.inject({ method: 'GET', url: '/' })
+      assert.strictEqual(response.statusCode, 302)
+    })
 
     test('should initiate oauth with the openid-client strategy from npm', async () => {
-      const issuer = new OpenIdIssuer({ issuer: 'test_issuer', authorization_endpoint: 'http://www.example.com' });
+      const issuer = new OpenIdIssuer({ issuer: 'test_issuer', authorization_endpoint: 'http://www.example.com' })
 
       const client = new issuer.Client({
         client_id: 'identifier',
         client_secret: 'secure',
         redirect_uris: ['http://www.example.com/auth/openid-client/callback']
-      });
+      })
 
       const strategy = new OpenIdStrategy(
         {
           client
         },
         () => fail()
-      ) as TestStrategy;
+      ) as TestStrategy
 
-      const { server, fastifyPassport } = getConfiguredTestServer('openid-client', strategy);
+      const { server, fastifyPassport } = getConfiguredTestServer('openid-client', strategy)
 
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('openid-client', { authInfo: false }) },
         async () => 'hello world!'
-      );
+      )
       server.post(
         '/login',
         { preValidation: fastifyPassport.authenticate('openid-client', { authInfo: false }) },
         async () => 'hello'
-      );
+      )
 
-      const response = await server.inject({ method: 'GET', url: '/' });
-      assert.strictEqual(response.statusCode, 302);
-    });
-  });
-};
+      const response = await server.inject({ method: 'GET', url: '/' })
+      assert.strictEqual(response.statusCode, 302)
+    })
+  })
+}
 
-testSuite('@fastify/session');
-testSuite('@fastify/secure-session');
+testSuite('@fastify/session')
+testSuite('@fastify/secure-session')

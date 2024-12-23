@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
 module.exports = require('neostandard')({
-  semi: true,
+  semi: false,
   ignores: ['dist/**/*', 'node_modules/**/*', 'coverage/**/*'],
   ts: true,
-});
+})
