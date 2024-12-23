@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { spawnSync } from 'node:child_process'

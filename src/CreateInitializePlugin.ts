@@ -3,11 +3,11 @@ import { logIn, logOut, isAuthenticated, isUnauthenticated } from './decorators'
 import Authenticator from './Authenticator'
 import flash = require('@fastify/flash')
 
-export function CreateInitializePlugin(passport: Authenticator) {
+export function CreateInitializePlugin (passport: Authenticator) {
   return fp(async (fastify) => {
-    void fastify.register(flash)
+    fastify.register(flash)
     fastify.decorateRequest('passport', {
-      getter() {
+      getter () {
         return passport
       }
     })

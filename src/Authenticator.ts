@@ -38,7 +38,7 @@ export class Authenticator {
   private clearSessionOnLogin: boolean
   private clearSessionIgnoreFields: string[]
 
-  constructor(options: AuthenticatorOptions = {}) {
+  constructor (options: AuthenticatorOptions = {}) {
     this.key = options.key || 'passport'
     this.userProperty = options.userProperty || 'user'
     this.use(new SessionStrategy(this.deserializeUser.bind(this)))
@@ -54,9 +54,9 @@ export class Authenticator {
     )
   }
 
-  use(strategy: AnyStrategy): this
-  use(name: string, strategy: AnyStrategy): this
-  use(name: AnyStrategy | string, strategy?: AnyStrategy): this {
+  use (strategy: AnyStrategy): this
+  use (name: string, strategy: AnyStrategy): this
+  use (name: AnyStrategy | string, strategy?: AnyStrategy): this {
     if (!strategy) {
       strategy = name as AnyStrategy
       name = strategy.name as string
@@ -69,12 +69,12 @@ export class Authenticator {
     return this
   }
 
-  public unuse(name: string): this {
+  public unuse (name: string): this {
     delete this.strategies[name]
     return this
   }
 
-  public initialize(): FastifyPluginAsync {
+  public initialize (): FastifyPluginAsync {
     return CreateInitializePlugin(this)
   }
 
@@ -162,7 +162,7 @@ export class Authenticator {
     callback?: AuthenticateCallback<StrategyOrStrategies>
   ): RouteHandlerMethod {
     let options: AuthenticateOptions | undefined
-    if (typeof optionsOrCallback == 'function') {
+    if (typeof optionsOrCallback === 'function') {
       options = {}
       callback = optionsOrCallback
     } else {
@@ -208,7 +208,7 @@ export class Authenticator {
     callback?: AuthenticateCallback<StrategyOrStrategies>
   ): RouteHandlerMethod {
     let options: AuthenticateOptions | undefined
-    if (typeof optionsOrCallback == 'function') {
+    if (typeof optionsOrCallback === 'function') {
       options = {}
       callback = optionsOrCallback
     } else {
@@ -244,7 +244,7 @@ export class Authenticator {
    *
    * @return {Function} middleware
    */
-  public secureSession(options?: AuthenticateOptions): FastifyPluginAsync {
+  public secureSession (options?: AuthenticateOptions): FastifyPluginAsync {
     return fastifyPlugin(async (fastify) => {
       fastify.addHook('preValidation', new AuthenticationRoute(this, 'session', options).handler)
     })
@@ -323,11 +323,11 @@ export class Authenticator {
    *
    * @api public
    */
-  registerAuthInfoTransformer(fn: InfoTransformerFunction) {
+  registerAuthInfoTransformer (fn: InfoTransformerFunction) {
     this.infoTransformers.push(fn)
   }
 
-  async transformAuthInfo(info: any, request: FastifyRequest) {
+  async transformAuthInfo (info: any, request: FastifyRequest) {
     const result = await this.runStack(this.infoTransformers, info, request)
     // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
     return result || info
@@ -340,7 +340,7 @@ export class Authenticator {
    * @return {AnyStrategy}
    * @api private
    */
-  strategy(name: string): AnyStrategy | undefined {
+  strategy (name: string): AnyStrategy | undefined {
     return this.strategies[name]
   }
 
@@ -349,7 +349,7 @@ export class Authenticator {
       try {
         return await attempt(...args)
       } catch (e) {
-        if (e == 'pass') {
+        if (e === 'pass') {
           continue
         } else {
           throw e

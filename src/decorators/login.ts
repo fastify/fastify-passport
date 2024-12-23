@@ -21,13 +21,13 @@ export type DoneCallback = (err?: Error) => void
  * @param {Function} done
  * @api public
  */
-export async function logIn<T = unknown>(this: FastifyRequest, user: T): Promise<void>
-export async function logIn<T = unknown>(
+export async function logIn<T = unknown> (this: FastifyRequest, user: T): Promise<void>
+export async function logIn<T = unknown> (
   this: FastifyRequest,
   user: T,
   options: { session?: boolean; keepSessionInfo?: boolean }
 ): Promise<void>
-export async function logIn<T = unknown>(
+export async function logIn<T = unknown> (
   this: FastifyRequest,
   user: T,
   options: { session?: boolean; keepSessionInfo?: boolean } = {}

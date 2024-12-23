@@ -8,9 +8,9 @@ import type { FastifyRequest } from 'fastify'
 export class SessionStrategy extends Strategy {
   private deserializeUser: DeserializeFunction
 
-  constructor(deserializeUser: DeserializeFunction)
-  constructor(options: any, deserializeUser: DeserializeFunction)
-  constructor(options: any, deserializeUser?: DeserializeFunction) {
+  constructor (deserializeUser: DeserializeFunction)
+  constructor (options: any, deserializeUser: DeserializeFunction)
+  constructor (options: any, deserializeUser?: DeserializeFunction) {
     super('session')
     if (typeof options === 'function') {
       this.deserializeUser = options
@@ -32,7 +32,7 @@ export class SessionStrategy extends Strategy {
    * @param {Object} options
    * @api protected
    */
-  authenticate(request: FastifyRequest, options?: { pauseStream?: boolean }) {
+  authenticate (request: FastifyRequest, options?: { pauseStream?: boolean }) {
     if (!request.passport) {
       return this.error(new Error('passport.initialize() plugin not in use'))
     }
@@ -45,7 +45,7 @@ export class SessionStrategy extends Strategy {
     const sessionUser = request.passport.sessionManager.getUserFromSession(request)
 
     if (sessionUser || sessionUser === 0) {
-      void this.deserializeUser(sessionUser, request)
+      this.deserializeUser(sessionUser, request)
         .catch((err: Error) => this.error(err))
         .then(async (user?: any) => {
           if (!user) {

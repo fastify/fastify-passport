@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
@@ -9,9 +8,9 @@ import { getTestServer, TestBrowserSession } from './helpers'
 let counter: number
 let authenticators: Record<string, Authenticator>
 
-async function TestStrategyModule(instance: FastifyInstance, { namespace, clearSessionOnLogin }) {
+async function TestStrategyModule (instance: FastifyInstance, { namespace, clearSessionOnLogin }) {
   class TestStrategy extends Strategy {
-    authenticate(request: any, _options?: { pauseStream?: boolean }) {
+    authenticate (request: any, _options?: { pauseStream?: boolean }) {
       if (request.isAuthenticated()) {
         return this.pass()
       }
@@ -31,16 +30,16 @@ async function TestStrategyModule(instance: FastifyInstance, { namespace, clearS
   })
   authenticator.use(strategyName, new TestStrategy(strategyName))
   authenticator.registerUserSerializer<any, string>(async (user) => {
-    if (user.namespace == namespace) {
+    if (user.namespace === namespace) {
       return namespace + '-' + JSON.stringify(user)
     }
-    throw 'pass'
+    throw 'pass' // eslint-disable-line no-throw-literal
   })
   authenticator.registerUserDeserializer<string, any>(async (serialized: string) => {
     if (serialized.startsWith(`${namespace}-`)) {
       return JSON.parse(serialized.slice(`${namespace}-`.length))
     }
-    throw 'pass'
+    throw 'pass' // eslint-disable-line no-throw-literal
   })
 
   await instance.register(authenticator.initialize())
@@ -68,7 +67,7 @@ async function TestStrategyModule(instance: FastifyInstance, { namespace, clearS
       })
     },
     () => {
-      return
+
     }
   )
 
@@ -77,7 +76,7 @@ async function TestStrategyModule(instance: FastifyInstance, { namespace, clearS
     { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
     async (request, reply) => {
       await request.logout()
-      void reply.send('logged out')
+      reply.send('logged out')
     }
   )
 }

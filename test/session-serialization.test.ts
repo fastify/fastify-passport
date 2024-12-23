@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
@@ -25,8 +24,8 @@ const testSuite = (sessionPluginName: string) => {
 
       const setupSerializationTestServer = async (fastifyPassport: Authenticator) => {
         const server = getTestServer()
-        void server.register(fastifyPassport.initialize())
-        void server.register(fastifyPassport.secureSession())
+        server.register(fastifyPassport.initialize())
+        server.register(fastifyPassport.secureSession())
         server.get(
           '/',
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
@@ -67,19 +66,19 @@ const testSuite = (sessionPluginName: string) => {
         const fastifyPassport = new Authenticator()
         fastifyPassport.use('test', new TestStrategy('test'))
         fastifyPassport.registerUserSerializer(async () => {
-          throw 'pass'
+          throw 'pass' // eslint-disable-line no-throw-literal
         })
         fastifyPassport.registerUserSerializer(async () => {
-          throw 'pass'
+          throw 'pass' // eslint-disable-line no-throw-literal
         })
         fastifyPassport.registerUserSerializer(async (user) => {
           return JSON.stringify(user)
         })
         fastifyPassport.registerUserDeserializer(async () => {
-          throw 'pass'
+          throw 'pass' // eslint-disable-line no-throw-literal
         })
         fastifyPassport.registerUserDeserializer(async () => {
-          throw 'pass'
+          throw 'pass' // eslint-disable-line no-throw-literal
         })
         fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
         const server = await setupSerializationTestServer(fastifyPassport)
@@ -88,7 +87,7 @@ const testSuite = (sessionPluginName: string) => {
 
       test('should allow user serializers/deserializers that work like a database', async () => {
         const fastifyPassport = new Authenticator()
-        const strategy = new TestDatabaseStrategy('test', { '1': { id: '1', login: 'test', password: 'test' } })
+        const strategy = new TestDatabaseStrategy('test', { 1: { id: '1', login: 'test', password: 'test' } })
         fastifyPassport.use('test', strategy)
         fastifyPassport.registerUserSerializer<{ id: string; name: string }, string>(async (user) => user.id)
         fastifyPassport.registerUserDeserializer(async (serialized: string) => strategy.database[serialized])
@@ -102,7 +101,7 @@ const testSuite = (sessionPluginName: string) => {
         // jest.spyOn(console, 'error').mockImplementation(jest.fn())
         console.error = mock.fn()
         const fastifyPassport = new Authenticator()
-        const strategy = new TestDatabaseStrategy('test', { '1': { id: '1', login: 'test', password: 'test' } })
+        const strategy = new TestDatabaseStrategy('test', { 1: { id: '1', login: 'test', password: 'test' } })
         fastifyPassport.use('test', strategy)
         fastifyPassport.registerUserSerializer<{ id: string; name: string }, string>(async (user) => user.id)
         fastifyPassport.registerUserDeserializer(async (serialized: string) => strategy.database[serialized])
@@ -154,7 +153,7 @@ const testSuite = (sessionPluginName: string) => {
 
       test('should deny access if user deserializers return null for logged in sessions', async () => {
         const fastifyPassport = new Authenticator()
-        const strategy = new TestDatabaseStrategy('test', { '1': { id: '1', login: 'test', password: 'test' } })
+        const strategy = new TestDatabaseStrategy('test', { 1: { id: '1', login: 'test', password: 'test' } })
         fastifyPassport.use('test', strategy)
         fastifyPassport.registerUserSerializer<{ id: string; name: string }, string>(async (user) => user.id)
         fastifyPassport.registerUserDeserializer(async (serialized: string) => strategy.database[serialized] || null)

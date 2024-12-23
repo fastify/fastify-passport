@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { Strategy } from '../src/strategies'
@@ -6,7 +5,7 @@ import { TestThirdPartyStrategy } from './authorize.test'
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
 
 class WelcomeStrategy extends Strategy {
-  authenticate(request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: any, _options?: { pauseStream?: boolean }) {
     if (request.isAuthenticated()) {
       return this.pass()
     }
@@ -19,7 +18,7 @@ class WelcomeStrategy extends Strategy {
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
-    test(`should allow passing a specific Strategy instance to an authenticate call`, async () => {
+    test('should allow passing a specific Strategy instance to an authenticate call', async () => {
       const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] })
       server.get(
         '/',
@@ -60,7 +59,7 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(response.statusCode, 200)
     })
 
-    test(`should allow passing a multiple specific Strategy instances to an authenticate call`, async () => {
+    test('should allow passing a multiple specific Strategy instances to an authenticate call', async () => {
       const { server, fastifyPassport } = getRegisteredTestServer()
       server.get(
         '/',
@@ -103,7 +102,7 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(response.statusCode, 200)
     })
 
-    test(`should allow passing a mix of Strategy instances and strategy names`, async () => {
+    test('should allow passing a mix of Strategy instances and strategy names', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
       server.get(
         '/',
@@ -146,7 +145,7 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(response.statusCode, 200)
     })
 
-    test(`should allow passing specific instances to an authorize call`, async () => {
+    test('should allow passing specific instances to an authorize call', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
 
       server.get(
@@ -167,7 +166,7 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(response.statusCode, 200)
     })
 
-    test(`Strategy instances used during one authentication shouldn't be registered`, async () => {
+    test('Strategy instances used during one authentication shouldn\'t be registered', async () => {
       const { fastifyPassport } = getRegisteredTestServer()
       // build a handler with the welcome strategy
       fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false })

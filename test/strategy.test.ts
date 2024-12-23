@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import Authenticator from '../src/Authenticator'
@@ -23,7 +22,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should catch synchronous strategy errors and fail authentication', async () => {
       class ErrorStrategy extends Strategy {
-        authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           throw new Error('the strategy threw an error')
         }
       }
@@ -38,7 +37,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should catch asynchronous strategy errors and fail authentication', async () => {
       class ErrorStrategy extends Strategy {
-        async authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+        async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           await Promise.resolve()
           throw new Error('the strategy threw an error')
         }
@@ -54,7 +53,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should be able to fail with a failure flash message', async () => {
       class ErrorStrategy extends Strategy {
-        async authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+        async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           await Promise.resolve()
           this.fail({ message: 'The strategy failed with an error message' }, 401)
         }
@@ -73,7 +72,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should be able to fail without a failure flash message', async () => {
       class ErrorStrategy extends Strategy {
-        async authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+        async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           await Promise.resolve()
           this.fail(401)
         }

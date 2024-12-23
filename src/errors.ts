@@ -1,7 +1,7 @@
 class AuthenticationError extends Error {
   status: number
 
-  constructor(message: string, status: number) {
+  constructor (message: string, status: number) {
     super()
 
     Error.captureStackTrace(this, this.constructor)

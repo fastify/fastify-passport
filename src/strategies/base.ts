@@ -3,9 +3,10 @@ import { FastifyRequest } from 'fastify'
 export class Strategy {
   name: string
 
-  constructor(name: string) {
+  constructor (name: string) {
     this.name = name
   }
+
   /**
    * Authenticate request.
    *
@@ -16,8 +17,8 @@ export class Strategy {
    * @param {Object} [options] Strategy-specific options.
    * @api public
    */
-  authenticate(request: FastifyRequest, options?: any): void | Promise<void>
-  authenticate() {
+  authenticate (request: FastifyRequest, options?: any): void | Promise<void>
+  authenticate () {
     throw new Error('Strategy#authenticate must be overridden by subclass')
   }
 

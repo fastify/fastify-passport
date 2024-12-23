@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { getConfiguredTestServer, TestBrowserSession } from './helpers'
 import fastifyCsrfProtection from '@fastify/csrf-protection'
 
-function createServer(sessionPluginName: '@fastify/session' | '@fastify/secure-session') {
+function createServer (sessionPluginName: '@fastify/session' | '@fastify/secure-session') {
   const { server, fastifyPassport } = getConfiguredTestServer()
 
-  void server.register(fastifyCsrfProtection, { sessionPlugin: sessionPluginName })
+  server.register(fastifyCsrfProtection, { sessionPlugin: sessionPluginName })
 
   server.post(
     '/login',
@@ -35,7 +34,7 @@ const testSuite = (sessionPluginName: '@fastify/session' | '@fastify/secure-sess
         user = new TestBrowserSession(server)
       })
 
-      test(`should renegerate csrf token on login`, async () => {
+      test('should renegerate csrf token on login', async () => {
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
           assert.equal(sess.body, '')

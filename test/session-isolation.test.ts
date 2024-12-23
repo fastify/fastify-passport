@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
 
-function createServer() {
+function createServer () {
   const { server, fastifyPassport } = getConfiguredTestServer()
 
   server.get(
@@ -22,7 +21,7 @@ function createServer() {
 
   server.post('/force-login', async (request, reply) => {
     await request.logIn(generateTestUser())
-    void reply.send('logged in')
+    reply.send('logged in')
   })
 
   server.post(
@@ -30,7 +29,7 @@ function createServer() {
     { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async (request, reply) => {
       await request.logout()
-      void reply.send('logged out')
+      reply.send('logged out')
     }
   )
   return server
@@ -49,7 +48,7 @@ const testSuite = (sessionPluginName: string) => {
         userB = new TestBrowserSession(server)
         userC = new TestBrowserSession(server)
       })
-      test(`should return 401 Unauthorized if not logged in`, async () => {
+      test('should return 401 Unauthorized if not logged in', async () => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
@@ -65,7 +64,7 @@ const testSuite = (sessionPluginName: string) => {
         )
       })
 
-      test(`logging in one user shouldn't log in the others`, async () => {
+      test('logging in one user shouldn\'t log in the others', async () => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
@@ -97,7 +96,7 @@ const testSuite = (sessionPluginName: string) => {
         assert.strictEqual(response.body, 'hello!')
       })
 
-      test(`logging in each user should keep their sessions independent`, async () => {
+      test('logging in each user should keep their sessions independent', async () => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             let response = await user.inject({
@@ -126,7 +125,7 @@ const testSuite = (sessionPluginName: string) => {
         assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
       })
 
-      test(`logging out one user shouldn't log out the others`, async () => {
+      test('logging out one user shouldn\'t log out the others', async () => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             let response = await user.inject({
@@ -164,7 +163,7 @@ const testSuite = (sessionPluginName: string) => {
         )
       })
 
-      test(`force logging in users shouldn't change the login state of the others`, async () => {
+      test('force logging in users shouldn\'t change the login state of the others', async () => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'POST', url: '/force-login' })

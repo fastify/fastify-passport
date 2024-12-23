@@ -1,5 +1,5 @@
 import { FastifyRequest } from 'fastify'
 
-export function isUnauthenticated(this: FastifyRequest): boolean {
+export function isUnauthenticated (this: FastifyRequest): boolean {
   return !this.isAuthenticated()
 }

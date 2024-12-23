@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
 import { flashFactory } from '@fastify/flash/lib/flash'
 import { logIn, logOut, isAuthenticated, isUnauthenticated } from './decorators'
 import Authenticator from './Authenticator'

@@ -78,7 +78,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
    * @param options  options governing behaviour of strategies
    * @param callback optional custom callback to process the result of the strategy invocations
    */
-  constructor(
+  constructor (
     readonly authenticator: Authenticator,
     strategyOrStrategies: StrategyOrStrategies,
     options?: AuthenticateOptions,
@@ -114,7 +114,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
           reply
         )
       } catch (e) {
-        if (e == Unhandled) {
+        if (e === Unhandled) {
           continue
         } else {
           throw e
@@ -125,7 +125,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     return this.onAllFailed(failures, request, reply)
   }
 
-  attemptStrategy(
+  attemptStrategy (
     failures: FailureObject[],
     name: string,
     prototype: AnyStrategy,
@@ -155,7 +155,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
           return resolve()
         }
 
-        void request
+        request
           .logIn(user, this.options)
           .catch(reject)
           .then(() => {
@@ -168,15 +168,15 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
                   request.session.set('returnTo', undefined)
                 }
 
-                void reply.redirect(url)
+                reply.redirect(url)
               } else if (this.options.successRedirect) {
-                void reply.redirect(this.options.successRedirect)
+                reply.redirect(this.options.successRedirect)
               }
               return resolve()
             }
 
             if (this.options.authInfo !== false) {
-              void this.authenticator
+              this.authenticator
                 .transformAuthInfo(info, request)
                 .catch(reject)
                 .then((transformedInfo) => {
@@ -218,8 +218,8 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
       strategy.redirect = (url: string, status?: number) => {
         request.log.trace({ strategy: name, url }, 'passport strategy redirecting')
 
-        void reply.status(status || 302)
-        void reply.redirect(url)
+        reply.status(status || 302)
+        reply.redirect(url)
         resolve()
       }
 
@@ -256,7 +256,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
       try {
         const result = strategy.authenticate(request, this.options)
         if (types.isPromise(result)) {
-          void result.catch(error)
+          result.catch(error)
         }
       } catch (err) {
         error(err as Error)
@@ -264,7 +264,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     })
   }
 
-  async onAllFailed(failures: FailureObject[], request: FastifyRequest, reply: FastifyReply) {
+  async onAllFailed (failures: FailureObject[], request: FastifyRequest, reply: FastifyReply) {
     request.log.trace('all passport strategies failed')
 
     if (this.callback) {
@@ -302,22 +302,22 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     }
 
     rstatus = rstatus || 401
-    void reply.code(rstatus)
+    reply.code(rstatus)
 
     if (reply.statusCode === 401 && rchallenge.length) {
-      void reply.header('WWW-Authenticate', rchallenge)
+      reply.header('WWW-Authenticate', rchallenge)
     }
 
     if (this.options.failWithError) {
       throw new AuthenticationError(http.STATUS_CODES[reply.statusCode]!, rstatus)
     }
 
-    void reply.send(http.STATUS_CODES[reply.statusCode])
+    reply.send(http.STATUS_CODES[reply.statusCode])
   }
 
-  applyFlashOrMessage(event: 'success' | 'failure', request: FastifyRequest, result?: FlashObject) {
+  applyFlashOrMessage (event: 'success' | 'failure', request: FastifyRequest, result?: FlashObject) {
     const flashOption = this.options[`${event}Flash`]
-    const level = event == 'success' ? 'success' : 'error'
+    const level = event === 'success' ? 'success' : 'error'
 
     if (flashOption) {
       let flash: FlashObject | undefined
@@ -341,17 +341,17 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     }
   }
 
-  toFlashObject(input: string | FlashObject | undefined, type: string) {
+  toFlashObject (input: string | FlashObject | undefined, type: string) {
     if (input === undefined) {
-      return
-    } else if (typeof input == 'string') {
+      // fall-through
+    } else if (typeof input === 'string') {
       return { type, message: input }
     } else {
       return input
     }
   }
 
-  private getStrategyName(nameOrInstance: string | Strategy): string {
+  private getStrategyName (nameOrInstance: string | Strategy): string {
     if (typeof nameOrInstance === 'string') {
       return nameOrInstance
     } else if (nameOrInstance.name) {
@@ -361,7 +361,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     }
   }
 
-  private getStrategy(nameOrInstance: string | Strategy): AnyStrategy {
+  private getStrategy (nameOrInstance: string | Strategy): AnyStrategy {
     if (typeof nameOrInstance === 'string') {
       const prototype = this.authenticator.strategy(nameOrInstance)
       if (!prototype) {

@@ -17,7 +17,7 @@ let counter = 0
 export const generateTestUser = () => ({ name: 'test', id: String(counter++) })
 
 export class TestStrategy extends Strategy {
-  authenticate(request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: any, _options?: { pauseStream?: boolean }) {
     if (request.isAuthenticated()) {
       return this.pass()
     }
@@ -30,20 +30,20 @@ export class TestStrategy extends Strategy {
 }
 
 export class TestDatabaseStrategy extends Strategy {
-  constructor(
+  constructor (
     name: string,
     readonly database: Record<string, { id: string; login: string; password: string }> = {}
   ) {
     super(name)
   }
 
-  authenticate(request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: any, _options?: { pauseStream?: boolean }) {
     if (request.isAuthenticated()) {
       return this.pass()
     }
     if (request.body) {
       const user = Object.values(this.database).find(
-        (user) => user.login == request.body.login && user.password == request.body.password
+        (user) => user.login === request.body.login && user.password === request.body.password
       )
       if (user) {
         return this.success(user)
@@ -58,11 +58,11 @@ export class TestDatabaseStrategy extends Strategy {
 export class TestBrowserSession {
   cookies: Record<string, string>
 
-  constructor(readonly server: FastifyInstance) {
+  constructor (readonly server: FastifyInstance) {
     this.cookies = {}
   }
 
-  async inject(opts: InjectOptions): Promise<LightMyRequestResponse> {
+  async inject (opts: InjectOptions): Promise<LightMyRequestResponse> {
     opts.headers || (opts.headers = {})
     opts.headers.cookie = Object.entries(this.cookies)
       .map(([key, value]) => `${key}=${value}`)
@@ -82,14 +82,14 @@ type SessionOptions = FastifyRegisterOptions<FastifySessionOptions | SecureSessi
 
 const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOptions = null) => {
   if (process.env.SESSION_PLUGIN === '@fastify/session') {
-    void server.register(fastifyCookie)
+    server.register(fastifyCookie)
     const options = <FastifyRegisterOptions<FastifySessionOptions>>(sessionOptions || {
       secret: 'a secret with minimum length of 32 characters',
       cookie: { secure: false }
     })
-    void server.register(fastifySession, options)
+    server.register(fastifySession, options)
   } else {
-    void server.register(
+    server.register(
       fastifySecureSession,
       <FastifyRegisterOptions<SecureSessionPluginOptions> | undefined>(sessionOptions || { key: SecretKey })
     )
@@ -102,8 +102,8 @@ export const getTestServer = (sessionOptions: SessionOptions = null) => {
   loadSessionPlugins(server, sessionOptions)
 
   server.setErrorHandler((error, _request, reply) => {
-    void reply.status(500)
-    void reply.send(error)
+    reply.status(500)
+    reply.send(error)
   })
   return server
 }
@@ -118,8 +118,8 @@ export const getRegisteredTestServer = (
   fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
   const server = getTestServer(sessionOptions)
-  void server.register(fastifyPassport.initialize())
-  void server.register(fastifyPassport.secureSession())
+  server.register(fastifyPassport.initialize())
+  server.register(fastifyPassport.secureSession())
 
   return { fastifyPassport, server }
 }

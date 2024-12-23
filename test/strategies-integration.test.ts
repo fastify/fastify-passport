@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert, { fail } from 'node:assert'
 import { Strategy as FacebookStrategy } from 'passport-facebook'

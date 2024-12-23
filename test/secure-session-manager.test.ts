@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyRequest } from 'fastify'
@@ -142,7 +141,7 @@ describe('SecureSessionManager', () => {
     const user = { id: 'test' }
     const set = mock.fn()
     const request = {
-      session: { set: set, data: () => {}, sessionValue: 'exist' }
+      session: { set, data: () => {}, sessionValue: 'exist' }
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: false })
     assert.strictEqual(set.mock.callCount(), 1)

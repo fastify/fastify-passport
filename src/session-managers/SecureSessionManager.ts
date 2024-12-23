@@ -13,12 +13,12 @@ export class SecureSessionManager {
   clearSessionIgnoreFields: string[] = ['session']
   serializeUser: SerializeFunction
 
-  constructor(serializeUser: SerializeFunction)
-  constructor(
+  constructor (serializeUser: SerializeFunction)
+  constructor (
     options: { key?: string; clearSessionOnLogin?: boolean; clearSessionIgnoreFields?: string[] },
     serializeUser: SerializeFunction
   )
-  constructor(
+  constructor (
     options: SerializeFunction | { key?: string; clearSessionOnLogin?: boolean; clearSessionIgnoreFields?: string[] },
     serializeUser?: SerializeFunction
   ) {
@@ -37,7 +37,7 @@ export class SecureSessionManager {
     }
   }
 
-  async logIn(request: Request, user: any, options?: AuthenticateOptions) {
+  async logIn (request: Request, user: any, options?: AuthenticateOptions) {
     const object = await this.serializeUser(user, request)
 
     // Handle @fastify/session to prevent token/CSRF fixation
@@ -51,11 +51,11 @@ export class SecureSessionManager {
       } else {
         await request.session.regenerate()
       }
-    }
+
     // Handle @fastify/secure-session against CSRF fixation
     // TODO: This is quite hacky. The best option would be having a regenerate method
     // on secure-session as well
-    else if (this.clearSessionOnLogin && object) {
+    } else if (this.clearSessionOnLogin && object) {
       const currentData: SessionData = request.session?.data() ?? {}
       for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
@@ -67,14 +67,14 @@ export class SecureSessionManager {
     request.session.set(this.key, object)
   }
 
-  async logOut(request: Request) {
+  async logOut (request: Request) {
     request.session.set(this.key, undefined)
     if (request.session.regenerate) {
       await request.session.regenerate()
     }
   }
 
-  getUserFromSession(request: Request) {
+  getUserFromSession (request: Request) {
     return request.session.get(this.key)
   }
 }

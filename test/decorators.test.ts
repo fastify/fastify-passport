@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
@@ -18,7 +17,7 @@ const testSuite = (sessionPluginName: string) => {
         )
         server.post('/force-login', async (request, reply) => {
           await request.logIn({ name: 'force logged in user' })
-          void reply.send('logged in')
+          reply.send('logged in')
         })
 
         const login = await server.inject({
@@ -46,7 +45,7 @@ const testSuite = (sessionPluginName: string) => {
           const { server } = getConfiguredTestServer()
           server.post('/force-login', async (request, reply) => {
             await request.logIn({ name: 'force logged in user' }, { session: false })
-            void reply.send((request.user as any).name)
+            reply.send((request.user as any).name)
           })
 
           const login = await server.inject({
@@ -71,7 +70,7 @@ const testSuite = (sessionPluginName: string) => {
           const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
           server.post('/force-login', async (request, reply) => {
             await request.logIn({ name: 'force logged in user' }, { session: false })
-            void reply.send((request.user as any).name)
+            reply.send((request.user as any).name)
           })
 
           const login = await server.inject({
@@ -85,7 +84,7 @@ const testSuite = (sessionPluginName: string) => {
         }
       )
 
-      test(`should logout`, async () => {
+      test('should logout', async () => {
         const { server, fastifyPassport } = getConfiguredTestServer()
         server.get(
           '/',
@@ -96,8 +95,8 @@ const testSuite = (sessionPluginName: string) => {
           '/logout',
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
           async (request, reply) => {
-            void request.logout()
-            void reply.send('logged out')
+            request.logout()
+            reply.send('logged out')
           }
         )
         server.post(
