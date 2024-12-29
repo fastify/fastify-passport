@@ -312,7 +312,7 @@ fastifyPassport.registerUserDeserializer(async (id, request) => {
 });
 ```
 
-Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row cannot be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `@fastify/passport`'s behaviour in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behaviour of the original `passport` module.
+Sessions may specify serialized users that have since been deleted from the datastore storing them for the application. In that case, deserialization often fails because the user row cannot be found for a given id. Depending on the application, this can either be an error condition, or expected if users are deleted from the database while logged in. `@fastify/passport`'s behavior in this case is configurable. Errors are thrown if a deserializer returns undefined, and the session is logged out if a deserializer returns `null` or `false.` This matches the behavior of the original `passport` module.
 
 Therefore, a deserializer can return several things:
 
