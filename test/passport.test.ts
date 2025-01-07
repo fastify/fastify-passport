@@ -174,7 +174,7 @@ const testSuite = (sessionPluginName: string) => {
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-        async (request, reply) => reply.flash('success')
+        async (_request, reply) => reply.flash('success')
       )
       server.post(
         '/login',
@@ -213,7 +213,7 @@ const testSuite = (sessionPluginName: string) => {
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-        async (request, reply) => reply.flash('success')
+        async (_request, reply) => reply.flash('success')
       )
       server.post(
         '/login',
@@ -468,7 +468,7 @@ const testSuite = (sessionPluginName: string) => {
     test('should add failureFlash to session if failed to log in', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
 
-      server.get('/', async (request, reply) => reply.flash('error'))
+      server.get('/', async (_request, reply) => reply.flash('error'))
       server.post(
         '/login',
         {
@@ -501,7 +501,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should add failureFlash=true to session if failed to log in', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
-      server.get('/', async (request, reply) => reply.flash('error'))
+      server.get('/', async (_request, reply) => reply.flash('error'))
       server.post(
         '/login',
         {
@@ -582,7 +582,7 @@ const testSuite = (sessionPluginName: string) => {
       )
       server.post(
         '/login',
-        fastifyPassport.authenticate('test', async (request, reply, err, user) => {
+        fastifyPassport.authenticate('test', async (_request, _reply, _err, user) => {
           return (user as any).name
         })
       )
