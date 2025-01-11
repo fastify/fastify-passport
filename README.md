@@ -38,14 +38,14 @@ server.register(fastifyPassport.secureSession())
 // register an example strategy for fastifyPassport to authenticate users using
 fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
 
-// Add an authentication for a route which will use the strategy named "test" to protect the route
+// Add an authentication for a route that will use the strategy named "test" to protect the route
 server.get(
   '/',
   { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
   async () => 'hello world!'
 )
 
-// Add an authentication for a route which will use the strategy named "test" to protect the route, and redirect on success to a particular other route.
+// Add an authentication for a route that will use the strategy named "test" to protect the route, and redirect on success to a particular other route.
 server.post(
   '/login',
   { preValidation: fastifyPassport.authenticate('test', { successRedirect: '/', authInfo: false }) },
@@ -91,7 +91,7 @@ For security reasons the session is cleaned after login. You can manage this con
 
 ## Session Serialization
 
-In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `@fastify/passport` implements this pattern by storing sessions using `@fastify/secure-session`, and serializing/deserializing user objects to and from the session referenced by the cookie. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+In a typical web application, the credentials used to authenticate a user will only be transmitted once when a user logs in, and after, they are considered logged in because of some data stored in their session. `@fastify/passport` implements this pattern by storing sessions using `@fastify/secure-session`, and serializing/deserializing user objects to and from the session referenced by the cookie. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer/deserializer pair if you want to fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 // register a serializer that stores the user object's id in the session ...
@@ -146,7 +146,7 @@ An optional `callback` can be supplied to allow the application to override the 
 (request, reply, err | null, user | false, info?, (status | statuses)?) => Promise<void>
 ```
 
-where `request` and `reply` will be set to the original `FastifyRequest` and `FastifyReply` objects, and `err` will be set to `null` in case of a success or an `Error` object in case of a failure. If `err` is not `null` then `user`, `info` and `status` objects will be `undefined`. The `user` object will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.
+where `request` and `reply` will be set to the original `FastifyRequest` and `FastifyReply` objects, and `err` will be set to `null` in case of a success or an `Error` object in case of a failure. If `err` is not `null` then `user`, `info`, and `status` objects will be `undefined`. The `user` object will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.
 
 An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication.
 
@@ -169,9 +169,9 @@ fastify.get(
 Examples:
 
 ```js
-// create a request handler that uses the facebook strategy
+// create a request handler that uses the Facebook strategy
 fastifyPassport.use(new FacebookStrategy('facebook', {
-  // options for the facebook strategy, see https://www.npmjs.com/package/passport-facebook
+  // options for the Facebook strategy, see https://www.npmjs.com/package/passport-facebook
 })))
 fastifyPassport.authenticate('facebook');
 
@@ -208,7 +208,7 @@ fastify.get(
 )
 ```
 
-Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, shouldn't really be used together in the same `authenticate` call. This is because `@fastify/passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
+Note that multiple strategies that redirect to start an authentication flow, like OAuth2 strategies from major platforms, should not be used together in the same `authenticate` call. This is because `@fastify/passport` will run the strategies in order, and the first one that redirects will do so, preventing the user from ever using the other strategies. To set up multiple OAuth2 strategies, add several routes that each use a different strategy in their own `authenticate` call, and then direct users to the right route for the strategy they pick.
 
 Multiple strategies can also be passed as instances if you only intend to use them for that route handler or for that request.
 
@@ -243,7 +243,7 @@ Examples:
 fastifyPassport.authorize('twitter-authz', { failureRedirect: '/account' })
 ```
 
-`.authorize` allows the use of multiple strategies by passing an array of strategy names, and allows the use of already instantiated Strategy instances by passing the instance as the strategy, or an array of instances.
+`.authorize` allows the use of multiple strategies by passing an array of strategy names and allows the use of already instantiated Strategy instances by passing the instance as the strategy, or an array of instances.
 
 ### use(name?: string, strategy: Strategy)
 
@@ -273,7 +273,7 @@ fastifyPassport.unuse('legacy-api')
 
 ### registerUserSerializer(serializer: (user, request) => Promise<SerializedUser>)
 
-Registers an async user serializer function for taking a high level User object from your application and serializing it for storage into the session. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+Registers an async user serializer function for taking a high-level User object from your application and serializing it for storage into the session. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer/deserializer pair if you want to fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 // register a serializer that stores the user object's id in the session ...
@@ -282,7 +282,7 @@ fastifyPassport.registerUserSerializer(async (user, request) => user.id)
 
 ### registerUserDeserializer(deserializer: (serializedUser, request) => Promise<User>)
 
-Registers an async user deserializer function for taking a low level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer / deserializer pair if you want to say fetch a User object from your database, and store only a user ID in the session.
+Registers an async user deserializer function for taking a low-level serialized user object (often just a user ID) from a session, and deserializing it from storage into the request context. `@fastify/passport` cannot store rich object classes in the session, only JSON objects, so you must register a serializer/deserializer pair if you want to fetch a User object from your database, and store only a user ID in the session.
 
 ```js
 fastifyPassport.registerUserDeserializer(async (id, request) => {
@@ -327,7 +327,7 @@ Test if request is unauthenticated.
 
 ## Using with TypeScript
 
-`@fastify/passport` is written in TypeScript, so it includes type definitions for all of it's API. You can also strongly type the `FastifyRequest.user` property using TypeScript declaration merging. You must re-declare the `PassportUser` interface in the `fastify` module within your own code to add the properties you expect to be assigned by the strategy when authenticating:
+`@fastify/passport` is written in TypeScript, so it includes type definitions for all of its API. You can also strongly type the `FastifyRequest.user` property using TypeScript declaration merging. You must re-declare the `PassportUser` interface in the `fastify` module within your own code to add the properties you expect to be assigned by the strategy when authenticating:
 
 ```typescript
 declare module 'fastify' {
@@ -349,7 +349,7 @@ declare module 'fastify' {
 
 ## Using multiple instances
 
-`@fastify/passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application, and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It is important to register each instance of `@fastify/passport` in a different Fastify plugin context so that the decorators `@fastify/passport` like `request.logIn` and `request.logOut` do not collide.
+`@fastify/passport` supports being registered multiple times in different plugin encapsulation contexts. This is useful to implement two separate authentication stacks. For example, you might have a set of strategies that authenticate users of your application and a whole other set of strategies for authenticating staff members of your application that access an administration area. Users might be stored at `request.user`, and administrators at `request.admin`, and logging in as one should have no bearing on the other. It is important to register each instance of `@fastify/passport` in a different Fastify plugin context so that the decorators `@fastify/passport` like `request.logIn` and `request.logOut` do not collide.
 
 To register @fastify/passport more than once, you must instantiate more copies with different `keys` and `userProperty`s so they do not collide when decorating your fastify instance or storing things in the session.
 
@@ -391,14 +391,14 @@ It is important to note that using multiple `@fastify/passport` instances is not
 
 # Differences from Passport.js
 
-`@fastify/passport` is an adapted version of Passport that tries to be as compatible as possible, but is an adapted version that has some incompatibilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
+`@fastify/passport` is an adapted version of Passport that tries to be as compatible as possible but is an adapted version that has some incompatibilities. Passport strategies that adhere to the passport strategy API should work fine, but there are some differences in other APIs made to integrate better with Fastify and to stick with Fastify's theme of performance.
 
 Differences:
 
 - `serializeUser` renamed to `registerUserSerializer` and always takes an async function with the signature `(user: User, request: FastifyRequest) => Promise<SerializedUser>`
 - `deserializeUser` renamed to `registerUserDeserializer` and always takes an async function with the signature `(serialized: SerializedUser, request: FastifyRequest) => Promise<User>`
 - `transformAuthInfo` renamed to `registerAuthInfoTransformer` and always takes an async function with the signature `(info: any, request: FastifyRequest) => Promise<any>`
-- `.authenticate` and `.authorize` accept strategy instances in addition to strategy names. This allows for using one time strategy instances (say for testing given user credentials) without adding them to the global list of registered strategies.
+- `.authenticate` and `.authorize` accept strategy instances in addition to strategy names. This allows for using one-time strategy instances (say for testing given user credentials) without adding them to the global list of registered strategies.
 
 ## License
 
