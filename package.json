@@ -61,7 +61,7 @@
     "passport-google-oauth": "^2.0.0",
     "rimraf": "^6.0.1",
     "set-cookie-parser": "^2.4.6",
-    "tsd": "^0.31.0",
+    "tsd": "^0.32.0",
     "typescript": "~5.8.2"
   },
   "files": [
