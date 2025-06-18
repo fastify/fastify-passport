@@ -46,14 +46,19 @@ export class SessionStrategy extends Strategy {
 
     if (sessionUser || sessionUser === 0) {
       this.deserializeUser(sessionUser, request)
-        .catch((err: Error) => this.error(err))
         .then(async (user?: any) => {
           if (!user) {
-            await request.passport.sessionManager.logOut(request)
+            if (typeof request.passport.sessionManager.logOut === 'function') {
+              await request.passport.sessionManager.logOut(request)
+            }
           } else {
             request[request.passport.userProperty] = user
           }
           this.pass()
+        })
+        .catch((err: Error) => {
+          // Ensure the error is reported and do not continue with success path
+          this.error(err)
         })
     } else {
       this.pass()

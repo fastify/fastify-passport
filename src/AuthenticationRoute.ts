@@ -343,7 +343,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
 
   toFlashObject (input: string | FlashObject | undefined, type: string) {
     if (input === undefined) {
-      // fall-through
+      return undefined
     } else if (typeof input === 'string') {
       return { type, message: input }
     } else {
