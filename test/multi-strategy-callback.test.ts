@@ -5,11 +5,11 @@ import { Strategy } from '../src/strategies'
 
 // Strategy that always fails with a specific status
 class FailingStrategy extends Strategy {
-  constructor(name: string, private status: number = 401) {
+  constructor (name: string, private status: number = 401) {
     super(name)
   }
 
-  authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (_request: any, _options?: { pauseStream?: boolean }) {
     this.fail(this.status)
   }
 }
@@ -18,7 +18,7 @@ const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test('should call callback with single status for single strategy failure', async () => {
       const { server, fastifyPassport } = getRegisteredTestServer()
-      
+
       let callbackCalled = false
       let receivedStatus: number | undefined
       let receivedStatuses: (number | undefined)[] | undefined
@@ -41,7 +41,7 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      
+
       assert.strictEqual(response.statusCode, 401)
       assert.strictEqual(callbackCalled, true)
       assert.strictEqual(receivedStatus, 403)
@@ -50,7 +50,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should call callback with array of statuses for multi-strategy failure', async () => {
       const { server, fastifyPassport } = getRegisteredTestServer()
-      
+
       let callbackCalled = false
       let receivedStatus: number | undefined
       let receivedStatuses: (number | undefined)[] | undefined
@@ -73,7 +73,7 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      
+
       assert.strictEqual(response.statusCode, 401)
       assert.strictEqual(callbackCalled, true)
       assert.strictEqual(receivedStatus, undefined)
@@ -82,13 +82,13 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should call callback with array of statuses for multi-strategy with mixed status types', async () => {
       const { server, fastifyPassport } = getRegisteredTestServer()
-      
+
       let callbackCalled = false
       let receivedStatuses: (number | undefined)[] | undefined
 
       // One strategy fails with status, another fails without status (undefined)
       class FailingWithoutStatusStrategy extends Strategy {
-        authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           this.fail() // No status provided, should be undefined
         }
       }
@@ -110,7 +110,7 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      
+
       assert.strictEqual(response.statusCode, 401)
       assert.strictEqual(callbackCalled, true)
       assert.deepStrictEqual(receivedStatuses, [402, undefined])
@@ -118,12 +118,12 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should work correctly when first strategy succeeds in multi-strategy setup', async () => {
       const { server, fastifyPassport } = getRegisteredTestServer()
-      
+
       let callbackCalled = false
 
       // Strategy that always succeeds
       class SucceedingStrategy extends Strategy {
-        authenticate(_request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           this.success({ id: 'test-user', name: 'Test User' })
         }
       }
@@ -145,7 +145,7 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      
+
       assert.strictEqual(response.statusCode, 200)
       assert.strictEqual(response.body, 'Authentication succeeded')
       assert.strictEqual(callbackCalled, true)
