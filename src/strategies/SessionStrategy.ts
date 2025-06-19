@@ -57,7 +57,6 @@ export class SessionStrategy extends Strategy {
           this.pass()
         })
         .catch((err: Error) => {
-          // Ensure the error is reported and do not continue with success path
           this.error(err)
         })
     } else {

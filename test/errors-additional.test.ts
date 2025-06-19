@@ -4,21 +4,23 @@ import assert from 'node:assert'
 import AuthenticationError from '../src/errors'
 
 describe('AuthenticationError', () => {
-  test('sets name, message and custom status', () => {
-    const err = new AuthenticationError('Boom', 403)
+  test('creates error with custom message and status code', () => {
+    const err = new AuthenticationError('Access denied', 403)
 
-    // Inheritance checks
+    // Verify inheritance
     assert.ok(err instanceof Error)
     assert.ok(err instanceof AuthenticationError)
 
-    // Property checks
+    // Verify properties
     assert.strictEqual(err.name, 'AuthenticationError')
-    assert.strictEqual(err.message, 'Boom')
+    assert.strictEqual(err.message, 'Access denied')
     assert.strictEqual(err.status, 403)
   })
 
-  test('defaults status to 401 when not provided', () => {
+  test('defaults to 401 status when status is not provided', () => {
     const err = new AuthenticationError('Unauthorized', undefined as any)
     assert.strictEqual(err.status, 401)
+    assert.strictEqual(err.message, 'Unauthorized')
+    assert.strictEqual(err.name, 'AuthenticationError')
   })
 })
