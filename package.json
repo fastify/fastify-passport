@@ -47,7 +47,7 @@
     "@fastify/csrf-protection": "^7.0.0",
     "@fastify/secure-session": "^8.0.0",
     "@fastify/session": "^11.0.0",
-    "@types/node": "^22.1.0",
+    "@types/node": "^24.0.8",
     "@types/passport": "^1.0.5",
     "@types/set-cookie-parser": "^2.4.0",
     "borp": "^0.20.0",
