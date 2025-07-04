@@ -15,11 +15,14 @@ describe('SessionStrategy deserialization error handling', () => {
 
     const strategy = new SessionStrategy(deserializeUser)
 
-    // Mock the strategy methods
-    strategy.error = (err: Error) => {
-      errorCalled = true
-      errorMessage = err.message
-    }
+    // Create promises to track when methods are called
+    const errorPromise = new Promise<void>((resolve) => {
+      strategy.error = (err: Error) => {
+        errorCalled = true
+        errorMessage = err.message
+        resolve()
+      }
+    })
 
     strategy.pass = () => {
       passCalled = true
@@ -39,8 +42,8 @@ describe('SessionStrategy deserialization error handling', () => {
     // Call authenticate
     strategy.authenticate(mockRequest)
 
-    // Wait a bit for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 10))
+    // Wait for the error to be called
+    await errorPromise
 
     // Verify that error was called but pass was not
     assert.strictEqual(errorCalled, true, 'error() should have been called')
@@ -59,13 +62,16 @@ describe('SessionStrategy deserialization error handling', () => {
 
     const strategy = new SessionStrategy(deserializeUser)
 
-    // Mock the strategy methods
+    // Create promises to track when methods are called
+    const passPromise = new Promise<void>((resolve) => {
+      strategy.pass = () => {
+        passCalled = true
+        resolve()
+      }
+    })
+
     strategy.error = () => {
       errorCalled = true
-    }
-
-    strategy.pass = () => {
-      passCalled = true
     }
 
     // Mock request with session data
@@ -82,8 +88,8 @@ describe('SessionStrategy deserialization error handling', () => {
     // Call authenticate
     strategy.authenticate(mockRequest)
 
-    // Wait a bit for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 10))
+    // Wait for pass to be called
+    await passPromise
 
     // Verify that pass was called but error was not
     assert.strictEqual(errorCalled, false, 'error() should NOT have been called')
@@ -102,12 +108,16 @@ describe('SessionStrategy deserialization error handling', () => {
 
     const strategy = new SessionStrategy(deserializeUser)
 
+    // Create promises to track when methods are called
+    const passPromise = new Promise<void>((resolve) => {
+      strategy.pass = () => {
+        passCalled = true
+        resolve()
+      }
+    })
+
     strategy.error = () => {
       errorCalled = true
-    }
-
-    strategy.pass = () => {
-      passCalled = true
     }
 
     // Mock request with NO session data
@@ -123,8 +133,8 @@ describe('SessionStrategy deserialization error handling', () => {
 
     strategy.authenticate(mockRequest)
 
-    // Wait a bit for the async operations to complete
-    await new Promise(resolve => setTimeout(resolve, 10))
+    // Wait for pass to be called
+    await passPromise
 
     // Should pass immediately without trying to deserialize
     assert.strictEqual(errorCalled, false, 'error() should NOT have been called')
