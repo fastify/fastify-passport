@@ -3,7 +3,8 @@ import assert, { fail } from 'node:assert'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
-import { Issuer as OpenIdIssuer, Strategy as OpenIdStrategy } from 'openid-client'
+import { Configuration as OpenIdClientConfiguration } from 'openid-client'
+import { Strategy as OpenIdClientStrategy } from 'openid-client/passport'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
@@ -90,20 +91,18 @@ const testSuite = (sessionPluginName: string) => {
     })
 
     test('should initiate oauth with the openid-client strategy from npm', async () => {
-      const issuer = new OpenIdIssuer({ issuer: 'test_issuer', authorization_endpoint: 'http://www.example.com' })
-
-      const client = new issuer.Client({
+      const issuer = { issuer: 'https://as.example.com/', authorization_endpoint: 'https://as.example.com/authorize' }
+      const client = {
         client_id: 'identifier',
         client_secret: 'secure',
-        redirect_uris: ['http://www.example.com/auth/openid-client/callback']
-      })
+      }
 
-      const strategy = new OpenIdStrategy(
-        {
-          client
-        },
+      const config = new OpenIdClientConfiguration(issuer, client.client_id, client.client_secret)
+
+      const strategy = new OpenIdClientStrategy(
+        { config },
         () => fail()
-      ) as TestStrategy
+      ) as unknown as TestStrategy
 
       const { server, fastifyPassport } = getConfiguredTestServer('openid-client', strategy)
 
