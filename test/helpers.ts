@@ -91,7 +91,7 @@ const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOpti
   } else {
     server.register(
       fastifySecureSession,
-      <FastifyRegisterOptions<SecureSessionPluginOptions> | undefined>(sessionOptions || { key: SecretKey })
+      <FastifyRegisterOptions<SecureSessionPluginOptions>>(sessionOptions || { key: SecretKey })
     )
   }
 }
