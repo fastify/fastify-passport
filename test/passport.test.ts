@@ -375,6 +375,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should return 200 if logged in against a running server', async (t) => {
       const { server, fastifyPassport } = getConfiguredTestServer()
+      t.after(() => server.close())
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: true }) },
@@ -411,8 +412,6 @@ const testSuite = (sessionPluginName: string) => {
 
       assert.strictEqual(home.status, 200)
       assert.strictEqual(await home.text(), 'hello world!')
-
-      server.close()
     })
 
     test('should execute failureRedirect if failed to log in', async () => {
