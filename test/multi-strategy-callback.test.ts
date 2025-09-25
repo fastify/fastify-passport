@@ -5,8 +5,11 @@ import { Strategy } from '../src/strategies'
 
 // Strategy that always fails with a specific status
 class FailingStrategy extends Strategy {
-  constructor (name: string, private status: number = 401) {
+  readonly status: number
+
+  constructor (name: string, status: number = 401) {
     super(name)
+    this.status = status
   }
 
   authenticate (_request: any, _options?: { pauseStream?: boolean }) {

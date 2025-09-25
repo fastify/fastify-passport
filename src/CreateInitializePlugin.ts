@@ -1,10 +1,13 @@
-import fp from 'fastify-plugin'
-import { logIn, logOut, isAuthenticated, isUnauthenticated } from './decorators'
-import Authenticator from './Authenticator'
-import flash = require('@fastify/flash')
+import { fastifyPlugin } from 'fastify-plugin'
+import flash from '@fastify/flash'
+import type Authenticator from './Authenticator'
+import { logIn } from './decorators/login'
+import { logOut } from './decorators/logout'
+import { isAuthenticated } from './decorators/is-authenticated'
+import { isUnauthenticated } from './decorators/is-unauthenticated'
 
 export function CreateInitializePlugin (passport: Authenticator) {
-  return fp(async (fastify) => {
+  return fastifyPlugin(async (fastify) => {
     fastify.register(flash)
     fastify.decorateRequest('passport', {
       getter () {

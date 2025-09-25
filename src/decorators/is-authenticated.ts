@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 export function isAuthenticated (this: FastifyRequest): boolean {
   const property = this.passport.userProperty

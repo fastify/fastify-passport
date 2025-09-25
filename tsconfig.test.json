@@ -1,11 +1,11 @@
 {
+  "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
     "sourceMap": true,
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "declaration": true,
-    "target": "es2017",
     "module": "nodenext",
     "pretty": true,
     "noEmitOnError": true,
@@ -20,7 +20,7 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "lib": ["ESNext"]
+    "erasableSyntaxOnly": true
   },
   "include": ["src", "test"]
 }
