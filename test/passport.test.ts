@@ -392,8 +392,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'POST',
         body: JSON.stringify({ login: 'test', password: 'test' }),
         headers: { 'Content-Type': 'application/json' },
-        redirect: 'manual',
-        keepalive: false
+        redirect: 'manual'
       })
 
       assert.strictEqual(login.status, 302)
@@ -405,9 +404,7 @@ const testSuite = (sessionPluginName: string) => {
       const home = await fetch(address, {
         headers: {
           cookie: cookies[0]
-        },
-        method: 'GET',
-        keepalive: false
+        }
       })
 
       assert.strictEqual(home.status, 200)
