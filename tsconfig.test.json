@@ -2,11 +2,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "sourceMap": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "declaration": true,
     "target": "es2017",
-    "module": "commonjs",
+    "module": "nodenext",
     "pretty": true,
     "noEmitOnError": true,
     "strict": true,
