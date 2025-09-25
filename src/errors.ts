@@ -1,4 +1,4 @@
-class AuthenticationError extends Error {
+export class AuthenticationError extends Error {
   status: number
 
   constructor (message: string, status: number) {

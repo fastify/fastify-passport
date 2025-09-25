@@ -30,11 +30,14 @@ export class TestStrategy extends Strategy {
 }
 
 export class TestDatabaseStrategy extends Strategy {
+  readonly database: Record<string, { id: string; login: string; password: string }>
+
   constructor (
     name: string,
-    readonly database: Record<string, { id: string; login: string; password: string }> = {}
+    database: Record<string, { id: string; login: string; password: string }> = {}
   ) {
     super(name)
+    this.database = database
   }
 
   authenticate (request: any, _options?: { pauseStream?: boolean }) {
@@ -57,8 +60,10 @@ export class TestDatabaseStrategy extends Strategy {
 /** Class representing a browser in tests */
 export class TestBrowserSession {
   cookies: Record<string, string>
+  server: FastifyInstance
 
-  constructor (readonly server: FastifyInstance) {
+  constructor (server: FastifyInstance) {
+    this.server = server
     this.cookies = {}
   }
 
@@ -83,15 +88,15 @@ type SessionOptions = FastifyRegisterOptions<FastifySessionOptions | SecureSessi
 const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOptions = null) => {
   if (process.env.SESSION_PLUGIN === '@fastify/session') {
     server.register(fastifyCookie)
-    const options = <FastifyRegisterOptions<FastifySessionOptions>>(sessionOptions || {
+    const options = sessionOptions || {
       secret: 'a secret with minimum length of 32 characters',
       cookie: { secure: false }
-    })
-    server.register(fastifySession, options)
+    }
+    server.register(fastifySession, options as FastifyRegisterOptions<FastifySessionOptions>)
   } else {
     server.register(
       fastifySecureSession,
-      <FastifyRegisterOptions<SecureSessionPluginOptions>>(sessionOptions || { key: SecretKey })
+      (sessionOptions || { key: SecretKey }) as FastifyRegisterOptions<SecureSessionPluginOptions>
     )
   }
 }

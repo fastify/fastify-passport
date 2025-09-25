@@ -1,8 +1,8 @@
-import { FastifyRequest } from 'fastify'
-import { AuthenticateOptions } from '../AuthenticationRoute'
-import { SerializeFunction } from '../Authenticator'
-import { FastifySessionObject } from '@fastify/session'
-import { Session, SessionData } from '@fastify/secure-session'
+import type { FastifyRequest } from 'fastify'
+import type { AuthenticateOptions } from '../AuthenticationRoute'
+import type { SerializeFunction } from '../Authenticator'
+import type { FastifySessionObject } from '@fastify/session'
+import type { Session, SessionData } from '@fastify/secure-session'
 
 type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
 

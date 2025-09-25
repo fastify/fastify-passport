@@ -1,4 +1,4 @@
-import { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify'
 
 /**
  * Terminate an existing login session.

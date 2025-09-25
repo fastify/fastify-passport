@@ -1,8 +1,9 @@
-import * as http from 'node:http'
-import AuthenticationError from './errors'
-import Authenticator from './Authenticator'
-import { AnyStrategy, Strategy } from './strategies'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { STATUS_CODES } from 'node:http'
+import type { Authenticator } from './Authenticator'
+import type { AnyStrategy } from './strategies'
+import type { Strategy } from './strategies/base'
+import { AuthenticationError } from './errors'
+import type { FastifyReply, FastifyRequest } from 'fastify'
 import { types } from 'node:util'
 
 type FlashObject = { type?: string; message?: string }
@@ -69,6 +70,8 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
   readonly options: AuthenticateOptions
   readonly strategies: (string | Strategy)[]
   readonly isMultiStrategy: boolean
+  readonly authenticator: Authenticator
+  readonly callback: AuthenticateCallback<StrategyOrStrategies> | undefined
 
   /**
    * Create a new route handler that runs authentication strategies.
@@ -79,12 +82,14 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
    * @param callback optional custom callback to process the result of the strategy invocations
    */
   constructor (
-    readonly authenticator: Authenticator,
+    authenticator: Authenticator,
     strategyOrStrategies: StrategyOrStrategies,
     options?: AuthenticateOptions,
-    readonly callback?: AuthenticateCallback<StrategyOrStrategies>
+    callback?: AuthenticateCallback<StrategyOrStrategies>
   ) {
     this.options = options || {}
+    this.authenticator = authenticator
+    this.callback = callback
 
     // Cast `name` to an array, allowing authentication to pass through a chain of strategies.  The first strategy to succeed, redirect, or error will halt the chain.  Authentication failures will proceed through each strategy in series, ultimately failing if all strategies fail.
     // This is typically used on API endpoints to allow clients to authenticate using their preferred choice of Basic, Digest, token-based schemes, etc. It is not feasible to construct a chain of multiple strategies that involve redirection (for example both Facebook and Twitter), since the first one to redirect will halt the chain.
@@ -309,10 +314,10 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     }
 
     if (this.options.failWithError) {
-      throw new AuthenticationError(http.STATUS_CODES[reply.statusCode]!, rstatus)
+      throw new AuthenticationError(STATUS_CODES[reply.statusCode]!, rstatus)
     }
 
-    reply.send(http.STATUS_CODES[reply.statusCode])
+    reply.send(STATUS_CODES[reply.statusCode])
   }
 
   applyFlashOrMessage (event: 'success' | 'failure', request: FastifyRequest, result?: FlashObject) {

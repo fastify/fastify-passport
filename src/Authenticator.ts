@@ -1,9 +1,11 @@
-import { FastifyPluginAsync, FastifyRequest, RouteHandlerMethod } from 'fastify'
-import fastifyPlugin from 'fastify-plugin'
-import { AuthenticateCallback, AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
+import type { FastifyPluginAsync, FastifyRequest, RouteHandlerMethod } from 'fastify'
+import { fastifyPlugin } from 'fastify-plugin'
+import { type AuthenticateCallback, type AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
 import { SecureSessionManager } from './session-managers/SecureSessionManager'
-import { AnyStrategy, SessionStrategy, Strategy } from './strategies'
+import type { AnyStrategy } from './strategies/index'
+import type { Strategy } from './strategies/base'
+import { SessionStrategy } from './strategies/SessionStrategy'
 
 export type SerializeFunction<User = any, SerializedUser = any> = (
   user: User,

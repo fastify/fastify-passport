@@ -1,5 +1,5 @@
 import { Strategy } from './base'
-import { DeserializeFunction } from '../Authenticator'
+import type { DeserializeFunction } from '../Authenticator'
 import type { FastifyRequest } from 'fastify'
 
 /**
