@@ -1,7 +1,5 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import got from 'got'
-import { AddressInfo } from 'node:net'
 import { AuthenticateOptions } from '../src/AuthenticationRoute'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
@@ -375,8 +373,9 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(response.statusCode, 200)
     })
 
-    test('should return 200 if logged in against a running server', async () => {
+    test('should return 200 if logged in against a running server', async (t) => {
       const { server, fastifyPassport } = getConfiguredTestServer()
+      t.after(() => server.close())
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: true }) },
@@ -388,29 +387,28 @@ const testSuite = (sessionPluginName: string) => {
         () => {}
       )
 
-      await server.listen()
-      server.server.unref()
-
-      const port = (server.server.address() as AddressInfo).port
-      const login = await got('http://localhost:' + port + '/login', {
+      const address = await server.listen()
+      const login = await fetch(address + '/login', {
         method: 'POST',
-        json: { login: 'test', password: 'test' },
-        followRedirect: false
+        body: JSON.stringify({ login: 'test', password: 'test' }),
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'manual'
       })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
-      const cookies = login.headers['set-cookie']!
-      assert.strictEqual(cookies.length, 1)
 
-      const home = await got({
-        url: 'http://localhost:' + port,
+      assert.strictEqual(login.status, 302)
+      assert.strictEqual(login.headers.get('location'), '/')
+      const cookies = login.headers.getSetCookie()
+      assert.strictEqual(cookies.length, 1)
+      assert.strictEqual(await login.text(), '')
+
+      const home = await fetch(address, {
         headers: {
           cookie: cookies[0]
-        },
-        method: 'GET'
+        }
       })
 
-      assert.strictEqual(home.statusCode, 200)
+      assert.strictEqual(home.status, 200)
+      assert.strictEqual(await home.text(), 'hello world!')
     })
 
     test('should execute failureRedirect if failed to log in', async () => {
