@@ -90,7 +90,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     // This is typically used on API endpoints to allow clients to authenticate using their preferred choice of Basic, Digest, token-based schemes, etc. It is not feasible to construct a chain of multiple strategies that involve redirection (for example both Facebook and Twitter), since the first one to redirect will halt the chain.
     if (Array.isArray(strategyOrStrategies)) {
       this.strategies = strategyOrStrategies
-      this.isMultiStrategy = false
+      this.isMultiStrategy = true
     } else {
       this.strategies = [strategyOrStrategies]
       this.isMultiStrategy = false
