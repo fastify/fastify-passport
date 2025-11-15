@@ -201,4 +201,36 @@ describe('AuthenticationRoute edge cases', () => {
 
     assert.strictEqual(response.statusCode, 401)
   })
+
+  test('should use constructor.name when strategy instance name property is empty', async () => {
+    class CustomNamedStrategy extends TestStrategy {
+      constructor () {
+        super('test')
+        Object.defineProperty(this, 'name', {
+          value: '',
+          writable: false,
+          configurable: true
+        })
+      }
+    }
+
+    const strategy = new CustomNamedStrategy()
+    const { server, fastifyPassport } = getConfiguredTestServer()
+
+    fastifyPassport.use('CustomNamedStrategy', strategy)
+
+    server.post(
+      '/login',
+      { preValidation: fastifyPassport.authenticate(strategy) },
+      async (request: any) => (request.user as any).name
+    )
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: { login: 'test', password: 'test' },
+      url: '/login'
+    })
+
+    assert.strictEqual(response.statusCode, 200)
+  })
 })
