@@ -43,7 +43,7 @@ describe('Authenticator edge cases', () => {
     })
 
     assert.strictEqual(response.statusCode, 200)
-    const body = JSON.parse(response.body)
+    const body = response.json()
     assert.ok(body.account)
     assert.strictEqual(body.account.name, 'test')
   })
@@ -71,7 +71,7 @@ describe('Authenticator edge cases', () => {
     })
 
     assert.strictEqual(response.statusCode, 200)
-    const body = JSON.parse(response.body)
+    const body = response.json()
     assert.ok(body.authorizedUser)
   })
 

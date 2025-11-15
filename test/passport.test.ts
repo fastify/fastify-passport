@@ -63,7 +63,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(homeResponse.body, '["welcome"]')
+      assert.deepStrictEqual(homeResponse.json(), ['welcome'])
       assert.strictEqual(homeResponse.statusCode, 200)
     })
 
@@ -118,7 +118,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["welcome from strategy"]')
+      assert.deepStrictEqual(response.json(), ['welcome from strategy'])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -260,7 +260,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["welcome"]')
+      assert.deepStrictEqual(response.json(), ['welcome'])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -299,7 +299,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '[]')
+      assert.deepStrictEqual(response.json(), [])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -551,7 +551,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["try again"]')
+      assert.deepStrictEqual(response.json(), ['try again'])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -582,7 +582,7 @@ const testSuite = (sessionPluginName: string) => {
       })
 
       assert.strictEqual(response.statusCode, 200)
-      assert.strictEqual(response.body, '[]')
+      assert.deepStrictEqual(response.json(), [])
     })
 
     test('should return 401 Unauthorized if not logged in when used as a handler', async () => {
@@ -708,7 +708,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(homeResponse.body, '["welcome"]')
+      assert.deepStrictEqual(homeResponse.json(), ['welcome'])
       assert.strictEqual(homeResponse.statusCode, 200)
     })
   })

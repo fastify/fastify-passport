@@ -97,7 +97,7 @@ const testSuite = (sessionPluginName: string) => {
         })
 
         assert.strictEqual(response.statusCode, 200)
-        const body = JSON.parse(response.body)
+        const body = response.json()
         assert.strictEqual(body.isUnauthenticated, true)
       })
 
@@ -114,7 +114,7 @@ const testSuite = (sessionPluginName: string) => {
         })
 
         assert.strictEqual(response.statusCode, 200)
-        const body = JSON.parse(response.body)
+        const body = response.json()
         assert.strictEqual(body.isUnauthenticated, false)
       })
 

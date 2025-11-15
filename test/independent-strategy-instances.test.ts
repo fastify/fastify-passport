@@ -1,5 +1,5 @@
-import { test, describe } from 'node:test'
 import assert from 'node:assert'
+import { describe, test } from 'node:test'
 import { Strategy } from '../src/strategies'
 import { TestThirdPartyStrategy } from './authorize.test'
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
@@ -55,7 +55,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["welcome from strategy"]')
+      assert.deepStrictEqual(response.json(), ['welcome from strategy'])
       assert.strictEqual(response.statusCode, 200)
     })
 

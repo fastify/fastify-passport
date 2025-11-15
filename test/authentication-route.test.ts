@@ -109,8 +109,7 @@ describe('AuthenticationRoute edge cases', () => {
     })
 
     assert.strictEqual(response.statusCode, 500)
-    const body = JSON.parse(response.body)
-    assert.strictEqual(body.error, 'Strategy error')
+    assert.strictEqual(response.json().error, 'Strategy error')
   })
 
   test('should throw error for unknown strategy', async () => {
