@@ -1,7 +1,8 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import { SerializeFunction } from '../src/Authenticator'
-import { SessionStrategy } from '../src/strategies/SessionStrategy'
+import { SessionStrategy } from '../src/strategies'
+import { FastifyRequest } from 'fastify'
 
 describe('SessionStrategy', () => {
   test('should throw an Error if no parameter was passed', () => {
@@ -50,10 +51,31 @@ describe('SessionStrategy', () => {
   })
 
   test('should not throw an Error if no deserializeUser-function was passed as first parameter', () => {
-    assert.doesNotThrow(() => new SessionStrategy(((id) => id) as unknown as SerializeFunction))
+    assert.doesNotThrow(() => new SessionStrategy(((id: string) => id) as unknown as SerializeFunction))
   })
 
   test('should not throw an Error if no deserializeUser-function was passed as second parameter', () => {
-    assert.doesNotThrow(() => new SessionStrategy({}, ((id) => id) as unknown as SerializeFunction))
+    assert.doesNotThrow(() => new SessionStrategy({}, ((id: string) => id) as unknown as SerializeFunction))
+  })
+
+  test('should handle authenticate call without options parameter', () => {
+    const strategy = new SessionStrategy(async (user) => user)
+    let passCalled = false
+
+    strategy.pass = () => {
+      passCalled = true
+    }
+
+    const mockRequest = {
+      passport: {
+        sessionManager: {
+          getUserFromSession: () => undefined
+        }
+      }
+    } as unknown as FastifyRequest
+
+    strategy.authenticate(mockRequest)
+
+    assert.ok(passCalled, 'pass should be called when no session user')
   })
 })
