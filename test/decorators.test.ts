@@ -1,5 +1,6 @@
-import { test, describe } from 'node:test'
 import assert from 'node:assert'
+import { describe, test } from 'node:test'
+import '../src/index'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
@@ -83,6 +84,39 @@ const testSuite = (sessionPluginName: string) => {
           assert.strictEqual(login.headers['set-cookie'], undefined) // no user added to session
         }
       )
+
+      test('isUnauthenticated returns true when user is not authenticated', async () => {
+        const { server } = getConfiguredTestServer()
+        server.get('/check-auth', async (request, reply) => {
+          reply.send({ isUnauthenticated: request.isUnauthenticated() })
+        })
+
+        const response = await server.inject({
+          method: 'GET',
+          url: '/check-auth'
+        })
+
+        assert.strictEqual(response.statusCode, 200)
+        const body = JSON.parse(response.body)
+        assert.strictEqual(body.isUnauthenticated, true)
+      })
+
+      test('isUnauthenticated returns false when user is authenticated', async () => {
+        const { server } = getConfiguredTestServer()
+        server.post('/login', async (request, reply) => {
+          await request.logIn({ name: 'test user' })
+          reply.send({ isUnauthenticated: request.isUnauthenticated() })
+        })
+
+        const response = await server.inject({
+          method: 'POST',
+          url: '/login'
+        })
+
+        assert.strictEqual(response.statusCode, 200)
+        const body = JSON.parse(response.body)
+        assert.strictEqual(body.isUnauthenticated, false)
+      })
 
       test('should logout', async () => {
         const { server, fastifyPassport } = getConfiguredTestServer()
