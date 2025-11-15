@@ -12,7 +12,7 @@
     "lint:fix": "eslint --fix",
     "prepublishOnly": "npm run build",
     "test": "npm run build:test && npm run test:unit",
-    "test:unit": "borp --coverage"
+    "test:unit": "borp --coverage --lines 100"
   },
   "repository": {
     "type": "git",
