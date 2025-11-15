@@ -1,8 +1,8 @@
-import { test, describe } from 'node:test'
 import assert from 'node:assert'
+import { describe, test } from 'node:test'
 import Authenticator from '../src/Authenticator'
-import { getConfiguredTestServer, TestStrategy } from './helpers'
 import { Strategy } from '../src/strategies'
+import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -32,7 +32,7 @@ const testSuite = (sessionPluginName: string) => {
 
       const response = await server.inject({ method: 'GET', url: '/' })
       assert.strictEqual(response.statusCode, 500)
-      assert.strictEqual(JSON.parse(response.body).message, 'the strategy threw an error')
+      assert.strictEqual(response.json().message, 'the strategy threw an error')
     })
 
     test('should catch asynchronous strategy errors and fail authentication', async () => {
@@ -48,7 +48,7 @@ const testSuite = (sessionPluginName: string) => {
 
       const response = await server.inject({ method: 'GET', url: '/' })
       assert.strictEqual(response.statusCode, 500)
-      assert.strictEqual(JSON.parse(response.body).message, 'the strategy threw an error')
+      assert.strictEqual(response.json().message, 'the strategy threw an error')
     })
 
     test('should be able to fail with a failure flash message', async () => {
