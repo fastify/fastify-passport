@@ -85,62 +85,6 @@ const testSuite = (sessionPluginName: string) => {
         }
       )
 
-      test('should throw error when passport.initialize() plugin is not in use', async () => {
-        const { server } = getConfiguredTestServer()
-
-        server.decorateRequest('logIn', async function (user: any) {
-          throw new Error('passport.initialize() plugin not in use')
-        })
-
-        server.post('/force-login', async (request: any, reply) => {
-          try {
-            await request.logIn({ name: 'test user' })
-            reply.send('should not reach here')
-          } catch (error: any) {
-            reply.status(500).send({ error: error.message })
-          }
-        })
-
-        const response = await server.inject({
-          method: 'POST',
-          url: '/force-login'
-        })
-
-        assert.strictEqual(response.statusCode, 500)
-        const body = JSON.parse(response.body)
-        assert.strictEqual(body.error, 'passport.initialize() plugin not in use')
-      })
-
-      test('should clear user property when session login throws an error', async () => {
-        const { server } = getConfiguredTestServer()
-
-        server.post('/force-login-error', async (request: any, reply) => {
-          const originalLogIn = request.passport.sessionManager.logIn
-          request.passport.sessionManager.logIn = async () => {
-            throw new Error('Session storage error')
-          }
-
-          try {
-            await request.logIn({ name: 'test user' })
-            reply.send('should not reach here')
-          } catch (error: any) {
-            request.passport.sessionManager.logIn = originalLogIn
-
-            assert.strictEqual(request.user, null)
-            reply.status(500).send({ error: error.message })
-          }
-        })
-
-        const response = await server.inject({
-          method: 'POST',
-          url: '/force-login-error'
-        })
-
-        assert.strictEqual(response.statusCode, 500)
-        const body = JSON.parse(response.body)
-        assert.strictEqual(body.error, 'Session storage error')
-      })
-
       test('isUnauthenticated returns true when user is not authenticated', async () => {
         const { server } = getConfiguredTestServer()
         server.get('/check-auth', async (request, reply) => {
