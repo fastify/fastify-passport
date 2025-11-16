@@ -1,6 +1,6 @@
-import { test, describe, beforeEach } from 'node:test'
-import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
+import assert from 'node:assert'
+import { beforeEach, describe, test } from 'node:test'
 import { Authenticator } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { getTestServer, TestBrowserSession } from './helpers'
@@ -248,14 +248,14 @@ const testSuite = (sessionPluginName: string) => {
           url: '/user/a'
         })
         assert.strictEqual(response.statusCode, 200)
-        const userA = JSON.parse(response.body)
+        const userA = response.json()
 
         response = await session.inject({
           method: 'GET',
           url: '/user/b'
         })
         assert.strictEqual(response.statusCode, 200)
-        const userB = JSON.parse(response.body)
+        const userB = response.json()
 
         assert.notStrictEqual(userA.id, userB.id)
       })
@@ -415,7 +415,7 @@ const testSuite = (sessionPluginName: string) => {
           url: '/user/a'
         })
         assert.strictEqual(response.statusCode, 200)
-        const userA = JSON.parse(response.body)
+        const userA = response.json()
 
         // login b
         response = await session.inject({
@@ -432,7 +432,7 @@ const testSuite = (sessionPluginName: string) => {
           url: '/user/b'
         })
         assert.strictEqual(response.statusCode, 200)
-        const userB = JSON.parse(response.body)
+        const userB = response.json()
 
         assert.notStrictEqual(userA.id, userB.id)
       })

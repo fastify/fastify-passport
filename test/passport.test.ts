@@ -1,5 +1,5 @@
-import { test, describe } from 'node:test'
 import assert from 'node:assert'
+import { describe, test } from 'node:test'
 import { AuthenticateOptions } from '../src/AuthenticationRoute'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
@@ -63,7 +63,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(homeResponse.body, '["welcome"]')
+      assert.deepStrictEqual(homeResponse.json(), ['welcome'])
       assert.strictEqual(homeResponse.statusCode, 200)
     })
 
@@ -118,7 +118,65 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["welcome from strategy"]')
+      assert.deepStrictEqual(response.json(), ['welcome from strategy'])
+      assert.strictEqual(response.statusCode, 200)
+    })
+
+    test('should append multiple messages to session when messages already exist', async () => {
+      const { server, fastifyPassport } = getConfiguredTestServer('test', new TestStrategy('test'), null, {
+        clearSessionIgnoreFields: ['messages']
+      })
+
+      server.post(
+        '/fail1',
+        {
+          preValidation: fastifyPassport.authenticate('test', {
+            failureMessage: 'first failure',
+            authInfo: false
+          })
+        },
+        () => {}
+      )
+      server.post(
+        '/fail2',
+        {
+          preValidation: fastifyPassport.authenticate('test', {
+            failureMessage: 'second failure',
+            authInfo: false
+          })
+        },
+        () => {}
+      )
+      server.get('/messages', async (request) => request.session.get('messages') || [])
+
+      const firstFail = await server.inject({
+        method: 'POST',
+        url: '/fail1',
+        payload: { login: 'wrong', password: 'wrong' }
+      })
+
+      assert.strictEqual(firstFail.statusCode, 401)
+
+      const secondFail = await server.inject({
+        method: 'POST',
+        url: '/fail2',
+        headers: {
+          cookie: firstFail.headers['set-cookie']
+        },
+        payload: { login: 'wrong', password: 'wrong' }
+      })
+
+      assert.strictEqual(secondFail.statusCode, 401)
+
+      const response = await server.inject({
+        url: '/messages',
+        headers: {
+          cookie: secondFail.headers['set-cookie']
+        },
+        method: 'GET'
+      })
+
+      assert.deepStrictEqual(response.json(), ['first failure', 'second failure'])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -202,7 +260,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["welcome"]')
+      assert.deepStrictEqual(response.json(), ['welcome'])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -241,7 +299,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '[]')
+      assert.deepStrictEqual(response.json(), [])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -449,7 +507,7 @@ const testSuite = (sessionPluginName: string) => {
       })
       assert.strictEqual(login.statusCode, 401)
 
-      const headers = {}
+      const headers: Record<string, string | string[]> = {}
       if (login.headers['set-cookie']) {
         headers['cookie'] = login.headers['set-cookie']
       }
@@ -493,7 +551,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, '["try again"]')
+      assert.deepStrictEqual(response.json(), ['try again'])
       assert.strictEqual(response.statusCode, 200)
     })
 
@@ -524,7 +582,7 @@ const testSuite = (sessionPluginName: string) => {
       })
 
       assert.strictEqual(response.statusCode, 200)
-      assert.strictEqual(response.body, '[]')
+      assert.deepStrictEqual(response.json(), [])
     })
 
     test('should return 401 Unauthorized if not logged in when used as a handler', async () => {
@@ -650,7 +708,7 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(homeResponse.body, '["welcome"]')
+      assert.deepStrictEqual(homeResponse.json(), ['welcome'])
       assert.strictEqual(homeResponse.statusCode, 200)
     })
   })

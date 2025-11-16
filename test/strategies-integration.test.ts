@@ -14,10 +14,10 @@ const testSuite = (sessionPluginName: string) => {
         {
           clientID: '384163122467-cq6dolrp53at1a3pa8j0f4stpa5gvouh.apps.googleusercontent.com',
           clientSecret: 'o15Chw0KIaXtx_2wRGxNdNSy',
-          callbackURL: 'http://www.example.com/auth/google/callback'
+          callbackURL: 'http://www.example.com/auth/google/callback',
         },
         () => fail()
-      )
+      ) as TestStrategy
 
       const { server, fastifyPassport } = getConfiguredTestServer('google', strategy)
 
