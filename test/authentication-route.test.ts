@@ -9,7 +9,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('test', { failWithError: true }) },
-      async () => 'should not reach here'
+      async () => assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -33,7 +33,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('challenge') },
-      async () => 'should not reach here'
+      async () => assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -118,7 +118,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('nonexistent') },
-      async () => 'should not reach here'
+      async () => assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -190,7 +190,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('object') },
-      async () => 'should not reach here'
+      async () => assert.fail('should not reach here')
     )
 
     const response = await server.inject({
