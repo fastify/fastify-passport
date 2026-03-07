@@ -4,6 +4,7 @@ import type { logOut } from './decorators/logout'
 import type { isAuthenticated } from './decorators/is-authenticated'
 import type { isUnauthenticated } from './decorators/is-unauthenticated'
 import Authenticator from './Authenticator'
+import type { AuthContext } from './types'
 
 const passport = new Authenticator()
 
@@ -27,7 +28,7 @@ declare module 'fastify' {
    * }
    * ```
    */
-  interface PassportUser {}
+  interface PassportUser { }
 
   interface ExpressSessionData {
     [key: string]: any
@@ -46,9 +47,12 @@ declare module 'fastify' {
     user?: PassportUser
     authInfo?: Record<string, any>
     account?: PassportUser
+    authContext?: AuthContext
   }
 
   interface FastifyReply {
     flash: ReturnType<typeof flashFactory>['reply']
   }
 }
+
+export type { AuthResult, AuthContext } from './types'

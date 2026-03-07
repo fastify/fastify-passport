@@ -21,5 +21,6 @@ export function CreateInitializePlugin (passport: Authenticator) {
     fastify.decorateRequest('isAuthenticated', isAuthenticated)
     fastify.decorateRequest('isUnauthenticated', isUnauthenticated)
     fastify.decorateRequest(passport.userProperty, null)
+    fastify.decorateRequest('authContext', undefined)
   })
 }

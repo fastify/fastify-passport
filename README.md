@@ -16,6 +16,36 @@ Beta. `@fastify/passport` is still a relatively new project. There may be incomp
 npm i @fastify/passport
 ```
 
+## Running the Demo
+
+This repository includes a fully-functional Demo Server (`demo-auth-server.ts`) that showcases exactly how to use the programmatic `authenticateRequest()` API and `request.authContext` observability hook. The demo utilizes two mocked strategies: stateful `Session` and stateless `API Key` fallback.
+
+To test the demo server locally:
+
+**1. Start the server (Requires ts-node):**
+```bash
+npm run build
+npx ts-node demo-auth-server.ts
+```
+
+**2. Test the endpoints:**
+You can test the programmatic auth fallback logic using the following curl commands. The protected route will attempt to authenticate via the stateful Session cookie first, and if that fails, it will attempt to authenticate statelessly via the `x-api-key` header.
+
+```bash
+# Login (creates a secure session)
+curl http://127.0.0.1:3000/login
+
+# Test Protected Route (fails if no session/key is present)
+# Succeeds statelessly with API key header
+curl -H "x-api-key: secret-key" http://127.0.0.1:3000/protected
+
+# Test with an invalid API key header
+curl -H "x-api-key: invalid" http://127.0.0.1:3000/protected
+
+# Logout (clears session and forces fallback to API key on next request)
+curl http://127.0.0.1:3000/logout
+```
+
 ## Google OAuth2 Video tutorial
 
 The community created this fast introduction to `@fastify/passport`:
@@ -231,6 +261,37 @@ fastify.get(
 )
 ```
 
+### authenticateRequest(strategy: string | Strategy | (string | Strategy)[], request: FastifyRequest, reply: FastifyReply, options?: AuthenticateOptions)
+
+A programmatic alternative to `.authenticate()`. Returns a `Promise<AuthResult>` instead of a Fastify route hook, allowing you to explicitly handle the authentication result and control the response flow inside your route handler.
+
+The `AuthResult` object contains the outcome of the authentication attempt, including `ok: boolean`, the `statusCode` (e.g. 200, 401), and the authenticated `user` (if successful). If authentication fails across all strategies, it may contain `challenges` from the attempted strategies.
+
+Options:
+- `session` Save login state in session, defaults to _false_ (different from `.authenticate()`)
+- Other options like `assignProperty`, `state`, and `keepSessionInfo` are also supported. Note that redirection options (`successRedirect`, `failureRedirect`) will not automatically trigger a redirect; instead, their URLs will be returned in the `AuthResult.redirectUrl` property for you to handle manually.
+
+Example:
+
+```js
+fastify.get('/protected', async (request, reply) => {
+  const result = await fastifyPassport.authenticateRequest(['bearer', 'basic'], request, reply)
+
+  if (result.ok) {
+    return reply.code(200).send({
+      message: 'Authentication successful!',
+      user: result.user
+    })
+  } else {
+    // result.statusCode will typically be 401
+    return reply.code(result.statusCode).send({
+      error: 'Authentication failed',
+      challenges: result.challenges
+    })
+  }
+})
+```
+
 ### authorize(strategy: string | Strategy | (string | Strategy)[], options: AuthenticateOptions = {}, callback?: AuthenticateCallback)
 
 Returns a hook that will authorize a third-party account using the given `strategy`, with optional `options`. Intended for use as a `preValidation` hook on any route. `.authorize` has the same API as `.authenticate`, but has one key difference: it doesn't modify the logged in user's details. Instead, if authorization is successful, the result provided by the strategy's verify callback will be assigned to `request.account`. The existing login session and `request.user` will be unaffected.
@@ -324,6 +385,19 @@ Therefore, a deserializer can return several things:
 ### Request#isUnauthenticated()
 
 Test if request is unauthenticated.
+
+### Request#authContext
+
+During an authentication attempt (either via `.authenticate()` hook or `.authenticateRequest()`), `@fastify/passport` exposes `request.authContext` to provide deep observability into the authentication process. This object is populated incrementally as strategies execute and provides a summary upon completion.
+
+The context includes:
+- `outcome`: The final result (`'authenticated'`, `'rejected'`, `'error'`, etc.)
+- `successfulStrategy`: The name of the strategy that eventually succeeded (if any)
+- `elapsedMs`: Total time spent authenticating across all strategies
+- `userId`: The `id` property from the authenticated user object, if present
+- `attempts`: An array detailing the `strategy` name, `outcome`, `elapsedMs`, and specific `errorType` (if applicable) for each individual strategy tried
+
+This is highly useful for audit logging, metrics aggregation, and debugging complex multi-strategy scenarios.
 
 ## Using with TypeScript
 
