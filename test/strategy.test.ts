@@ -4,6 +4,9 @@ import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
+
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test('should be able to unuse strategy', () => {
@@ -22,7 +25,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should catch synchronous strategy errors and fail authentication', async () => {
       class ErrorStrategy extends Strategy {
-        authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
           throw new Error('the strategy threw an error')
         }
       }
@@ -37,7 +40,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should catch asynchronous strategy errors and fail authentication', async () => {
       class ErrorStrategy extends Strategy {
-        async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+        async authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
           await Promise.resolve()
           throw new Error('the strategy threw an error')
         }
@@ -53,7 +56,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should be able to fail with a failure flash message', async () => {
       class ErrorStrategy extends Strategy {
-        async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+        async authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
           await Promise.resolve()
           this.fail({ message: 'The strategy failed with an error message' }, 401)
         }
@@ -72,7 +75,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should be able to fail without a failure flash message', async () => {
       class ErrorStrategy extends Strategy {
-        async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+        async authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
           await Promise.resolve()
           this.fail(401)
         }

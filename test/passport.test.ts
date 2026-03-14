@@ -5,6 +5,9 @@ import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { getConfiguredTestServer, getRegisteredTestServer, getTestServer, TestStrategy } from './helpers'
 
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
+
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test('should return 401 Unauthorized if not logged in', async () => {
@@ -69,11 +72,16 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should allow login, and add successMessage to the session from a strategy that sets it', async () => {
       class WelcomeStrategy extends Strategy {
-        authenticate (request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (request: StrategyRequest, _options?: StrategyOptions) {
           if (request.isAuthenticated()) {
             return this.pass()
           }
-          if (request.body && request.body.login === 'welcomeuser' && request.body.password === 'test') {
+
+          const body = (typeof request.body === 'object' && request.body !== null)
+            ? request.body as { login?: string, password?: string }
+            : undefined
+
+          if (body && body.login === 'welcomeuser' && body.password === 'test') {
             return this.success({ name: 'test' }, { message: 'welcome from strategy' })
           }
           this.fail()
@@ -347,7 +355,7 @@ const testSuite = (sessionPluginName: string) => {
             authInfo: false
           })
         },
-        (request: any, reply: any) => {
+        (request, reply) => {
           reply.send(request.user)
         }
       )
@@ -638,8 +646,8 @@ const testSuite = (sessionPluginName: string) => {
       )
       server.post(
         '/login',
-        fastifyPassport.authenticate('test', async (_request, _reply, _err, user) => {
-          return (user as any).name
+        fastifyPassport.authenticate('test', async (_request, reply, _err, user) => {
+          reply.send((user as { name: string }).name)
         })
       )
 
@@ -651,7 +659,7 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(login.statusCode, 200)
       assert.strictEqual(login.body, 'test')
 
-      const headers: Record<string, any> = {}
+      const headers: Record<string, string | string[]> = {}
       if (login.headers['set-cookie']) {
         headers['cookie'] = login.headers['set-cookie']
       }

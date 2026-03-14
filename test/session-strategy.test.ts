@@ -1,8 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
-import { SerializeFunction } from '../src/Authenticator'
+import type { DeserializeFunction } from '../src/Authenticator'
 import { SessionStrategy } from '../src/strategies'
-import { FastifyRequest } from 'fastify'
 
 describe('SessionStrategy', () => {
   test('should throw an Error if no parameter was passed', () => {
@@ -51,11 +50,13 @@ describe('SessionStrategy', () => {
   })
 
   test('should not throw an Error if no deserializeUser-function was passed as first parameter', () => {
-    assert.doesNotThrow(() => new SessionStrategy(((id: string) => id) as unknown as SerializeFunction))
+    const deserialize: DeserializeFunction = async (id) => id
+    assert.doesNotThrow(() => new SessionStrategy(deserialize))
   })
 
   test('should not throw an Error if no deserializeUser-function was passed as second parameter', () => {
-    assert.doesNotThrow(() => new SessionStrategy({}, ((id: string) => id) as unknown as SerializeFunction))
+    const deserialize: DeserializeFunction = async (id) => id
+    assert.doesNotThrow(() => new SessionStrategy({}, deserialize))
   })
 
   test('should handle authenticate call without options parameter', () => {
@@ -72,7 +73,7 @@ describe('SessionStrategy', () => {
           getUserFromSession: () => undefined
         }
       }
-    } as unknown as FastifyRequest
+    }
 
     strategy.authenticate(mockRequest)
 

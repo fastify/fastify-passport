@@ -4,12 +4,20 @@ import { Strategy } from '../src/strategies'
 import { TestThirdPartyStrategy } from './authorize.test'
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
 
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
+
 class WelcomeStrategy extends Strategy {
-  authenticate (request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: StrategyRequest, _options?: StrategyOptions) {
     if (request.isAuthenticated()) {
       return this.pass()
     }
-    if (request.body && request.body.login === 'welcomeuser' && request.body.password === 'test') {
+
+    const body = (typeof request.body === 'object' && request.body !== null)
+      ? request.body as { login?: string, password?: string }
+      : undefined
+
+    if (body && body.login === 'welcomeuser' && body.password === 'test') {
       return this.success({ name: 'test' }, { message: 'welcome from strategy' })
     }
     this.fail()
@@ -152,9 +160,9 @@ const testSuite = (sessionPluginName: string) => {
         '/',
         { preValidation: fastifyPassport.authorize(new TestThirdPartyStrategy('third-party')) },
         async (request) => {
-          const user = request.user as any
+          const user = request.user
           assert.ifError(user)
-          const account = request.account as any
+          const account = request.account as { id: string, name: string }
           assert.ok(account.id)
           assert.strictEqual(account.name, 'test')
 

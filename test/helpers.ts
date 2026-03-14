@@ -1,15 +1,26 @@
 import fs from 'node:fs'
 import { join } from 'node:path'
-import fastify, { FastifyInstance } from 'fastify'
+import fastify, { InjectOptions, LightMyRequestResponse } from 'fastify'
 import fastifySecureSession, { SecureSessionPluginOptions } from '@fastify/secure-session'
 import fastifyCookie from '@fastify/cookie'
 import Authenticator, { AuthenticatorOptions } from '../src/Authenticator'
-import { Strategy } from '../src/strategies'
-import { InjectOptions, Response as LightMyRequestResponse } from 'light-my-request'
+import { Strategy, type AnyStrategy } from '../src/strategies'
 import parseCookies from 'set-cookie-parser'
-import { IncomingMessage } from 'node:http'
 import { FastifyRegisterOptions } from 'fastify/types/register'
 import { fastifySession, FastifySessionOptions } from '@fastify/session'
+
+export type TestServer = Awaited<ReturnType<typeof fastify>>
+
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
+type LoginBody = { login?: string, password?: string }
+
+const getLoginBody = (request: StrategyRequest): LoginBody | undefined => {
+  if (typeof request.body === 'object' && request.body !== null) {
+    return request.body as LoginBody
+  }
+  return undefined
+}
 
 const SecretKey = fs.readFileSync(join(__dirname, '../../test', 'secure.key'))
 
@@ -17,11 +28,13 @@ let counter = 0
 export const generateTestUser = () => ({ name: 'test', id: String(counter++) })
 
 export class TestStrategy extends Strategy {
-  authenticate (request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: StrategyRequest, _options?: StrategyOptions) {
     if (request.isAuthenticated()) {
       return this.pass()
     }
-    if (request.body && request.body.login === 'test' && request.body.password === 'test') {
+
+    const body = getLoginBody(request)
+    if (body && body.login === 'test' && body.password === 'test') {
       return this.success(generateTestUser())
     }
 
@@ -40,13 +53,15 @@ export class TestDatabaseStrategy extends Strategy {
     this.database = database
   }
 
-  authenticate (request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (request: StrategyRequest, _options?: StrategyOptions) {
     if (request.isAuthenticated()) {
       return this.pass()
     }
-    if (request.body) {
+
+    const body = getLoginBody(request)
+    if (body) {
       const user = Object.values(this.database).find(
-        (user) => user.login === request.body.login && user.password === request.body.password
+        (user) => user.login === body.login && user.password === body.password
       )
       if (user) {
         return this.success(user)
@@ -60,9 +75,9 @@ export class TestDatabaseStrategy extends Strategy {
 /** Class representing a browser in tests */
 export class TestBrowserSession {
   cookies: Record<string, string>
-  server: FastifyInstance
+  server: TestServer
 
-  constructor (server: FastifyInstance) {
+  constructor (server: TestServer) {
     this.server = server
     this.cookies = {}
   }
@@ -75,7 +90,9 @@ export class TestBrowserSession {
 
     const result = await this.server.inject(opts)
     if (result.statusCode < 500) {
-      for (const { name, value } of parseCookies(result as unknown as IncomingMessage, { decodeValues: false })) {
+      const setCookie = result.headers['set-cookie']
+      const cookieInput = Array.isArray(setCookie) ? setCookie : (setCookie ? [setCookie] : [])
+      for (const { name, value } of parseCookies(cookieInput, { decodeValues: false })) {
         this.cookies[name] = value
       }
     }
@@ -85,7 +102,7 @@ export class TestBrowserSession {
 
 type SessionOptions = FastifyRegisterOptions<FastifySessionOptions | SecureSessionPluginOptions> | null
 
-const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOptions = null) => {
+const loadSessionPlugins = (server: TestServer, sessionOptions: SessionOptions = null) => {
   if (process.env.SESSION_PLUGIN === '@fastify/session') {
     server.register(fastifyCookie)
     const options = sessionOptions || {
@@ -101,7 +118,7 @@ const loadSessionPlugins = (server: FastifyInstance, sessionOptions: SessionOpti
   }
 }
 
-/** Create a fastify instance with a few simple setup bits added, but without fastify-passport registered or any strategies set up. */
+/** Create a fastify instance with a few simple setup bits added, but without fastify-passport registered or strategies set up. */
 export const getTestServer = (sessionOptions: SessionOptions = null) => {
   const server = fastify()
   loadSessionPlugins(server, sessionOptions)
@@ -132,7 +149,7 @@ export const getRegisteredTestServer = (
 /** Create a fastify instance with fastify-passport plugin registered and the given strategy registered with it. */
 export const getConfiguredTestServer = (
   name = 'test',
-  strategy = new TestStrategy('test'),
+  strategy: AnyStrategy = new TestStrategy('test'),
   sessionOptions: SessionOptions = null,
   passportOptions: AuthenticatorOptions = {}
 ) => {

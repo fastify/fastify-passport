@@ -14,7 +14,7 @@ const testSuite = (sessionPluginName: string) => {
         server.get(
           '/',
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-          async (request) => (request.user as any).name
+          async (request) => (request.user as { name: string }).name
         )
         server.post('/force-login', async (request, reply) => {
           await request.logIn({ name: 'force logged in user' })
@@ -46,7 +46,7 @@ const testSuite = (sessionPluginName: string) => {
           const { server } = getConfiguredTestServer()
           server.post('/force-login', async (request, reply) => {
             await request.logIn({ name: 'force logged in user' }, { session: false })
-            reply.send((request.user as any).name)
+            reply.send((request.user as { name: string }).name)
           })
 
           const login = await server.inject({
@@ -71,7 +71,7 @@ const testSuite = (sessionPluginName: string) => {
           const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
           server.post('/force-login', async (request, reply) => {
             await request.logIn({ name: 'force logged in user' }, { session: false })
-            reply.send((request.user as any).name)
+            reply.send((request.user as { name: string }).name)
           })
 
           const login = await server.inject({

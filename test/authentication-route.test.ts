@@ -90,11 +90,11 @@ describe('AuthenticationRoute edge cases', () => {
 
     const { server, fastifyPassport } = getConfiguredTestServer('error', new ErrorStrategy('error'))
 
-    server.post('/login', async (request: any, reply) => {
+    server.post('/login', async (request, reply) => {
       const handler = fastifyPassport.authenticate(
         'error',
-        async (req: any, rep: any, err: any, user: any) => {
-          if (err) {
+        async (_req, rep, err, user) => {
+          if (err instanceof Error) {
             return rep.status(500).send({ error: err.message })
           }
           rep.send({ user })
@@ -143,7 +143,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate(strategy) },
-      async (request: any) => (request.user as any).name
+      async (request) => (request.user as { name: string }).name
     )
 
     const response = await server.inject({
@@ -221,7 +221,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate(strategy) },
-      async (request: any) => (request.user as any).name
+      async (request) => (request.user as { name: string }).name
     )
 
     const response = await server.inject({

@@ -3,6 +3,9 @@ import { describe, test } from 'node:test'
 import { Strategy } from '../src/strategies/base'
 import { getConfiguredTestServer } from './helpers'
 
+type LoginBody = { login?: string, password?: string }
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+
 describe('Additional coverage tests', () => {
   test('should use constructor name when strategy instance has no name property', async () => {
     class CustomAuthStrategy extends Strategy {
@@ -10,8 +13,9 @@ describe('Additional coverage tests', () => {
         super('custom-auth')
       }
 
-      authenticate (request: any) {
-        if (request.body && request.body.login === 'test' && request.body.password === 'test') {
+      authenticate (request: StrategyRequest) {
+        const body = (typeof request.body === 'object' && request.body !== null) ? request.body as LoginBody : undefined
+        if (body && body.login === 'test' && body.password === 'test') {
           return this.success({ name: 'test', id: '1' })
         }
         this.fail()
@@ -26,7 +30,7 @@ describe('Additional coverage tests', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate(strategy) },
-      async (request: any) => (request.user as any).name
+      async (request) => (request.user as { name: string }).name
     )
 
     const response = await server.inject({
@@ -41,7 +45,7 @@ describe('Additional coverage tests', () => {
 
   test('should throw error when authenticate is not overridden', () => {
     const strategy = new Strategy('test')
-    const fakeRequest = {} as any
+    const fakeRequest = {} as Parameters<Strategy['authenticate']>[0]
 
     assert.throws(
       () => {

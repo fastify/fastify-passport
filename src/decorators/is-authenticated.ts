@@ -1,6 +1,6 @@
-import type { FastifyRequest } from 'fastify'
+import type { FastifyPassportRequest } from '../types'
 
-export function isAuthenticated (this: FastifyRequest): boolean {
+export function isAuthenticated (this: FastifyPassportRequest): boolean {
   const property = this.passport.userProperty
   return !!this[property]
 }

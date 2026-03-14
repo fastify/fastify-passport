@@ -3,6 +3,8 @@ import { describe, test } from 'node:test'
 import Authenticator from '../src/Authenticator'
 import { getConfiguredTestServer } from './helpers'
 
+type TransformRequest = Parameters<Authenticator['transformAuthInfo']>[1]
+
 describe('Authenticator edge cases', () => {
   test('should throw error when no serializer succeeds', async () => {
     const fastifyPassport = new Authenticator()
@@ -14,12 +16,11 @@ describe('Authenticator edge cases', () => {
       throw 'pass' // eslint-disable-line no-throw-literal
     })
 
-    const { server } = getConfiguredTestServer()
-
     try {
-      await fastifyPassport.serializeUser({ name: 'test' }, server.inject as any)
+      await fastifyPassport.serializeUser({ name: 'test' }, {})
       assert.fail('Should have thrown an error')
-    } catch (error: any) {
+    } catch (error) {
+      assert.ok(error instanceof Error)
       assert.ok(error.message.includes('Failed to serialize user into session'))
       assert.ok(error.message.includes('Tried 2 serializers'))
     }
@@ -31,7 +32,7 @@ describe('Authenticator edge cases', () => {
     server.post(
       '/authorize',
       { preValidation: fastifyPassport.authorize('test', { assignProperty: 'account' }) },
-      async (request: any, reply) => {
+      async (request, reply) => {
         reply.send({ account: request.account })
       }
     )
@@ -43,19 +44,19 @@ describe('Authenticator edge cases', () => {
     })
 
     assert.strictEqual(response.statusCode, 200)
-    const body = response.json()
+    const body = response.json() as { account?: { name?: string } }
     assert.ok(body.account)
-    assert.strictEqual(body.account.name, 'test')
+    assert.strictEqual(body.account?.name, 'test')
   })
 
   test('should handle authorize with callback function as second parameter', async () => {
     const { server, fastifyPassport } = getConfiguredTestServer()
 
-    server.post('/authorize', async (request: any, reply) => {
+    server.post('/authorize', async (request, reply) => {
       const handler = fastifyPassport.authorize(
         'test',
-        async (req: any, rep: any, err: any, user: any) => {
-          if (err) {
+        async (_req, rep, err, user) => {
+          if (err instanceof Error) {
             return rep.status(500).send({ error: err.message })
           }
           rep.send({ authorizedUser: user })
@@ -71,16 +72,16 @@ describe('Authenticator edge cases', () => {
     })
 
     assert.strictEqual(response.statusCode, 200)
-    const body = response.json()
+    const body = response.json() as { authorizedUser?: unknown }
     assert.ok(body.authorizedUser)
   })
 
   test('should use default authInfo transformer when no transformers are registered', async () => {
     const fastifyPassport = new Authenticator()
-    const { server } = getConfiguredTestServer()
 
     const info = { message: 'test info' }
-    const result = await fastifyPassport.transformAuthInfo(info, server.inject as any)
+    const request = {} as TransformRequest
+    const result = await fastifyPassport.transformAuthInfo(info, request)
 
     assert.deepStrictEqual(result, info)
   })
@@ -92,9 +93,9 @@ describe('Authenticator edge cases', () => {
       return { ...info, transformed: true }
     })
 
-    const { server } = getConfiguredTestServer()
     const info = { message: 'test info' }
-    const result = await fastifyPassport.transformAuthInfo(info, server.inject as any)
+    const request = {} as TransformRequest
+    const result = await fastifyPassport.transformAuthInfo(info, request) as { message: string, transformed?: boolean }
 
     assert.strictEqual(result.message, 'test info')
     assert.strictEqual(result.transformed, true)
@@ -111,9 +112,9 @@ describe('Authenticator edge cases', () => {
       return { ...info, transformed: true }
     })
 
-    const { server } = getConfiguredTestServer()
     const info = { message: 'test info' }
-    const result = await fastifyPassport.transformAuthInfo(info, server.inject as any)
+    const request = {} as TransformRequest
+    const result = await fastifyPassport.transformAuthInfo(info, request) as { message: string, transformed?: boolean }
 
     assert.strictEqual(result.message, 'test info')
     assert.strictEqual(result.transformed, true)
@@ -126,13 +127,14 @@ describe('Authenticator edge cases', () => {
       throw new Error('Transformer error')
     })
 
-    const { server } = getConfiguredTestServer()
     const info = { message: 'test info' }
+    const request = {} as TransformRequest
 
     try {
-      await fastifyPassport.transformAuthInfo(info, server.inject as any)
+      await fastifyPassport.transformAuthInfo(info, request)
       assert.fail('Should have thrown an error')
-    } catch (error: any) {
+    } catch (error) {
+      assert.ok(error instanceof Error)
       assert.strictEqual(error.message, 'Transformer error')
     }
   })

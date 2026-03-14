@@ -11,7 +11,7 @@ function createServer () {
     async () => 'hello!'
   )
   server.get('/my-id', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
-    String((request.user as any).id)
+    String((request.user as { id: string }).id)
   )
   server.post(
     '/login',

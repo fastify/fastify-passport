@@ -5,19 +5,19 @@ import { Strategy as GitHubStrategy } from 'passport-github2'
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
 import { Configuration as OpenIdClientConfiguration } from 'openid-client'
 import { Strategy as OpenIdClientStrategy } from 'openid-client/passport'
-import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { getConfiguredTestServer } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     test('should initiate oauth with the google strategy from npm', async () => {
-      const strategy: TestStrategy = new GoogleStrategy(
+      const strategy = new GoogleStrategy(
         {
           clientID: '384163122467-cq6dolrp53at1a3pa8j0f4stpa5gvouh.apps.googleusercontent.com',
           clientSecret: 'o15Chw0KIaXtx_2wRGxNdNSy',
           callbackURL: 'http://www.example.com/auth/google/callback',
         },
         () => fail()
-      ) as TestStrategy
+      )
 
       const { server, fastifyPassport } = getConfiguredTestServer('google', strategy)
 
@@ -37,7 +37,7 @@ const testSuite = (sessionPluginName: string) => {
     })
 
     test('should initiate oauth with the facebook strategy from npm', async () => {
-      const strategy: TestStrategy = new FacebookStrategy(
+      const strategy = new FacebookStrategy(
         {
           clientID: 'foobar',
           clientSecret: 'baz',
@@ -64,7 +64,7 @@ const testSuite = (sessionPluginName: string) => {
     })
 
     test('should initiate oauth with the github strategy from npm', async () => {
-      const strategy: TestStrategy = new GitHubStrategy(
+      const strategy = new GitHubStrategy(
         {
           clientID: 'foobar',
           clientSecret: 'baz',
@@ -102,8 +102,9 @@ const testSuite = (sessionPluginName: string) => {
       const strategy = new OpenIdClientStrategy(
         { config },
         () => fail()
-      ) as unknown as TestStrategy
+      )
 
+      // @ts-expect-error openid-client Strategy type is not structurally compatible with passport Strategy typings
       const { server, fastifyPassport } = getConfiguredTestServer('openid-client', strategy)
 
       server.get(
