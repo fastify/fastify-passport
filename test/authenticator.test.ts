@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import Authenticator from '../src/Authenticator'
-import { getConfiguredTestServer } from './helpers'
+import { asPassportRequest, getConfiguredTestServer } from './helpers'
 
 type TransformRequest = Parameters<Authenticator['transformAuthInfo']>[1]
 
@@ -33,7 +33,7 @@ describe('Authenticator edge cases', () => {
       '/authorize',
       { preValidation: fastifyPassport.authorize('test', { assignProperty: 'account' }) },
       async (request, reply) => {
-        reply.send({ account: request.account })
+        reply.send({ account: asPassportRequest(request).account })
       }
     )
 

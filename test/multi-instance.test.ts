@@ -2,7 +2,7 @@ import assert from 'node:assert'
 import { beforeEach, describe, test } from 'node:test'
 import { Authenticator } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
-import { getTestServer, TestBrowserSession, type TestServer } from './helpers'
+import { asPassportRequest, getTestServer, TestBrowserSession, type TestServer } from './helpers'
 
 let counter = 0
 let authenticators: Record<string, Authenticator>
@@ -13,7 +13,7 @@ type StrategyOptions = Parameters<Strategy['authenticate']>[1]
 async function TestStrategyModule (instance: TestServer, { namespace, clearSessionOnLogin }) {
   class TestStrategy extends Strategy {
     authenticate (request: StrategyRequest, _options?: StrategyOptions) {
-      if (request.isAuthenticated()) {
+      if (asPassportRequest(request).isAuthenticated()) {
         return this.pass()
       }
 
@@ -82,7 +82,7 @@ async function TestStrategyModule (instance: TestServer, { namespace, clearSessi
     `/logout-${namespace}`,
     { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
     async (request, reply) => {
-      await request.logout()
+      await asPassportRequest(request).logout()
       reply.send('logged out')
     }
   )

@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import '../src/index'
-import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { asPassportRequest, getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -14,10 +14,10 @@ const testSuite = (sessionPluginName: string) => {
         server.get(
           '/',
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-          async (request) => (request.user as { name: string }).name
+          async (request) => (asPassportRequest(request).user as { name: string }).name
         )
         server.post('/force-login', async (request, reply) => {
-          await request.logIn({ name: 'force logged in user' })
+          await asPassportRequest(request).logIn({ name: 'force logged in user' })
           reply.send('logged in')
         })
 
@@ -45,8 +45,8 @@ const testSuite = (sessionPluginName: string) => {
         async () => {
           const { server } = getConfiguredTestServer()
           server.post('/force-login', async (request, reply) => {
-            await request.logIn({ name: 'force logged in user' }, { session: false })
-            reply.send((request.user as { name: string }).name)
+            await asPassportRequest(request).logIn({ name: 'force logged in user' }, { session: false })
+            reply.send((asPassportRequest(request).user as { name: string }).name)
           })
 
           const login = await server.inject({
@@ -70,8 +70,8 @@ const testSuite = (sessionPluginName: string) => {
           }
           const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
           server.post('/force-login', async (request, reply) => {
-            await request.logIn({ name: 'force logged in user' }, { session: false })
-            reply.send((request.user as { name: string }).name)
+            await asPassportRequest(request).logIn({ name: 'force logged in user' }, { session: false })
+            reply.send((asPassportRequest(request).user as { name: string }).name)
           })
 
           const login = await server.inject({
@@ -88,7 +88,7 @@ const testSuite = (sessionPluginName: string) => {
       test('isUnauthenticated returns true when user is not authenticated', async () => {
         const { server } = getConfiguredTestServer()
         server.get('/check-auth', async (request, reply) => {
-          reply.send({ isUnauthenticated: request.isUnauthenticated() })
+          reply.send({ isUnauthenticated: asPassportRequest(request).isUnauthenticated() })
         })
 
         const response = await server.inject({
@@ -104,8 +104,8 @@ const testSuite = (sessionPluginName: string) => {
       test('isUnauthenticated returns false when user is authenticated', async () => {
         const { server } = getConfiguredTestServer()
         server.post('/login', async (request, reply) => {
-          await request.logIn({ name: 'test user' })
-          reply.send({ isUnauthenticated: request.isUnauthenticated() })
+          await asPassportRequest(request).logIn({ name: 'test user' })
+          reply.send({ isUnauthenticated: asPassportRequest(request).isUnauthenticated() })
         })
 
         const response = await server.inject({
@@ -129,7 +129,7 @@ const testSuite = (sessionPluginName: string) => {
           '/logout',
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
           async (request, reply) => {
-            request.logout()
+            asPassportRequest(request).logout()
             reply.send('logged out')
           }
         )

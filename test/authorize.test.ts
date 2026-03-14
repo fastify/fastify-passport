@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import type { RouteHandlerMethod } from 'fastify'
 import { expectType } from 'tsd'
 import { Strategy } from '../src/strategies'
-import { generateTestUser, getConfiguredTestServer } from './helpers'
+import { asPassportRequest, generateTestUser, getConfiguredTestServer } from './helpers'
 
 type StrategyRequest = Parameters<Strategy['authenticate']>[0]
 type StrategyOptions = Parameters<Strategy['authenticate']>[1]
@@ -22,9 +22,10 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.use(new TestThirdPartyStrategy('third-party'))
         expectType<RouteHandlerMethod>(fastifyPassport.authorize('third-party'))
         server.get('/', { preValidation: fastifyPassport.authorize('third-party') }, async (request) => {
-          const user = request.user
+          const decoratedRequest = asPassportRequest(request)
+          const user = decoratedRequest.user
           assert.ifError(user)
-          const account = request.account as { id: string, name: string }
+          const account = decoratedRequest.account as { id: string, name: string }
           assert.ok(account.id)
           assert.strictEqual(account.name, 'test')
 

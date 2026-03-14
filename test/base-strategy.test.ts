@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import { Strategy } from '../src/strategies/base'
-import { getConfiguredTestServer } from './helpers'
+import { asPassportRequest, getConfiguredTestServer } from './helpers'
 
 type LoginBody = { login?: string, password?: string }
 type StrategyRequest = Parameters<Strategy['authenticate']>[0]
@@ -30,7 +30,7 @@ describe('Additional coverage tests', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate(strategy) },
-      async (request) => (request.user as { name: string }).name
+      async (request) => (asPassportRequest(request).user as { name: string }).name
     )
 
     const response = await server.inject({

@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
-import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { asPassportRequest, getConfiguredTestServer, TestStrategy } from './helpers'
 
 describe('AuthenticationRoute edge cases', () => {
   test('should use failWithError option to throw error on authentication failure', async () => {
@@ -143,7 +143,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate(strategy) },
-      async (request) => (request.user as { name: string }).name
+      async (request) => (asPassportRequest(request).user as { name: string }).name
     )
 
     const response = await server.inject({
@@ -221,7 +221,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate(strategy) },
-      async (request) => (request.user as { name: string }).name
+      async (request) => (asPassportRequest(request).user as { name: string }).name
     )
 
     const response = await server.inject({
