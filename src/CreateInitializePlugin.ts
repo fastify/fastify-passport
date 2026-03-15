@@ -25,5 +25,5 @@ export function CreateInitializePlugin (passport: Authenticator): FastifyPasspor
       .decorateRequest(passport.userProperty, null)
 
     return decorated
-  }) as FastifyPassportInitializePlugin
+  })
 }

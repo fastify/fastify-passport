@@ -3,8 +3,7 @@ import type {
   AnyFastifyInstance,
   ApplyDecorators,
   FastifyPluginAsync,
-  FastifyPluginOptions,
-  UnEncapsulatedPlugin
+  FastifyPluginOptions
 } from 'fastify'
 import type { FastifyRequest } from 'fastify/types/request'
 import type { FastifyReply } from 'fastify/types/reply'
@@ -57,12 +56,10 @@ export type FastifyPassportInitializePluginDecorators = {
   reply: FastifyPassportReplyDecorators
 }
 
-export type FastifyPassportInitializePlugin<TInstance extends AnyFastifyInstance = AnyFastifyInstance> = UnEncapsulatedPlugin<
-  FastifyPluginAsync<
-    FastifyPluginOptions,
-    TInstance,
-    ApplyDecorators<TInstance, FastifyPassportInitializePluginDecorators>
-  >
+export type FastifyPassportInitializePlugin<TInstance extends AnyFastifyInstance = AnyFastifyInstance> = FastifyPluginAsync<
+  FastifyPluginOptions,
+  TInstance,
+  ApplyDecorators<TInstance, FastifyPassportInitializePluginDecorators>
 >
 
 export type FastifyPassportRequest = FastifyRequest & FastifyPassportRequestDecorators
