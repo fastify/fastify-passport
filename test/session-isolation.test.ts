@@ -19,7 +19,8 @@ function createServer () {
     async () => 'success'
   )
 
-  server.post('/force-login', async (request: any, reply) => {
+  server.post('/force-login', async (request, reply) => {
+    // @ts-expect-error decorated by fastify-passport during test setup
     await request.logIn(generateTestUser())
     reply.send('logged in')
   })
