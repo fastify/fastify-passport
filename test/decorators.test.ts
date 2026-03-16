@@ -16,7 +16,14 @@ const testSuite = (sessionPluginName: string) => {
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
           async (request) => (asPassportRequest(request).user as { name: string }).name
         )
-        server.post('/force-login', async (request, reply) => {
+        server.post('/force-login', {
+          config: {
+            rateLimit: {
+              max: 100,
+              timeWindow: '1 minute'
+            }
+          }
+        }, async (request, reply) => {
           await asPassportRequest(request).logIn({ name: 'force logged in user' })
           reply.send('logged in')
         })
@@ -44,7 +51,14 @@ const testSuite = (sessionPluginName: string) => {
         'logIn allows logging in an arbitrary user for the duration of the request if session=false',
         async () => {
           const { server } = getConfiguredTestServer()
-          server.post('/force-login', async (request, reply) => {
+          server.post('/force-login', {
+            config: {
+              rateLimit: {
+                max: 100,
+                timeWindow: '1 minute'
+              }
+            }
+          }, async (request, reply) => {
             await asPassportRequest(request).logIn({ name: 'force logged in user' }, { session: false })
             reply.send((asPassportRequest(request).user as { name: string }).name)
           })
@@ -69,7 +83,14 @@ const testSuite = (sessionPluginName: string) => {
             saveUninitialized: false
           }
           const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
-          server.post('/force-login', async (request, reply) => {
+          server.post('/force-login', {
+            config: {
+              rateLimit: {
+                max: 100,
+                timeWindow: '1 minute'
+              }
+            }
+          }, async (request, reply) => {
             await asPassportRequest(request).logIn({ name: 'force logged in user' }, { session: false })
             reply.send((asPassportRequest(request).user as { name: string }).name)
           })
@@ -103,7 +124,14 @@ const testSuite = (sessionPluginName: string) => {
 
       test('isUnauthenticated returns false when user is authenticated', async () => {
         const { server } = getConfiguredTestServer()
-        server.post('/login', async (request, reply) => {
+        server.post('/login', {
+          config: {
+            rateLimit: {
+              max: 100,
+              timeWindow: '1 minute'
+            }
+          }
+        }, async (request, reply) => {
           await asPassportRequest(request).logIn({ name: 'test user' })
           reply.send({ isUnauthenticated: asPassportRequest(request).isUnauthenticated() })
         })

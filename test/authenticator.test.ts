@@ -52,7 +52,14 @@ describe('Authenticator edge cases', () => {
   test('should handle authorize with callback function as second parameter', async () => {
     const { server, fastifyPassport } = getConfiguredTestServer()
 
-    server.post('/authorize', async (request, reply) => {
+    server.post('/authorize', {
+      config: {
+        rateLimit: {
+          max: 100,
+          timeWindow: '1 minute'
+        }
+      }
+    }, async (request, reply) => {
       const handler = fastifyPassport.authorize(
         'test',
         async (_req, rep, err, user) => {

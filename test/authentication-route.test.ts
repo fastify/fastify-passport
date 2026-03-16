@@ -90,7 +90,14 @@ describe('AuthenticationRoute edge cases', () => {
 
     const { server, fastifyPassport } = getConfiguredTestServer('error', new ErrorStrategy('error'))
 
-    server.post('/login', async (request, reply) => {
+    server.post('/login', {
+      config: {
+        rateLimit: {
+          max: 100,
+          timeWindow: '1 minute'
+        }
+      }
+    }, async (request, reply) => {
       const handler = fastifyPassport.authenticate(
         'error',
         async (_req, rep, err, user) => {

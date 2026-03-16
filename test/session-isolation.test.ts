@@ -19,7 +19,14 @@ function createServer () {
     async () => 'success'
   )
 
-  server.post('/force-login', async (request, reply) => {
+  server.post('/force-login', {
+    config: {
+      rateLimit: {
+        max: 100,
+        timeWindow: '1 minute'
+      }
+    }
+  }, async (request, reply) => {
     await asPassportRequest(request).logIn(generateTestUser())
     reply.send('logged in')
   })
