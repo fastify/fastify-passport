@@ -11,6 +11,7 @@ type SessionPlugin = FastifyPluginCallback<Record<string, unknown>>
 
 const fastifyCookie = require('@fastify/cookie') as SessionPlugin
 const fastifySecureSession = require('@fastify/secure-session') as SessionPlugin
+const fastifyRateLimit = require('@fastify/rate-limit') as SessionPlugin
 const fastifySessionModule = require('@fastify/session') as { fastifySession?: SessionPlugin, default?: SessionPlugin }
 const fastifySession = fastifySessionModule.fastifySession ?? fastifySessionModule.default
 
@@ -163,6 +164,11 @@ const loadSessionPlugins = (server: TestServer, sessionOptions: SessionOptions =
 export const getTestServer = (sessionOptions: SessionOptions = null) => {
   const server = fastify()
   loadSessionPlugins(server, sessionOptions)
+  server.register(fastifyRateLimit, {
+    global: true,
+    max: 1_000_000,
+    timeWindow: '1 minute'
+  })
 
   server.setErrorHandler((error, _request, reply) => {
     reply.status(500)
