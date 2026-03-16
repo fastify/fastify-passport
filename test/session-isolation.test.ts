@@ -19,16 +19,8 @@ function createServer () {
     async () => 'success'
   )
 
-  // codeql[js/missing-rate-limiting] test route used to validate session isolation behavior
-  server.post('/force-login', {
-    config: {
-      rateLimit: {
-        max: 100,
-        timeWindow: '1 minute'
-      }
-    }
-  }, async (request, reply) => {
-    await asPassportRequest(request).logIn(generateTestUser())
+  server.post('/force-login', async (request: any, reply) => {
+    await request.logIn(generateTestUser())
     reply.send('logged in')
   })
 

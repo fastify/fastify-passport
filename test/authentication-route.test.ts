@@ -90,19 +90,11 @@ describe('AuthenticationRoute edge cases', () => {
 
     const { server, fastifyPassport } = getConfiguredTestServer('error', new ErrorStrategy('error'))
 
-    // codeql[js/missing-rate-limiting] test route used only for authentication callback behavior
-    server.post('/login', {
-      config: {
-        rateLimit: {
-          max: 100,
-          timeWindow: '1 minute'
-        }
-      }
-    }, async (request, reply) => {
+    server.post('/login', async (request: any, reply) => {
       const handler = fastifyPassport.authenticate(
         'error',
-        async (_req, rep, err, user) => {
-          if (err instanceof Error) {
+        async (req: any, rep: any, err: any, user: any) => {
+          if (err) {
             return rep.status(500).send({ error: err.message })
           }
           rep.send({ user })
