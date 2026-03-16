@@ -90,6 +90,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     const { server, fastifyPassport } = getConfiguredTestServer('error', new ErrorStrategy('error'))
 
+    // codeql[js/missing-rate-limiting] test route used only for authentication callback behavior
     server.post('/login', {
       config: {
         rateLimit: {

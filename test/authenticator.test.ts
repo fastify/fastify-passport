@@ -52,6 +52,7 @@ describe('Authenticator edge cases', () => {
   test('should handle authorize with callback function as second parameter', async () => {
     const { server, fastifyPassport } = getConfiguredTestServer()
 
+    // codeql[js/missing-rate-limiting] test route used only for authorize callback behavior
     server.post('/authorize', {
       config: {
         rateLimit: {

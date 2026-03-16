@@ -19,6 +19,7 @@ function createServer () {
     async () => 'success'
   )
 
+  // codeql[js/missing-rate-limiting] test route used to validate session isolation behavior
   server.post('/force-login', {
     config: {
       rateLimit: {

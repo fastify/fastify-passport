@@ -16,6 +16,7 @@ const testSuite = (sessionPluginName: string) => {
           { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
           async (request) => (asPassportRequest(request).user as { name: string }).name
         )
+        // codeql[js/missing-rate-limiting] test route used to validate request decorators
         server.post('/force-login', {
           config: {
             rateLimit: {
@@ -51,6 +52,7 @@ const testSuite = (sessionPluginName: string) => {
         'logIn allows logging in an arbitrary user for the duration of the request if session=false',
         async () => {
           const { server } = getConfiguredTestServer()
+          // codeql[js/missing-rate-limiting] test route used to validate request decorators
           server.post('/force-login', {
             config: {
               rateLimit: {
@@ -83,6 +85,7 @@ const testSuite = (sessionPluginName: string) => {
             saveUninitialized: false
           }
           const { server } = getConfiguredTestServer('test', new TestStrategy('test'), sessionOptions)
+          // codeql[js/missing-rate-limiting] test route used to validate request decorators
           server.post('/force-login', {
             config: {
               rateLimit: {
@@ -124,6 +127,7 @@ const testSuite = (sessionPluginName: string) => {
 
       test('isUnauthenticated returns false when user is authenticated', async () => {
         const { server } = getConfiguredTestServer()
+        // codeql[js/missing-rate-limiting] test route used to validate authentication decorators
         server.post('/login', {
           config: {
             rateLimit: {
