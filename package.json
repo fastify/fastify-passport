@@ -40,7 +40,7 @@
   "homepage": "http://passportjs.org/",
   "dependencies": {
     "@fastify/flash": "^6.0.0",
-    "fastify-plugin": "^5.0.0"
+    "fastify-plugin": "github:fastify/fastify-plugin#feat/create-plugin"
   },
   "devDependencies": {
     "@fastify/cookie": "^11.0.1",
