@@ -3,6 +3,9 @@ import assert from 'node:assert'
 import { getRegisteredTestServer } from './helpers'
 import { Strategy } from '../src/strategies'
 
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
+
 // Strategy that always fails with a specific status
 class FailingStrategy extends Strategy {
   readonly status: number
@@ -12,7 +15,7 @@ class FailingStrategy extends Strategy {
     this.status = status
   }
 
-  authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+  authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
     this.fail(this.status)
   }
 }
@@ -91,7 +94,7 @@ const testSuite = (sessionPluginName: string) => {
 
       // One strategy fails with status, another fails without status (undefined)
       class FailingWithoutStatusStrategy extends Strategy {
-        authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
           this.fail() // No status provided, should be undefined
         }
       }
@@ -126,7 +129,7 @@ const testSuite = (sessionPluginName: string) => {
 
       // Strategy that always succeeds
       class SucceedingStrategy extends Strategy {
-        authenticate (_request: any, _options?: { pauseStream?: boolean }) {
+        authenticate (_request: StrategyRequest, _options?: StrategyOptions) {
           this.success({ id: 'test-user', name: 'Test User' })
         }
       }

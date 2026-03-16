@@ -3,7 +3,10 @@ import { describe, test } from 'node:test'
 import { AuthenticateOptions } from '../src/AuthenticationRoute'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
-import { getConfiguredTestServer, getRegisteredTestServer, getTestServer, TestStrategy } from './helpers'
+import { asPassportReply, asPassportRequest, getConfiguredTestServer, getRegisteredTestServer, getTestServer, TestStrategy } from './helpers'
+
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -31,7 +34,7 @@ const testSuite = (sessionPluginName: string) => {
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
         async (request, reply) => {
-          reply.send(request.session.get('messages'))
+          reply.send(asPassportRequest(request).session.get('messages'))
         }
       )
       server.post(
@@ -69,11 +72,16 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should allow login, and add successMessage to the session from a strategy that sets it', async () => {
       class WelcomeStrategy extends Strategy {
-        authenticate (request: any, _options?: { pauseStream?: boolean }) {
-          if (request.isAuthenticated()) {
+        authenticate (request: StrategyRequest, _options?: StrategyOptions) {
+          if (asPassportRequest(request).isAuthenticated()) {
             return this.pass()
           }
-          if (request.body && request.body.login === 'welcomeuser' && request.body.password === 'test') {
+
+          const body = (typeof request.body === 'object' && request.body !== null)
+            ? request.body as { login?: string, password?: string }
+            : undefined
+
+          if (body && body.login === 'welcomeuser' && body.password === 'test') {
             return this.success({ name: 'test' }, { message: 'welcome from strategy' })
           }
           this.fail()
@@ -88,7 +96,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('test', { authInfo: false })
         },
-        async (request) => request.session.get('messages')
+        async (request) => asPassportRequest(request).session.get('messages')
       )
       server.post(
         '/login',
@@ -147,7 +155,7 @@ const testSuite = (sessionPluginName: string) => {
         },
         () => {}
       )
-      server.get('/messages', async (request) => request.session.get('messages') || [])
+      server.get('/messages', async (request) => asPassportRequest(request).session.get('messages') || [])
 
       const firstFail = await server.inject({
         method: 'POST',
@@ -194,7 +202,7 @@ const testSuite = (sessionPluginName: string) => {
         } as AuthenticateOptions)
       )
       server.get('/', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
-        request.session.get('messages')
+        asPassportRequest(request).session.get('messages')
       )
       server.post(
         '/login',
@@ -230,7 +238,7 @@ const testSuite = (sessionPluginName: string) => {
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-        async (_request, reply) => reply.flash('success')
+        async (_request, reply) => asPassportReply(reply).flash('success')
       )
       server.post(
         '/login',
@@ -269,7 +277,7 @@ const testSuite = (sessionPluginName: string) => {
       server.get(
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-        async (_request, reply) => reply.flash('success')
+        async (_request, reply) => asPassportReply(reply).flash('success')
       )
       server.post(
         '/login',
@@ -347,8 +355,8 @@ const testSuite = (sessionPluginName: string) => {
             authInfo: false
           })
         },
-        (request: any, reply: any) => {
-          reply.send(request.user)
+        (request, reply) => {
+          reply.send(asPassportRequest(request).user)
         }
       )
 
@@ -365,7 +373,7 @@ const testSuite = (sessionPluginName: string) => {
         clearSessionIgnoreFields: ['returnTo']
       })
       server.addHook('preValidation', async (request, _reply) => {
-        request.session.set('returnTo', '/success')
+        asPassportRequest(request).session.set('returnTo', '/success')
       })
       server.get(
         '/success',
@@ -488,7 +496,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should add failureMessage to session if failed to log in', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
-      server.get('/', async (request, reply) => reply.send(request.session.get('messages')))
+      server.get('/', async (request, reply) => reply.send(asPassportRequest(request).session.get('messages')))
       server.post(
         '/login',
         {
@@ -524,7 +532,7 @@ const testSuite = (sessionPluginName: string) => {
     test('should add failureFlash to session if failed to log in', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
 
-      server.get('/', async (_request, reply) => reply.flash('error'))
+      server.get('/', async (_request, reply) => asPassportReply(reply).flash('error'))
       server.post(
         '/login',
         {
@@ -557,7 +565,7 @@ const testSuite = (sessionPluginName: string) => {
 
     test('should add failureFlash=true to session if failed to log in', async () => {
       const { server, fastifyPassport } = getConfiguredTestServer()
-      server.get('/', async (_request, reply) => reply.flash('error'))
+      server.get('/', async (_request, reply) => asPassportReply(reply).flash('error'))
       server.post(
         '/login',
         {
@@ -638,8 +646,8 @@ const testSuite = (sessionPluginName: string) => {
       )
       server.post(
         '/login',
-        fastifyPassport.authenticate('test', async (_request, _reply, _err, user) => {
-          return (user as any).name
+        fastifyPassport.authenticate('test', async (_request, reply, _err, user) => {
+          reply.send((user as { name: string }).name)
         })
       )
 
@@ -651,7 +659,7 @@ const testSuite = (sessionPluginName: string) => {
       assert.strictEqual(login.statusCode, 200)
       assert.strictEqual(login.body, 'test')
 
-      const headers: Record<string, any> = {}
+      const headers: Record<string, string | string[]> = {}
       if (login.headers['set-cookie']) {
         headers['cookie'] = login.headers['set-cookie']
       }
@@ -672,7 +680,7 @@ const testSuite = (sessionPluginName: string) => {
         '/',
         { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
         async (request, reply) => {
-          reply.send(request.session.get('messages'))
+          reply.send(asPassportRequest(request).session.get('messages'))
         }
       )
 

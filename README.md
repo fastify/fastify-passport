@@ -327,22 +327,24 @@ Test if request is unauthenticated.
 
 ## Using with TypeScript
 
-`@fastify/passport` is written in TypeScript, so it includes type definitions for all of its API. You can also strongly type the `FastifyRequest.user` property using TypeScript declaration merging. You must re-declare the `PassportUser` interface in the `fastify` module within your own code to add the properties you expect to be assigned by the strategy when authenticating:
+`@fastify/passport` is written in TypeScript, so it includes type definitions for all of its API. With modern Fastify typings, `request.logIn`, `request.logOut`, `request.isAuthenticated`, and `request.user` are inferred from the registered passport instance.
+
+You can strongly type the `request.user` property by declaration-merging the `PassportUser` interface exported by `@fastify/passport`:
 
 ```typescript
-declare module 'fastify' {
+declare module '@fastify/passport' {
   interface PassportUser {
     id: string
   }
 }
 ```
 
-or, if you already have a type for the objects returned from all of the strategies, you can make `PassportUser` extend it:
+Or, if you already have a type for users returned by your strategies:
 
 ```typescript
 import { User } from './my/types'
 
-declare module 'fastify' {
+declare module '@fastify/passport' {
   interface PassportUser extends User {}
 }
 ```

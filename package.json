@@ -40,13 +40,14 @@
   "homepage": "http://passportjs.org/",
   "dependencies": {
     "@fastify/flash": "^6.0.0",
-    "fastify-plugin": "^5.0.0"
+    "fastify-plugin": "github:fastify/fastify-plugin#feat/create-plugin"
   },
   "devDependencies": {
     "@fastify/cookie": "^11.0.1",
     "@fastify/csrf-protection": "^7.0.0",
     "@fastify/secure-session": "^8.0.0",
     "@fastify/session": "^11.0.0",
+    "@fastify/rate-limit": "^10.0.0",
     "@tsconfig/node20": "^20.1.6",
     "@types/node": "^25.0.3",
     "@types/passport": "^1.0.17",
@@ -56,7 +57,7 @@
     "@types/set-cookie-parser": "^2.4.10",
     "borp": "^0.21.0",
     "eslint": "^9.17.0",
-    "fastify": "^5.0.0",
+    "fastify": "github:fastify/fastify#feat/typed-decorators",
     "neostandard": "^0.12.0",
     "openid-client": "^6.6.1",
     "passport-facebook": "^3.0.0",

@@ -1,6 +1,7 @@
 import { Strategy } from './base'
 import type { DeserializeFunction } from '../Authenticator'
-import type { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify/types/request'
+import type { FastifyPassportRequest } from '../types'
 
 /**
  * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
@@ -9,11 +10,11 @@ export class SessionStrategy extends Strategy {
   private deserializeUser: DeserializeFunction
 
   constructor (deserializeUser: DeserializeFunction)
-  constructor (options: any, deserializeUser: DeserializeFunction)
-  constructor (options: any, deserializeUser?: DeserializeFunction) {
+  constructor (options: unknown, deserializeUser: DeserializeFunction)
+  constructor (options: unknown, deserializeUser?: DeserializeFunction) {
     super('session')
     if (typeof options === 'function') {
-      this.deserializeUser = options
+      this.deserializeUser = options as DeserializeFunction
     } else if (typeof deserializeUser === 'function') {
       this.deserializeUser = deserializeUser
     } else {
@@ -24,7 +25,7 @@ export class SessionStrategy extends Strategy {
   /**
    * Authenticate request based on the current session state.
    *
-   * The session authentication strategy uses the session to restore any login state across requests.  If a login session has been established, `request.user` will be populated with the current user.
+   * The session authentication strategy uses the session to restore login state across requests. If a login session has been established, `request.user` will be populated with the current user.
    *
    * This strategy is registered automatically by fastify-passport.
    *
@@ -32,8 +33,12 @@ export class SessionStrategy extends Strategy {
    * @param {Object} options
    * @api protected
    */
-  authenticate (request: FastifyRequest, options?: { pauseStream?: boolean }) {
-    if (!request.passport) {
+  authenticate (request: FastifyRequest, options?: { pauseStream?: boolean }): void
+  authenticate (request: Record<string, unknown>, options?: { pauseStream?: boolean }): void
+  authenticate (request: FastifyRequest | Record<string, unknown>, options?: { pauseStream?: boolean }) {
+    const passportRequest = request as FastifyPassportRequest
+
+    if (!passportRequest.passport) {
       return this.error(new Error('passport.initialize() plugin not in use'))
     }
     options = options || {}
@@ -42,16 +47,16 @@ export class SessionStrategy extends Strategy {
       return this.error(new Error("fastify-passport doesn't support pauseStream option."))
     }
 
-    const sessionUser = request.passport.sessionManager.getUserFromSession(request)
+    const sessionUser = passportRequest.passport.sessionManager.getUserFromSession(passportRequest)
 
     if (sessionUser || sessionUser === 0) {
       this.deserializeUser(sessionUser, request)
         .catch((err: Error) => this.error(err))
-        .then(async (user?: any) => {
+        .then(async (user?: unknown) => {
           if (!user) {
-            await request.passport.sessionManager.logOut(request)
+            await passportRequest.passport.sessionManager.logOut(passportRequest)
           } else {
-            request[request.passport.userProperty] = user
+            passportRequest[passportRequest.passport.userProperty] = user
           }
           this.pass()
         })

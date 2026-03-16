@@ -19,7 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
     "erasableSyntaxOnly": true
   },
   "include": ["src", "test"]

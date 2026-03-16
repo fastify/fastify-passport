@@ -1,20 +1,27 @@
-import { FastifyInstance } from 'fastify'
 import assert from 'node:assert'
 import { beforeEach, describe, test } from 'node:test'
 import { Authenticator } from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
-import { getTestServer, TestBrowserSession } from './helpers'
+import { asPassportRequest, getTestServer, TestBrowserSession, type TestServer } from './helpers'
 
-let counter: number
+let counter = 0
 let authenticators: Record<string, Authenticator>
 
-async function TestStrategyModule (instance: FastifyInstance, { namespace, clearSessionOnLogin }) {
+type StrategyRequest = Parameters<Strategy['authenticate']>[0]
+type StrategyOptions = Parameters<Strategy['authenticate']>[1]
+
+async function TestStrategyModule (instance: TestServer, { namespace, clearSessionOnLogin }) {
   class TestStrategy extends Strategy {
-    authenticate (request: any, _options?: { pauseStream?: boolean }) {
-      if (request.isAuthenticated()) {
+    authenticate (request: StrategyRequest, _options?: StrategyOptions) {
+      if (asPassportRequest(request).isAuthenticated()) {
         return this.pass()
       }
-      if (request.body && request.body.login === 'test' && request.body.password === 'test') {
+
+      const body = (typeof request.body === 'object' && request.body !== null)
+        ? request.body as { login?: string, password?: string }
+        : undefined
+
+      if (body && body.login === 'test' && body.password === 'test') {
         return this.success({ namespace, id: String(counter++) })
       }
 
@@ -29,13 +36,13 @@ async function TestStrategyModule (instance: FastifyInstance, { namespace, clear
     clearSessionOnLogin
   })
   authenticator.use(strategyName, new TestStrategy(strategyName))
-  authenticator.registerUserSerializer<any, string>(async (user) => {
+  authenticator.registerUserSerializer<{ namespace: string, id: string }, string>(async (user) => {
     if (user.namespace === namespace) {
       return namespace + '-' + JSON.stringify(user)
     }
     throw 'pass' // eslint-disable-line no-throw-literal
   })
-  authenticator.registerUserDeserializer<string, any>(async (serialized: string) => {
+  authenticator.registerUserDeserializer<string, { namespace: string, id: string }>(async (serialized: string) => {
     if (serialized.startsWith(`${namespace}-`)) {
       return JSON.parse(serialized.slice(`${namespace}-`.length))
     }
@@ -75,7 +82,7 @@ async function TestStrategyModule (instance: FastifyInstance, { namespace, clear
     `/logout-${namespace}`,
     { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
     async (request, reply) => {
-      await request.logout()
+      await asPassportRequest(request).logout()
       reply.send('logged out')
     }
   )
@@ -84,7 +91,7 @@ async function TestStrategyModule (instance: FastifyInstance, { namespace, clear
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     describe('multiple registered instances (clearSessionOnLogin: false)', () => {
-      let server: FastifyInstance
+      let server: TestServer
       let session: TestBrowserSession
 
       beforeEach(async () => {
@@ -262,7 +269,7 @@ const testSuite = (sessionPluginName: string) => {
     })
 
     describe('multiple registered instances (clearSessionOnLogin: true)', () => {
-      let server: FastifyInstance
+      let server: TestServer
       let session: TestBrowserSession
 
       beforeEach(async () => {

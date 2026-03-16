@@ -1,4 +1,4 @@
-import type { FastifyRequest } from 'fastify'
+import type { FastifyPassportRequest } from '../types'
 
 export type DoneCallback = (err?: Error) => void
 /**
@@ -21,14 +21,14 @@ export type DoneCallback = (err?: Error) => void
  * @param {Function} done
  * @api public
  */
-export async function logIn<T = unknown> (this: FastifyRequest, user: T): Promise<void>
+export async function logIn<T = unknown> (this: FastifyPassportRequest, user: T): Promise<void>
 export async function logIn<T = unknown> (
-  this: FastifyRequest,
+  this: FastifyPassportRequest,
   user: T,
   options: { session?: boolean; keepSessionInfo?: boolean }
 ): Promise<void>
 export async function logIn<T = unknown> (
-  this: FastifyRequest,
+  this: FastifyPassportRequest,
   user: T,
   options: { session?: boolean; keepSessionInfo?: boolean } = {}
 ) {

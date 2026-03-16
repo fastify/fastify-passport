@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
+import { asPassportRequest, generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
 
 function createServer () {
   const { server, fastifyPassport } = getConfiguredTestServer()
@@ -11,7 +11,7 @@ function createServer () {
     async () => 'hello!'
   )
   server.get('/my-id', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
-    String((request.user as any).id)
+    String((asPassportRequest(request).user as { id: string }).id)
   )
   server.post(
     '/login',
@@ -20,6 +20,7 @@ function createServer () {
   )
 
   server.post('/force-login', async (request, reply) => {
+    // @ts-expect-error decorated by fastify-passport during test setup
     await request.logIn(generateTestUser())
     reply.send('logged in')
   })
@@ -28,7 +29,7 @@ function createServer () {
     '/logout',
     { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async (request, reply) => {
-      await request.logout()
+      await asPassportRequest(request).logout()
       reply.send('logged out')
     }
   )

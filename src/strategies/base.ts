@@ -1,4 +1,8 @@
-import type { FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify/types/request'
+
+type BivariantHandler<T extends (...args: never[]) => unknown> = {
+  bivarianceHack (...args: Parameters<T>): ReturnType<T>
+}['bivarianceHack']
 
 export class Strategy {
   name: string
@@ -17,7 +21,7 @@ export class Strategy {
    * @param {Object} [options] Strategy-specific options.
    * @api public
    */
-  authenticate (request: FastifyRequest, options?: any): void | Promise<void>
+  authenticate (request: FastifyRequest, options?: unknown): void | Promise<void>
   authenticate () {
     throw new Error('Strategy#authenticate must be overridden by subclass')
   }
@@ -41,7 +45,7 @@ export class Strategy {
    * @param {Object} info
    * @api public
    */
-  success!: (user: any, info?: any) => void
+  success!: BivariantHandler<(user: unknown, info?: unknown) => void>
 
   /**
    * Fail authentication, with optional `challenge` and `status`, defaulting
@@ -53,7 +57,7 @@ export class Strategy {
    * @param {Number} status
    * @api public
    */
-  fail!: ((challenge?: any, status?: number) => void) & ((status?: number) => void)
+  fail!: BivariantHandler<(challenge?: unknown, status?: number) => void> & BivariantHandler<(status?: number) => void>
 
   /**
    * Redirect to `url` with optional `status`, defaulting to 302.

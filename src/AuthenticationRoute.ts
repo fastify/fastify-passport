@@ -3,7 +3,9 @@ import type { Authenticator } from './Authenticator'
 import type { AnyStrategy } from './strategies'
 import type { Strategy } from './strategies/base'
 import { AuthenticationError } from './errors'
-import type { FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyRequest } from 'fastify/types/request'
+import type { FastifyReply } from 'fastify/types/reply'
+import type { FastifyPassportRequest } from './types'
 import { types } from 'node:util'
 
 type FlashObject = { type?: string; message?: string }
@@ -13,17 +15,19 @@ type FailureObject = {
   type?: string
 }
 
-declare module '@fastify/secure-session' {
-  interface SessionData {
-    messages: string[]
-    returnTo: string | undefined
-  }
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null
+}
+
+const isFlashObject = (value: unknown): value is FlashObject => {
+  return isRecord(value)
 }
 
 const addMessage = (request: FastifyRequest, message: string) => {
-  const existing = request.session.get('messages')
+  const passportRequest = request as FastifyPassportRequest
+  const existing = passportRequest.session.get('messages') as string[] | undefined
   const messages = existing ? [...existing, message] : [message]
-  request.session.set('messages', messages)
+  passportRequest.session.set('messages', messages)
 }
 
 export interface AuthenticateOptions {
@@ -62,7 +66,7 @@ export type MultiStrategyCallback = (
 ) => Promise<void>
 
 export type AuthenticateCallback<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]> =
-  StrategyOrStrategies extends any[] ? MultiStrategyCallback : SingleStrategyCallback
+  StrategyOrStrategies extends readonly unknown[] ? MultiStrategyCallback : SingleStrategyCallback
 
 const Unhandled = Symbol.for('passport-unhandled')
 
@@ -103,7 +107,9 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
   }
 
   handler = async (request: FastifyRequest, reply: FastifyReply) => {
-    if (!request.passport) {
+    const passportRequest = request as FastifyPassportRequest
+
+    if (!passportRequest.passport) {
       throw new Error('passport.initialize() plugin not in use')
     }
     // accumulator for failures from each strategy in the chain
@@ -138,6 +144,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     reply: FastifyReply
   ) {
     const strategy = Object.create(prototype) as Strategy
+    const passportRequest = request as FastifyPassportRequest
 
     // This is a messed up way of adapting passport's API to fastify's async world. We create a promise that the strategy's per-call functions close over and resolve/reject with the result of the strategy. This augmentation business is a key part of how Passport strategies expect to work.
     return new Promise<void>((resolve, reject) => {
@@ -146,31 +153,32 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        *
        * Strategies should call this function to successfully authenticate a user.  `user` should be an object supplied by the application after it has been given an opportunity to verify credentials.  `info` is an optional argument containing additional user information.  This is useful for third-party authentication strategies to pass profile details.
        */
-      strategy.success = (user: any, info: { type?: string; message?: string }) => {
+      strategy.success = (user: unknown, info?: unknown) => {
         request.log.debug({ strategy: name }, 'passport strategy success')
         if (this.callback) {
           return resolve(this.callback(request, reply, null, user, info))
         }
 
-        info = info || {}
-        this.applyFlashOrMessage('success', request, info)
+        const strategyInfo = isFlashObject(info) ? info : undefined
+        this.applyFlashOrMessage('success', request, strategyInfo)
 
         if (this.options.assignProperty) {
           request[this.options.assignProperty] = user
           return resolve()
         }
 
-        request
+        passportRequest
           .logIn(user, this.options)
           .catch(reject)
           .then(() => {
             const complete = () => {
               if (this.options.successReturnToOrRedirect) {
                 let url = this.options.successReturnToOrRedirect
-                const returnTo = request.session?.get('returnTo')
+                const session = passportRequest.session
+                const returnTo = session.get('returnTo')
                 if (typeof returnTo === 'string') {
                   url = returnTo
-                  request.session.set('returnTo', undefined)
+                  session.set('returnTo', undefined)
                 }
 
                 reply.redirect(url)
@@ -182,10 +190,12 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
 
             if (this.options.authInfo !== false) {
               this.authenticator
-                .transformAuthInfo(info, request)
+                .transformAuthInfo(isRecord(info) ? info : {}, request)
                 .catch(reject)
                 .then((transformedInfo) => {
-                  request.authInfo = transformedInfo
+                  if (isRecord(transformedInfo)) {
+                    passportRequest.authInfo = transformedInfo
+                  }
                   complete()
                 })
             } else {
@@ -199,19 +209,21 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
        *
        * Strategies should call this function to fail an authentication attempt.
        */
-      strategy.fail = function (challengeOrStatus?: string | number | undefined, status?: number) {
+      strategy.fail = function (challengeOrStatus?: unknown, status?: number) {
         request.log.trace({ strategy: name }, 'passport strategy failed')
 
-        let challenge
+        let challenge: string | FlashObject | undefined
         if (typeof challengeOrStatus === 'number') {
           status = challengeOrStatus
           challenge = undefined
-        } else {
+        } else if (typeof challengeOrStatus === 'string' || isFlashObject(challengeOrStatus)) {
           challenge = challengeOrStatus
+        } else {
+          challenge = undefined
         }
 
         // push this failure into the accumulator and attempt authentication using the next strategy
-        failures.push({ challenge, status: status! })
+        failures.push({ challenge, status })
         reject(Unhandled)
       }
 
@@ -333,7 +345,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
       }
 
       if (flash && flash.type && flash.message) {
-        request.flash(flash.type, flash.message)
+        ;(request as FastifyPassportRequest).flash(flash.type, flash.message)
       }
     }
 

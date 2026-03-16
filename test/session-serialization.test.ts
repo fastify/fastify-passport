@@ -1,9 +1,7 @@
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
-import { FastifyInstance } from 'fastify'
-import { FastifyRequest } from 'fastify/types/request'
 import Authenticator from '../src/Authenticator'
-import { getTestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
+import { getTestServer, type TestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -15,7 +13,7 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
 
         const user = { name: 'foobar' }
-        const request = {} as unknown as FastifyRequest
+        const request = {}
         assert.deepStrictEqual(
           await fastifyPassport.deserializeUser(await fastifyPassport.serializeUser(user, request), request),
           user
@@ -40,7 +38,7 @@ const testSuite = (sessionPluginName: string) => {
         return server
       }
 
-      const verifySuccessfulLogin = async (server: FastifyInstance) => {
+      const verifySuccessfulLogin = async (server: TestServer) => {
         const loginResponse = await server.inject({
           method: 'POST',
           url: '/login',

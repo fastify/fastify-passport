@@ -1,4 +1,5 @@
-import type { FastifyPluginAsync, FastifyRequest, RouteHandlerMethod } from 'fastify'
+import type { FastifyPluginAsync, preValidationAsyncHookHandler } from 'fastify'
+import type { FastifyRequest } from 'fastify/types/request'
 import { fastifyPlugin } from 'fastify-plugin'
 import { type AuthenticateCallback, type AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
@@ -6,18 +7,21 @@ import { SecureSessionManager } from './session-managers/SecureSessionManager'
 import type { AnyStrategy } from './strategies/index'
 import type { Strategy } from './strategies/base'
 import { SessionStrategy } from './strategies/SessionStrategy'
+import type { FastifyPassportInitializePlugin } from './types'
 
-export type SerializeFunction<User = any, SerializedUser = any> = (
+export type PassportRequestLike = object
+
+export type SerializeFunction<User = unknown, SerializedUser = unknown> = (
   user: User,
-  req: FastifyRequest
+  req: PassportRequestLike
 ) => Promise<SerializedUser>
 
-export type DeserializeFunction<SerializedUser = any, User = any> = (
+export type DeserializeFunction<SerializedUser = unknown, User = unknown> = (
   serialized: SerializedUser,
-  req: FastifyRequest
+  req: PassportRequestLike
 ) => Promise<User>
 
-export type InfoTransformerFunction = (info: any) => Promise<any>
+export type InfoTransformerFunction = (info: Record<string, unknown>) => Promise<Record<string, unknown>>
 
 export interface AuthenticatorOptions {
   key?: string
@@ -34,8 +38,8 @@ export class Authenticator {
   public sessionManager: SecureSessionManager
 
   private strategies: { [k: string]: AnyStrategy } = {}
-  private serializers: SerializeFunction<any, any>[] = []
-  private deserializers: DeserializeFunction<any, any>[] = []
+  private serializers: SerializeFunction<unknown, unknown>[] = []
+  private deserializers: DeserializeFunction<unknown, unknown>[] = []
   private infoTransformers: InfoTransformerFunction[] = []
   private clearSessionOnLogin: boolean
   private clearSessionIgnoreFields: string[]
@@ -76,7 +80,7 @@ export class Authenticator {
     return this
   }
 
-  public initialize (): FastifyPluginAsync {
+  public initialize (): FastifyPassportInitializePlugin {
     return CreateInitializePlugin(this)
   }
 
@@ -92,13 +96,13 @@ export class Authenticator {
    *                        req.session.messages, or a string to use as override
    *                        message for success.
    *   - `successFlash`     True to flash success messages or a string to use as a flash
-   *                        message for success (overrides any from the strategy itself).
+   *                        message for success (overrides the strategy-provided one).
    *   - `failureRedirect`  After failed login, redirect to given URL
    *   - `failureMessage`   True to store failure message in
    *                        req.session.messages, or a string to use as override
    *                        message for failure.
    *   - `failureFlash`     True to flash failure messages or a string to use as a flash
-   *                        message for failures (overrides any from the strategy itself).
+   *                        message for failures (overrides the strategy-provided one).
    *   - `assignProperty`   Assign the object provided by the verify callback to given property
    *
    * An optional `callback` can be supplied to allow the application to override the default manner in which authentication attempts are handled.  The callback has the following signature, where `user` will be set to the authenticated user on a successful authentication attempt, or `false` otherwise.  An optional `info` argument will be passed, containing additional details provided by the strategy's verify callback - this could be information about a successful authentication or a challenge message for a failed authentication. An optional `status` argument will be passed when authentication fails - this could be a HTTP response code for a remote authentication failure or similar.
@@ -148,21 +152,21 @@ export class Authenticator {
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategyOrStrategies: StrategyOrStrategies,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod {
+  ): preValidationAsyncHookHandler {
     let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback === 'function') {
       options = {}
@@ -194,21 +198,21 @@ export class Authenticator {
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategyOrStrategies: StrategyOrStrategies,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod {
+  ): preValidationAsyncHookHandler {
     let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback === 'function') {
       options = {}
@@ -262,15 +266,15 @@ export class Authenticator {
    * @api public
    */
   registerUserSerializer<User, StoredUser>(fn: SerializeFunction<User, StoredUser>) {
-    this.serializers.push(fn)
+    this.serializers.push(fn as SerializeFunction<unknown, unknown>)
   }
 
   /** Runs the chain of serializers to find the first one that serializes a user, and returns it. */
-  async serializeUser<User, StoredUser = any>(user: User, request: FastifyRequest): Promise<StoredUser> {
+  async serializeUser<User, StoredUser = unknown>(user: User, request: PassportRequestLike): Promise<StoredUser> {
     const result = await this.runStack(this.serializers, user, request)
 
     if (result) {
-      return result
+      return result as StoredUser
     } else {
       throw new Error(`Failed to serialize user into session. Tried ${this.serializers.length} serializers.`)
     }
@@ -288,14 +292,14 @@ export class Authenticator {
    * @api public
    */
   registerUserDeserializer<StoredUser, User>(fn: DeserializeFunction<StoredUser, User>) {
-    this.deserializers.push(fn)
+    this.deserializers.push(fn as DeserializeFunction<unknown, unknown>)
   }
 
-  async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest): Promise<StoredUser | false> {
+  async deserializeUser<StoredUser>(stored: StoredUser, request: PassportRequestLike): Promise<StoredUser | false> {
     const result = await this.runStack(this.deserializers, stored, request)
 
     if (result) {
-      return result
+      return result as StoredUser
     } else if (result === null || result === false) {
       return false
     } else {
@@ -329,7 +333,7 @@ export class Authenticator {
     this.infoTransformers.push(fn)
   }
 
-  async transformAuthInfo (info: any, request: FastifyRequest) {
+  async transformAuthInfo (info: Record<string, unknown>, request: FastifyRequest) {
     const result = await this.runStack(this.infoTransformers, info, request)
     // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
     return result || info

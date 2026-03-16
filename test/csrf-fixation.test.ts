@@ -1,7 +1,8 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
-import { getConfiguredTestServer, TestBrowserSession } from './helpers'
-import fastifyCsrfProtection from '@fastify/csrf-protection'
+import { asPassportReply, asPassportRequest, getConfiguredTestServer, TestBrowserSession } from './helpers'
+
+const fastifyCsrfProtection = require('@fastify/csrf-protection')
 
 function createServer (sessionPluginName: '@fastify/session' | '@fastify/secure-session') {
   const { server, fastifyPassport } = getConfiguredTestServer()
@@ -15,10 +16,10 @@ function createServer (sessionPluginName: '@fastify/session' | '@fastify/secure-
   )
 
   server.get('/csrf', async (_req, reply) => {
-    return reply.generateCsrf()
+    return asPassportReply(reply).generateCsrf()
   })
   server.get('/session', async (req) => {
-    return req.session.get('_csrf')
+    return asPassportRequest(req).session.get('_csrf')
   })
   return server
 }
