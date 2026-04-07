@@ -2,6 +2,7 @@ import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import Authenticator from '../src/Authenticator'
 import { getConfiguredTestServer } from './helpers'
+import { preValidationHookHandler } from 'fastify'
 
 describe('Authenticator edge cases', () => {
   test('should throw error when no serializer succeeds', async () => {
@@ -30,7 +31,11 @@ describe('Authenticator edge cases', () => {
 
     server.post(
       '/authorize',
-      { preValidation: fastifyPassport.authorize('test', { assignProperty: 'account' }) },
+      {
+        preValidation: fastifyPassport.authorize('test', {
+          assignProperty: 'account'
+        }) as unknown as preValidationHookHandler
+      },
       async (request: any, reply) => {
         reply.send({ account: request.account })
       }

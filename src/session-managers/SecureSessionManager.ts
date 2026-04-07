@@ -49,12 +49,16 @@ export class SecureSessionManager {
         }
         await request.session.regenerate(keepSessionInfoKeys)
       } else {
+        const existingData: Record<string, unknown> = (request.session as any).data?.() ?? {}
         await request.session.regenerate()
+        for (const [key, value] of Object.entries(existingData)) {
+          request.session.set(key, value)
+        }
       }
 
-    // Handle @fastify/secure-session against CSRF fixation
-    // TODO: This is quite hacky. The best option would be having a regenerate method
-    // on secure-session as well
+      // Handle @fastify/secure-session against CSRF fixation
+      // TODO: This is quite hacky. The best option would be having a regenerate method
+      // on secure-session as well
     } else if (this.clearSessionOnLogin && object) {
       const currentData: SessionData = request.session?.data() ?? {}
       for (const field of Object.keys(currentData)) {
@@ -70,7 +74,17 @@ export class SecureSessionManager {
   async logOut (request: Request) {
     request.session.set(this.key, undefined)
     if (request.session.regenerate) {
-      await request.session.regenerate()
+      if (this.clearSessionOnLogin) {
+        await request.session.regenerate()
+      } else {
+        const existingData: Record<string, unknown> = (request.session as any).data?.() ?? {}
+        await request.session.regenerate()
+        for (const [key, value] of Object.entries(existingData)) {
+          if (key !== this.key) {
+            request.session.set(key, value)
+          }
+        }
+      }
     }
   }
 
