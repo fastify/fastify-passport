@@ -2,6 +2,7 @@ import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { getConfiguredTestServer, TestBrowserSession } from './helpers'
 import fastifyCsrfProtection from '@fastify/csrf-protection'
+import { preValidationHookHandler } from 'fastify'
 
 function createServer (sessionPluginName: '@fastify/session' | '@fastify/secure-session') {
   const { server, fastifyPassport } = getConfiguredTestServer()
@@ -10,7 +11,7 @@ function createServer (sessionPluginName: '@fastify/session' | '@fastify/secure-
 
   server.post(
     '/login',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as unknown as preValidationHookHandler },
     async () => 'success'
   )
 

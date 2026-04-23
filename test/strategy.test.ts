@@ -3,6 +3,7 @@ import { describe, test } from 'node:test'
 import Authenticator from '../src/Authenticator'
 import { Strategy } from '../src/strategies'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
+import type { preValidationHookHandler } from 'fastify'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -28,7 +29,11 @@ const testSuite = (sessionPluginName: string) => {
       }
 
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
-      server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
+      server.get(
+        '/',
+        { preValidation: fastifyPassport.authenticate('test') as unknown as preValidationHookHandler },
+        async () => 'hello world!'
+      )
 
       const response = await server.inject({ method: 'GET', url: '/' })
       assert.strictEqual(response.statusCode, 500)
@@ -44,7 +49,11 @@ const testSuite = (sessionPluginName: string) => {
       }
 
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
-      server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
+      server.get(
+        '/',
+        { preValidation: fastifyPassport.authenticate('test') as unknown as preValidationHookHandler },
+        async () => 'hello world!'
+      )
 
       const response = await server.inject({ method: 'GET', url: '/' })
       assert.strictEqual(response.statusCode, 500)
@@ -62,7 +71,11 @@ const testSuite = (sessionPluginName: string) => {
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('test', { failureFlash: true }) },
+        {
+          preValidation: fastifyPassport.authenticate('test', {
+            failureFlash: true
+          }) as unknown as preValidationHookHandler
+        },
         async () => 'hello world!'
       )
 
@@ -79,7 +92,11 @@ const testSuite = (sessionPluginName: string) => {
       }
 
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
-      server.get('/', { preValidation: fastifyPassport.authenticate('test') }, async () => 'hello world!')
+      server.get(
+        '/',
+        { preValidation: fastifyPassport.authenticate('test') as unknown as preValidationHookHandler },
+        async () => 'hello world!'
+      )
 
       const response = await server.inject({ method: 'GET', url: '/' })
       assert.strictEqual(response.statusCode, 401)
