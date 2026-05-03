@@ -31,7 +31,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as unknown as preValidationHookHandler
+            }) as preValidationHookHandler
           },
           async () => 'hello world!'
         )
@@ -41,7 +41,7 @@ const testSuite = (sessionPluginName: string) => {
             preValidation: fastifyPassport.authenticate('test', {
               successRedirect: '/',
               authInfo: false
-            }) as unknown as preValidationHookHandler
+            }) as preValidationHookHandler
           },
           () => {}
         )

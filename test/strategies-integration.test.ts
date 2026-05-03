@@ -27,7 +27,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('google', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello world!'
       )
@@ -36,7 +36,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('google', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello'
       )
@@ -62,7 +62,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('facebook', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello world!'
       )
@@ -71,7 +71,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('facebook', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello'
       )
@@ -97,7 +97,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('github', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello world!'
       )
@@ -106,7 +106,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('github', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello'
       )
@@ -136,7 +136,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('openid-client', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello world!'
       )
@@ -145,7 +145,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('openid-client', {
             authInfo: false
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello'
       )

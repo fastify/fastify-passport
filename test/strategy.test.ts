@@ -31,7 +31,7 @@ const testSuite = (sessionPluginName: string) => {
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('test') as unknown as preValidationHookHandler },
+        { preValidation: fastifyPassport.authenticate('test') as preValidationHookHandler },
         async () => 'hello world!'
       )
 
@@ -51,7 +51,7 @@ const testSuite = (sessionPluginName: string) => {
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('test') as unknown as preValidationHookHandler },
+        { preValidation: fastifyPassport.authenticate('test') as preValidationHookHandler },
         async () => 'hello world!'
       )
 
@@ -74,7 +74,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate('test', {
             failureFlash: true
-          }) as unknown as preValidationHookHandler
+          }) as preValidationHookHandler
         },
         async () => 'hello world!'
       )
@@ -94,7 +94,7 @@ const testSuite = (sessionPluginName: string) => {
       const { server, fastifyPassport } = getConfiguredTestServer('test', new ErrorStrategy('test'))
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('test') as unknown as preValidationHookHandler },
+        { preValidation: fastifyPassport.authenticate('test') as preValidationHookHandler },
         async () => 'hello world!'
       )
 

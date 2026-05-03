@@ -34,7 +34,7 @@ describe('Authenticator edge cases', () => {
       {
         preValidation: fastifyPassport.authorize('test', {
           assignProperty: 'account'
-        }) as unknown as preValidationHookHandler
+        }) as preValidationHookHandler
       },
       async (request: any, reply) => {
         reply.send({ account: request.account })

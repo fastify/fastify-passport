@@ -18,7 +18,7 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.use(new TestThirdPartyStrategy('third-party'))
         server.get(
           '/',
-          { preValidation: fastifyPassport.authorize('third-party') as unknown as preValidationHookHandler },
+          { preValidation: fastifyPassport.authorize('third-party') as preValidationHookHandler },
           async (request) => {
             const user = request.user as any
             assert.ifError(user)

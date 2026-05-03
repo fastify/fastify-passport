@@ -39,7 +39,7 @@ const testSuite = (sessionPluginName: string) => {
               receivedStatuses = undefined // Should not be called with array for single strategy
               reply.code(401).send('Authentication failed')
             }
-          ) as unknown as preValidationHookHandler
+          ) as preValidationHookHandler
         },
         async () => 'should not reach here'
       )
@@ -71,7 +71,7 @@ const testSuite = (sessionPluginName: string) => {
               receivedStatuses = statuses
               reply.code(401).send('Authentication failed')
             }
-          ) as unknown as preValidationHookHandler
+          ) as preValidationHookHandler
         },
         async () => 'should not reach here'
       )
@@ -108,7 +108,7 @@ const testSuite = (sessionPluginName: string) => {
               receivedStatuses = statuses
               reply.code(401).send('Authentication failed')
             }
-          ) as unknown as preValidationHookHandler
+          ) as preValidationHookHandler
         },
         async () => 'should not reach here'
       )
@@ -143,7 +143,7 @@ const testSuite = (sessionPluginName: string) => {
               // Success callback should not have status/statuses parameter
               reply.send('Authentication succeeded')
             }
-          ) as unknown as preValidationHookHandler
+          ) as preValidationHookHandler
         },
         async () => 'should not reach here'
       )

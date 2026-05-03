@@ -26,7 +26,7 @@ describe('Additional coverage tests', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate(strategy) as unknown as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate(strategy) as preValidationHookHandler },
       async (request: any) => (request.user as any).name
     )
 

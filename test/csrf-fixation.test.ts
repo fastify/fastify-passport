@@ -11,7 +11,7 @@ function createServer (sessionPluginName: '@fastify/session' | '@fastify/secure-
 
   server.post(
     '/login',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as unknown as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async () => 'success'
   )
 

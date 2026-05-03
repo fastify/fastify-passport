@@ -17,7 +17,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as unknown as preValidationHookHandler
+            }) as preValidationHookHandler
           },
           async (request) => (request.user as any).name
         )
@@ -130,7 +130,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as unknown as preValidationHookHandler
+            }) as preValidationHookHandler
           },
           async () => 'the root!'
         )
@@ -139,7 +139,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as unknown as preValidationHookHandler
+            }) as preValidationHookHandler
           },
           async (request, reply) => {
             request.logout()
@@ -152,7 +152,7 @@ const testSuite = (sessionPluginName: string) => {
             preValidation: fastifyPassport.authenticate('test', {
               successRedirect: '/',
               authInfo: false
-            }) as unknown as preValidationHookHandler
+            }) as preValidationHookHandler
           },
           async () => ''
         )

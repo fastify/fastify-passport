@@ -60,14 +60,14 @@ async function TestStrategyModule (
     {
       preValidation: authenticator.authenticate(strategyName, {
         authInfo: false
-      }) as unknown as preValidationHookHandler
+      }) as preValidationHookHandler
     },
     async () => `hello ${namespace}!`
   )
 
   instance.get(
     `/user/${namespace}`,
-    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) as unknown as preValidationHookHandler },
+    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) as preValidationHookHandler },
     async (request: any) => JSON.stringify(request[`user${namespace}`])
   )
 
@@ -77,7 +77,7 @@ async function TestStrategyModule (
       preValidation: authenticator.authenticate(strategyName, {
         successRedirect: `/${namespace}`,
         authInfo: false
-      }) as unknown as preValidationHookHandler
+      }) as preValidationHookHandler
     },
     () => {}
   )
@@ -87,7 +87,7 @@ async function TestStrategyModule (
     {
       preValidation: authenticator.authenticate(strategyName, {
         authInfo: false
-      }) as unknown as preValidationHookHandler
+      }) as preValidationHookHandler
     },
     async (request, reply) => {
       await request.logout()

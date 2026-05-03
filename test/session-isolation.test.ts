@@ -8,17 +8,17 @@ function createServer () {
 
   server.get(
     '/protected',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as unknown as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async () => 'hello!'
   )
   server.get(
     '/my-id',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as unknown as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async (request) => String((request.user as any).id)
   )
   server.post(
     '/login',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as unknown as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async () => 'success'
   )
 
@@ -29,7 +29,7 @@ function createServer () {
 
   server.post(
     '/logout',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as unknown as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async (request, reply) => {
       await request.logout()
       reply.send('logged out')
