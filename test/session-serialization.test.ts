@@ -1,6 +1,6 @@
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
-import { FastifyInstance } from 'fastify'
+import { FastifyInstance, preValidationHookHandler } from 'fastify'
 import { FastifyRequest } from 'fastify/types/request'
 import Authenticator from '../src/Authenticator'
 import { getTestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
@@ -28,12 +28,21 @@ const testSuite = (sessionPluginName: string) => {
         server.register(fastifyPassport.secureSession())
         server.get(
           '/',
-          { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+          {
+            preValidation: fastifyPassport.authenticate('test', {
+              authInfo: false
+            }) as preValidationHookHandler
+          },
           async () => 'hello world!'
         )
         server.post(
           '/login',
-          { preValidation: fastifyPassport.authenticate('test', { successRedirect: '/', authInfo: false }) },
+          {
+            preValidation: fastifyPassport.authenticate('test', {
+              successRedirect: '/',
+              authInfo: false
+            }) as preValidationHookHandler
+          },
           () => {}
         )
         server.get('/unprotected', async () => 'some content')

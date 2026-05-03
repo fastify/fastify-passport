@@ -6,6 +6,7 @@ import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
 import { Configuration as OpenIdClientConfiguration } from 'openid-client'
 import { Strategy as OpenIdClientStrategy } from 'openid-client/passport'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { preValidationHookHandler } from 'fastify'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -23,12 +24,20 @@ const testSuite = (sessionPluginName: string) => {
 
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('google', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('google', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello world!'
       )
       server.post(
         '/login',
-        { preValidation: fastifyPassport.authenticate('google', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('google', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello'
       )
 
@@ -50,12 +59,20 @@ const testSuite = (sessionPluginName: string) => {
 
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('facebook', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('facebook', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello world!'
       )
       server.post(
         '/login',
-        { preValidation: fastifyPassport.authenticate('facebook', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('facebook', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello'
       )
 
@@ -77,12 +94,20 @@ const testSuite = (sessionPluginName: string) => {
 
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('github', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('github', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello world!'
       )
       server.post(
         '/login',
-        { preValidation: fastifyPassport.authenticate('github', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('github', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello'
       )
 
@@ -108,12 +133,20 @@ const testSuite = (sessionPluginName: string) => {
 
       server.get(
         '/',
-        { preValidation: fastifyPassport.authenticate('openid-client', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('openid-client', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello world!'
       )
       server.post(
         '/login',
-        { preValidation: fastifyPassport.authenticate('openid-client', { authInfo: false }) },
+        {
+          preValidation: fastifyPassport.authenticate('openid-client', {
+            authInfo: false
+          }) as preValidationHookHandler
+        },
         async () => 'hello'
       )
 

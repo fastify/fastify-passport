@@ -2,6 +2,7 @@ import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import '../src/index'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { preValidationHookHandler } from 'fastify'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -13,7 +14,11 @@ const testSuite = (sessionPluginName: string) => {
         const { server, fastifyPassport } = getConfiguredTestServer()
         server.get(
           '/',
-          { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+          {
+            preValidation: fastifyPassport.authenticate('test', {
+              authInfo: false
+            }) as preValidationHookHandler
+          },
           async (request) => (request.user as any).name
         )
         server.post('/force-login', async (request, reply) => {
@@ -122,12 +127,20 @@ const testSuite = (sessionPluginName: string) => {
         const { server, fastifyPassport } = getConfiguredTestServer()
         server.get(
           '/',
-          { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+          {
+            preValidation: fastifyPassport.authenticate('test', {
+              authInfo: false
+            }) as preValidationHookHandler
+          },
           async () => 'the root!'
         )
         server.get(
           '/logout',
-          { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+          {
+            preValidation: fastifyPassport.authenticate('test', {
+              authInfo: false
+            }) as preValidationHookHandler
+          },
           async (request, reply) => {
             request.logout()
             reply.send('logged out')
@@ -135,7 +148,12 @@ const testSuite = (sessionPluginName: string) => {
         )
         server.post(
           '/login',
-          { preValidation: fastifyPassport.authenticate('test', { successRedirect: '/', authInfo: false }) },
+          {
+            preValidation: fastifyPassport.authenticate('test', {
+              successRedirect: '/',
+              authInfo: false
+            }) as preValidationHookHandler
+          },
           async () => ''
         )
 
