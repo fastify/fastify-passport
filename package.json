@@ -28,16 +28,10 @@
     "Harry Brundage <harry@harry.me>"
   ],
   "license": "MIT",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://opensource.org/licenses/MIT"
-    }
-  ],
   "bugs": {
     "url": "https://github.com/fastify/fastify-passport/issues"
   },
-  "homepage": "http://passportjs.org/",
+  "homepage": "https://www.passportjs.org/",
   "dependencies": {
     "@fastify/flash": "^6.0.0",
     "fastify-plugin": "^6.0.0"
