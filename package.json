@@ -28,23 +28,17 @@
     "Harry Brundage <harry@harry.me>"
   ],
   "license": "MIT",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://opensource.org/licenses/MIT"
-    }
-  ],
   "bugs": {
     "url": "https://github.com/fastify/fastify-passport/issues"
   },
-  "homepage": "http://passportjs.org/",
+  "homepage": "https://www.passportjs.org/",
   "dependencies": {
     "@fastify/flash": "^6.0.0",
-    "fastify-plugin": "^5.0.0"
+    "fastify-plugin": "^6.0.0"
   },
   "devDependencies": {
     "@fastify/cookie": "^11.0.1",
-    "@fastify/csrf-protection": "^7.0.0",
+    "@fastify/csrf-protection": "^8.0.0",
     "@fastify/secure-session": "^8.3.0",
     "@fastify/session": "^11.0.0",
     "@tsconfig/node20": "^20.1.6",
