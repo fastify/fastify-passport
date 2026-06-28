@@ -52,28 +52,31 @@ describe('SecureSessionManager', () => {
   })
 
   test('should not throw an Error if no serializeUser-function was passed as first parameter', () => {
-    const sessionManager = new SecureSessionManager(((id) => id) as unknown as SerializeFunction)
+    const sessionManager = new SecureSessionManager(((id: string) => id) as unknown as SerializeFunction)
     assert.strictEqual(sessionManager.key, 'passport')
   })
 
   test('should not throw an Error if no serializeUser-function was passed as second parameter', () => {
-    const sessionManager = new SecureSessionManager({}, ((id) => id) as unknown as SerializeFunction)
+    const sessionManager = new SecureSessionManager({}, ((id: string) => id) as unknown as SerializeFunction)
     assert.strictEqual(sessionManager.key, 'passport')
   })
 
   test('should set the key accordingly', () => {
-    const sessionManager = new SecureSessionManager({ key: 'test' }, ((id) => id) as unknown as SerializeFunction)
+    const sessionManager = new SecureSessionManager(
+      { key: 'test' },
+      ((id: string) => id) as unknown as SerializeFunction
+    )
     assert.strictEqual(sessionManager.key, 'test')
   })
 
   test('should ignore non-string keys', () => {
     // @ts-expect-error - strictEqual-error key has to be of type string
-    const sessionManager = new SecureSessionManager({ key: 1 }, ((id) => id) as unknown as SerializeFunction)
+    const sessionManager = new SecureSessionManager({ key: 1 }, ((id: string) => id) as unknown as SerializeFunction)
     assert.strictEqual(sessionManager.key, 'passport')
   })
 
   test('should only call request.session.regenerate once if a function', async () => {
-    const sessionManger = new SecureSessionManager({}, ((id) => id) as unknown as SerializeFunction)
+    const sessionManger = new SecureSessionManager({}, ((id: string) => id) as unknown as SerializeFunction)
     const user = { id: 'test' }
     const request = {
       session: { regenerate: mock.fn(() => {}), set: () => {}, data: () => {} }
@@ -86,7 +89,7 @@ describe('SecureSessionManager', () => {
   test('should call request.session.regenerate function if clearSessionOnLogin is false', async () => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: false },
-      ((id) => id) as unknown as SerializeFunction
+      ((id: string) => id) as unknown as SerializeFunction
     )
     const user = { id: 'test' }
     const request = {
@@ -101,7 +104,7 @@ describe('SecureSessionManager', () => {
   test('should call request.session.regenerate function with all properties from session if keepSessionInfo is true', async () => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: true },
-      ((id) => id) as unknown as SerializeFunction
+      ((id: string) => id) as unknown as SerializeFunction
     )
     const user = { id: 'test' }
     const request = {
@@ -120,7 +123,7 @@ describe('SecureSessionManager', () => {
   test('should call request.session.regenerate function with default properties from session if keepSessionInfo is false', async () => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: true },
-      ((id) => id) as unknown as SerializeFunction
+      ((id: string) => id) as unknown as SerializeFunction
     )
     const user = { id: 'test' }
     const request = {
@@ -136,7 +139,7 @@ describe('SecureSessionManager', () => {
   test('should call session.set function if no regenerate function provided and keepSessionInfo is true', async () => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: true },
-      ((id) => id) as unknown as SerializeFunction
+      ((id: string) => id) as unknown as SerializeFunction
     )
     const user = { id: 'test' }
     const set = mock.fn()
