@@ -19,7 +19,7 @@ npm i @fastify/passport
 ## Google OAuth2 Video tutorial
 
 The community created this fast introduction to `@fastify/passport`:
-[![Google OAuth2 Tutorial Passport](https://img.youtube.com/vi/XRcQQWU0XOM/0.jpg)](https://youtu.be/XRcQQWU0XOM)
+[![Google OAuth2 Tutorial Passport](https://img.youtube.com/vi/XRcQQWU0XOM/0.jpg)](https://www.youtube.com/watch?v=XRcQQWU0XOM)
 
 
 ## Example
