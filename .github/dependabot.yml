@@ -21,7 +21,7 @@ updates:
       # Prefix all commit messages with "chore: "
       prefix: "chore"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     cooldown:
       default-days: 7
     versioning-strategy: "increase-if-necessary"
