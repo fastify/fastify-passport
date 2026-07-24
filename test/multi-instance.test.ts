@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify'
+import { FastifyInstance, preValidationHookHandler } from 'fastify'
 import assert from 'node:assert'
 import { beforeEach, describe, test } from 'node:test'
 import { Authenticator } from '../src/Authenticator'
@@ -8,7 +8,16 @@ import { getTestServer, TestBrowserSession } from './helpers'
 let counter: number
 let authenticators: Record<string, Authenticator>
 
-async function TestStrategyModule (instance: FastifyInstance, { namespace, clearSessionOnLogin }) {
+async function TestStrategyModule (
+  instance: FastifyInstance,
+  {
+    namespace,
+    clearSessionOnLogin
+  }: {
+    namespace: string
+    clearSessionOnLogin: boolean
+  }
+) {
   class TestStrategy extends Strategy {
     authenticate (request: any, _options?: { pauseStream?: boolean }) {
       if (request.isAuthenticated()) {
@@ -48,14 +57,18 @@ async function TestStrategyModule (instance: FastifyInstance, { namespace, clear
 
   instance.get(
     `/${namespace}`,
-    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
+    {
+      preValidation: authenticator.authenticate(strategyName, {
+        authInfo: false
+      }) as preValidationHookHandler
+    },
     async () => `hello ${namespace}!`
   )
 
   instance.get(
     `/user/${namespace}`,
-    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
-    async (request) => JSON.stringify(request[`user${namespace}`])
+    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) as preValidationHookHandler },
+    async (request: any) => JSON.stringify(request[`user${namespace}`])
   )
 
   instance.post(
@@ -64,16 +77,18 @@ async function TestStrategyModule (instance: FastifyInstance, { namespace, clear
       preValidation: authenticator.authenticate(strategyName, {
         successRedirect: `/${namespace}`,
         authInfo: false
-      })
+      }) as preValidationHookHandler
     },
-    () => {
-
-    }
+    () => {}
   )
 
   instance.post(
     `/logout-${namespace}`,
-    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
+    {
+      preValidation: authenticator.authenticate(strategyName, {
+        authInfo: false
+      }) as preValidationHookHandler
+    },
     async (request, reply) => {
       await request.logout()
       reply.send('logged out')

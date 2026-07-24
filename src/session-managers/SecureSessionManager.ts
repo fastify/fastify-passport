@@ -6,6 +6,19 @@ import type { Session, SessionData } from '@fastify/secure-session'
 
 type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
 
+/**
+ * Safely reads the current session data via the `data()` method exposed by both
+ * `@fastify/session` and `@fastify/secure-session`. Falls back to an empty object
+ * if the method is not present or not callable, instead of throwing at runtime.
+ */
+function getExistingSessionData (session: Request['session']): Record<string, unknown> {
+  const data = (session as unknown as { data?: unknown }).data
+  if (typeof data !== 'function') {
+    return {}
+  }
+  return (data.call(session) as Record<string, unknown> | undefined) ?? {}
+}
+
 /** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
 export class SecureSessionManager {
   key: string
@@ -42,20 +55,24 @@ export class SecureSessionManager {
 
     // Handle @fastify/session to prevent token/CSRF fixation
     if (request.session.regenerate) {
-      if (this.clearSessionOnLogin && object) {
+      if (this.clearSessionOnLogin && (object || object === 0)) {
         const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
           keepSessionInfoKeys.push(...Object.keys(request.session))
         }
         await request.session.regenerate(keepSessionInfoKeys)
       } else {
+        const existingData = getExistingSessionData(request.session)
         await request.session.regenerate()
+        for (const [key, value] of Object.entries(existingData)) {
+          request.session.set(key, value)
+        }
       }
 
-    // Handle @fastify/secure-session against CSRF fixation
-    // TODO: This is quite hacky. The best option would be having a regenerate method
-    // on secure-session as well
-    } else if (this.clearSessionOnLogin && object) {
+      // Handle @fastify/secure-session against CSRF fixation
+      // TODO: This is quite hacky. The best option would be having a regenerate method
+      // on secure-session as well
+    } else if (this.clearSessionOnLogin && (object || object === 0)) {
       const currentData: SessionData = request.session?.data() ?? {}
       for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
@@ -70,7 +87,17 @@ export class SecureSessionManager {
   async logOut (request: Request) {
     request.session.set(this.key, undefined)
     if (request.session.regenerate) {
-      await request.session.regenerate()
+      if (this.clearSessionOnLogin) {
+        await request.session.regenerate()
+      } else {
+        const existingData = getExistingSessionData(request.session)
+        await request.session.regenerate()
+        for (const [key, value] of Object.entries(existingData)) {
+          if (key !== this.key) {
+            request.session.set(key, value)
+          }
+        }
+      }
     }
   }
 

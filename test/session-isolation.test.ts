@@ -1,21 +1,24 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
+import { preValidationHookHandler } from 'fastify'
 
 function createServer () {
   const { server, fastifyPassport } = getConfiguredTestServer()
 
   server.get(
     '/protected',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async () => 'hello!'
   )
-  server.get('/my-id', { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) }, async (request) =>
-    String((request.user as any).id)
+  server.get(
+    '/my-id',
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
+    async (request) => String((request.user as any).id)
   )
   server.post(
     '/login',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async () => 'success'
   )
 
@@ -26,7 +29,7 @@ function createServer () {
 
   server.post(
     '/logout',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
     async (request, reply) => {
       await request.logout()
       reply.send('logged out')
@@ -41,7 +44,7 @@ const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     const sessionOnlyTest = sessionPluginName === '@fastify/session' ? test : test.skip
     describe('session isolation', () => {
-      let userA, userB, userC
+      let userA: TestBrowserSession, userB: TestBrowserSession, userC: TestBrowserSession
 
       beforeEach(() => {
         userA = new TestBrowserSession(server)
