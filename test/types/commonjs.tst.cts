@@ -1,6 +1,7 @@
 import { expect } from 'tstyche'
-import { Authenticator, Strategy } from '../../dist/index.js'
 import fastifyPassport = require('../../dist/index.js')
+
+const { Authenticator, Strategy } = fastifyPassport
 
 expect(fastifyPassport).type.toHaveProperty('initialize')
 expect(fastifyPassport.initialize).type.toBeCallableWith()
