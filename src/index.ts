@@ -4,14 +4,17 @@ import type { logOut } from './decorators/logout'
 import type { isAuthenticated } from './decorators/is-authenticated'
 import type { isUnauthenticated } from './decorators/is-unauthenticated'
 import Authenticator from './Authenticator'
+import { Strategy } from './strategies/base'
 
 const passport = new Authenticator()
+const exportedPassport = Object.assign(passport, { default: passport, Authenticator, Strategy })
 
-// Workaround for importing fastify-passport in native ESM context
-module.exports = exports = passport
-export default passport
-export { Strategy } from './strategies/base'
-export { Authenticator } from './Authenticator'
+// Expose named exports to Node.js' CommonJS named-export detection.
+module.exports.default = passport
+module.exports.Authenticator = Authenticator
+module.exports.Strategy = Strategy
+
+export = exportedPassport
 
 declare module 'fastify' {
   /**
