@@ -8,11 +8,11 @@ expect(fastifyPassport.default).type.toHaveProperty('initialize')
 expect(fastifyPassport.Authenticator).type.toBeConstructableWith()
 expect(fastifyPassport.Strategy).type.toBeConstructableWith('test')
 
-fastifyPassport.registerUserSerializer(async user => user)
-fastifyPassport.registerUserDeserializer(async user => user)
+expect(fastifyPassport.registerUserSerializer).type.toBeCallableWith(async (user: unknown) => user)
+expect(fastifyPassport.registerUserDeserializer).type.toBeCallableWith(async (user: unknown) => user)
 
 class TestStrategy extends fastifyPassport.Strategy {
   authenticate (): void {}
 }
 
-new TestStrategy('test')
+expect(TestStrategy).type.toBeConstructableWith('test')
