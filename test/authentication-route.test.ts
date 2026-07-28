@@ -1,7 +1,6 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 describe('AuthenticationRoute edge cases', () => {
   test('should use failWithError option to throw error on authentication failure', async () => {
@@ -12,7 +11,7 @@ describe('AuthenticationRoute edge cases', () => {
       {
         preValidation: fastifyPassport.authenticate('test', {
           failWithError: true
-        }) as preValidationHookHandler
+        })
       },
       async () => assert.fail('should not reach here')
     )
@@ -37,7 +36,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate('challenge') as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate('challenge') },
       async () => assert.fail('should not reach here')
     )
 
@@ -73,7 +72,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate(['first', 'second']) as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate(['first', 'second']) },
       async () => 'should not reach here'
     )
 
@@ -122,7 +121,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate('nonexistent') as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate('nonexistent') },
       async () => assert.fail('should not reach here')
     )
 
@@ -147,7 +146,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate(strategy) as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate(strategy) },
       async (request: any) => (request.user as any).name
     )
 
@@ -171,7 +170,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate('custom') as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate('custom') },
       async () => 'should not reach here'
     )
 
@@ -194,7 +193,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate('object') as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate('object') },
       async () => assert.fail('should not reach here')
     )
 
@@ -225,7 +224,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate(strategy) as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate(strategy) },
       async (request: any) => (request.user as any).name
     )
 

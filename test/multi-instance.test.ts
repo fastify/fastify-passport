@@ -1,4 +1,4 @@
-import { FastifyInstance, preValidationHookHandler } from 'fastify'
+import { FastifyInstance } from 'fastify'
 import assert from 'node:assert'
 import { beforeEach, describe, test } from 'node:test'
 import { Authenticator } from '../src/Authenticator'
@@ -60,14 +60,14 @@ async function TestStrategyModule (
     {
       preValidation: authenticator.authenticate(strategyName, {
         authInfo: false
-      }) as preValidationHookHandler
+      })
     },
     async () => `hello ${namespace}!`
   )
 
   instance.get(
     `/user/${namespace}`,
-    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) as preValidationHookHandler },
+    { preValidation: authenticator.authenticate(strategyName, { authInfo: false }) },
     async (request: any) => JSON.stringify(request[`user${namespace}`])
   )
 
@@ -77,7 +77,7 @@ async function TestStrategyModule (
       preValidation: authenticator.authenticate(strategyName, {
         successRedirect: `/${namespace}`,
         authInfo: false
-      }) as preValidationHookHandler
+      })
     },
     () => {}
   )
@@ -87,7 +87,7 @@ async function TestStrategyModule (
     {
       preValidation: authenticator.authenticate(strategyName, {
         authInfo: false
-      }) as preValidationHookHandler
+      })
     },
     async (request, reply) => {
       await request.logout()

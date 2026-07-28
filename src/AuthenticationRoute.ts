@@ -3,7 +3,7 @@ import type { Authenticator } from './Authenticator'
 import type { AnyStrategy } from './strategies'
 import type { Strategy } from './strategies/base'
 import { AuthenticationError } from './errors'
-import type { FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyReply, FastifyRequest, preValidationAsyncHookHandler } from 'fastify'
 import { types } from 'node:util'
 
 type FlashObject = { type?: string; message?: string }
@@ -102,7 +102,7 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
     }
   }
 
-  handler = async (request: FastifyRequest, reply: FastifyReply) => {
+  handler: preValidationAsyncHookHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.passport) {
       throw new Error('passport.initialize() plugin not in use')
     }

@@ -1,24 +1,23 @@
 import { test, describe, beforeEach } from 'node:test'
 import assert from 'node:assert'
 import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 function createServer () {
   const { server, fastifyPassport } = getConfiguredTestServer()
 
   server.get(
     '/protected',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async () => 'hello!'
   )
   server.get(
     '/my-id',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async (request) => String((request.user as any).id)
   )
   server.post(
     '/login',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async () => 'success'
   )
 
@@ -29,7 +28,7 @@ function createServer () {
 
   server.post(
     '/logout',
-    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) as preValidationHookHandler },
+    { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
     async (request, reply) => {
       await request.logout()
       reply.send('logged out')

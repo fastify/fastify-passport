@@ -2,7 +2,6 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { getRegisteredTestServer } from './helpers'
 import { Strategy } from '../src/strategies'
-import { preValidationHookHandler } from 'fastify'
 
 // Strategy that always fails with a specific status
 class FailingStrategy extends Strategy {
@@ -39,7 +38,7 @@ const testSuite = (sessionPluginName: string) => {
               receivedStatuses = undefined // Should not be called with array for single strategy
               reply.code(401).send('Authentication failed')
             }
-          ) as preValidationHookHandler
+          )
         },
         async () => 'should not reach here'
       )
@@ -71,7 +70,7 @@ const testSuite = (sessionPluginName: string) => {
               receivedStatuses = statuses
               reply.code(401).send('Authentication failed')
             }
-          ) as preValidationHookHandler
+          )
         },
         async () => 'should not reach here'
       )
@@ -108,7 +107,7 @@ const testSuite = (sessionPluginName: string) => {
               receivedStatuses = statuses
               reply.code(401).send('Authentication failed')
             }
-          ) as preValidationHookHandler
+          )
         },
         async () => 'should not reach here'
       )
@@ -143,7 +142,7 @@ const testSuite = (sessionPluginName: string) => {
               // Success callback should not have status/statuses parameter
               reply.send('Authentication succeeded')
             }
-          ) as preValidationHookHandler
+          )
         },
         async () => 'should not reach here'
       )

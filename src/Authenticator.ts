@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync, FastifyRequest, RouteHandlerMethod } from 'fastify'
+import type { FastifyPluginAsync, FastifyRequest, preValidationAsyncHookHandler } from 'fastify'
 import { fastifyPlugin } from 'fastify-plugin'
 import { type AuthenticateCallback, type AuthenticateOptions, AuthenticationRoute } from './AuthenticationRoute'
 import { CreateInitializePlugin } from './CreateInitializePlugin'
@@ -148,21 +148,21 @@ export class Authenticator {
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authenticate<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategyOrStrategies: StrategyOrStrategies,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod {
+  ): preValidationAsyncHookHandler {
     let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback === 'function') {
       options = {}
@@ -194,21 +194,21 @@ export class Authenticator {
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategy: StrategyOrStrategies,
     options?: AuthenticateOptions,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod
+  ): preValidationAsyncHookHandler
   public authorize<StrategyOrStrategies extends string | Strategy | (string | Strategy)[]>(
     strategyOrStrategies: StrategyOrStrategies,
     optionsOrCallback?: AuthenticateOptions | AuthenticateCallback<StrategyOrStrategies>,
     callback?: AuthenticateCallback<StrategyOrStrategies>
-  ): RouteHandlerMethod {
+  ): preValidationAsyncHookHandler {
     let options: AuthenticateOptions | undefined
     if (typeof optionsOrCallback === 'function') {
       options = {}
