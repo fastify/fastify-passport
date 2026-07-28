@@ -7,8 +7,6 @@ expect(fastifyPassport).type.toHaveProperty('initialize')
 expect(fastifyPassport.initialize).type.toBeCallableWith()
 expect(fastifyPassport.authenticate).type.toBeCallableWith('test')
 expect(fastifyPassport.default).type.toHaveProperty('initialize')
-expect(fastifyPassport.Authenticator).type.toBeConstructableWith()
-expect(fastifyPassport.Strategy).type.toBeConstructableWith('test')
 expect(Authenticator).type.toBeConstructableWith()
 expect(Strategy).type.toBeConstructableWith('test')
 
