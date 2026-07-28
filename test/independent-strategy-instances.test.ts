@@ -3,7 +3,6 @@ import { describe, test } from 'node:test'
 import { Strategy } from '../src/strategies'
 import { TestThirdPartyStrategy } from './authorize.test'
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 class WelcomeStrategy extends Strategy {
   authenticate (request: any, _options?: { pauseStream?: boolean }) {
@@ -26,7 +25,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate(new WelcomeStrategy('welcome'), {
             authInfo: false
-          }) as preValidationHookHandler
+          })
         },
         async (request) => request.session.get('messages')
       )
@@ -37,7 +36,7 @@ const testSuite = (sessionPluginName: string) => {
             successRedirect: '/',
             successMessage: true,
             authInfo: false
-          }) as preValidationHookHandler
+          })
         },
         () => {}
       )
@@ -69,7 +68,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate([new WelcomeStrategy('welcome'), new TestStrategy('test')], {
             authInfo: false
-          }) as preValidationHookHandler
+          })
         },
         async (request) => `messages: ${request.session.get('messages')}`
       )
@@ -80,7 +79,7 @@ const testSuite = (sessionPluginName: string) => {
             successRedirect: '/',
             successMessage: true,
             authInfo: false
-          }) as preValidationHookHandler
+          })
         },
         () => {}
       )
@@ -112,7 +111,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authenticate([new WelcomeStrategy('welcome'), 'test'], {
             authInfo: false
-          }) as preValidationHookHandler
+          })
         },
         async (request) => `messages: ${request.session.get('messages')}`
       )
@@ -123,7 +122,7 @@ const testSuite = (sessionPluginName: string) => {
             successRedirect: '/',
             successMessage: true,
             authInfo: false
-          }) as preValidationHookHandler
+          })
         },
         () => {}
       )
@@ -156,7 +155,7 @@ const testSuite = (sessionPluginName: string) => {
         {
           preValidation: fastifyPassport.authorize(
             new TestThirdPartyStrategy('third-party')
-          ) as preValidationHookHandler
+          )
         },
         async (request) => {
           const user = request.user as any

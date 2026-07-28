@@ -2,7 +2,6 @@ import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import { Strategy } from '../src/strategies/base'
 import { getConfiguredTestServer } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 describe('Additional coverage tests', () => {
   test('should use constructor name when strategy instance has no name property', async () => {
@@ -26,7 +25,7 @@ describe('Additional coverage tests', () => {
 
     server.post(
       '/login',
-      { preValidation: fastifyPassport.authenticate(strategy) as preValidationHookHandler },
+      { preValidation: fastifyPassport.authenticate(strategy) },
       async (request: any) => (request.user as any).name
     )
 

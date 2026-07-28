@@ -2,7 +2,6 @@ import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import Authenticator from '../src/Authenticator'
 import { getConfiguredTestServer } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 describe('Authenticator edge cases', () => {
   test('should throw error when no serializer succeeds', async () => {
@@ -34,7 +33,7 @@ describe('Authenticator edge cases', () => {
       {
         preValidation: fastifyPassport.authorize('test', {
           assignProperty: 'account'
-        }) as preValidationHookHandler
+        })
       },
       async (request: any, reply) => {
         reply.send({ account: request.account })
@@ -51,6 +50,28 @@ describe('Authenticator edge cases', () => {
     const body = response.json()
     assert.ok(body.account)
     assert.strictEqual(body.account.name, 'test')
+  })
+
+  test('should use authenticate as preValidation with a typed querystring', async (t) => {
+    const { server, fastifyPassport } = getConfiguredTestServer()
+    t.after(() => server.close())
+
+    server.post<{ Querystring: { returnTo: string } }>(
+      '/login',
+      {
+        preValidation: fastifyPassport.authenticate('test', { authInfo: false })
+      },
+      async (request) => request.query.returnTo
+    )
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: { login: 'test', password: 'test' },
+      url: '/login?returnTo=account'
+    })
+
+    assert.strictEqual(response.statusCode, 200)
+    assert.strictEqual(response.body, 'account')
   })
 
   test('should handle authorize with callback function as second parameter', async () => {

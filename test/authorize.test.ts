@@ -2,7 +2,6 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { Strategy } from '../src/strategies'
 import { generateTestUser, getConfiguredTestServer } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 export class TestThirdPartyStrategy extends Strategy {
   authenticate (_request: any, _options?: { pauseStream?: boolean }) {
@@ -18,7 +17,7 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.use(new TestThirdPartyStrategy('third-party'))
         server.get(
           '/',
-          { preValidation: fastifyPassport.authorize('third-party') as preValidationHookHandler },
+          { preValidation: fastifyPassport.authorize('third-party') },
           async (request) => {
             const user = request.user as any
             assert.ifError(user)

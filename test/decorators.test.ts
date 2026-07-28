@@ -2,7 +2,6 @@ import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import '../src/index'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
-import { preValidationHookHandler } from 'fastify'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -17,7 +16,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as preValidationHookHandler
+            })
           },
           async (request) => (request.user as any).name
         )
@@ -130,7 +129,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as preValidationHookHandler
+            })
           },
           async () => 'the root!'
         )
@@ -139,7 +138,7 @@ const testSuite = (sessionPluginName: string) => {
           {
             preValidation: fastifyPassport.authenticate('test', {
               authInfo: false
-            }) as preValidationHookHandler
+            })
           },
           async (request, reply) => {
             request.logout()
@@ -152,7 +151,7 @@ const testSuite = (sessionPluginName: string) => {
             preValidation: fastifyPassport.authenticate('test', {
               successRedirect: '/',
               authInfo: false
-            }) as preValidationHookHandler
+            })
           },
           async () => ''
         )
