@@ -1,4 +1,5 @@
 import { expect } from 'tstyche'
+import { Authenticator, Strategy } from '../../dist/index.js'
 import fastifyPassport = require('../../dist/index.js')
 
 expect(fastifyPassport).type.toHaveProperty('initialize')
@@ -7,6 +8,8 @@ expect(fastifyPassport.authenticate).type.toBeCallableWith('test')
 expect(fastifyPassport.default).type.toHaveProperty('initialize')
 expect(fastifyPassport.Authenticator).type.toBeConstructableWith()
 expect(fastifyPassport.Strategy).type.toBeConstructableWith('test')
+expect(Authenticator).type.toBeConstructableWith()
+expect(Strategy).type.toBeConstructableWith('test')
 
 expect(fastifyPassport.registerUserSerializer).type.toBeCallableWith(async (user: unknown) => user)
 expect(fastifyPassport.registerUserDeserializer).type.toBeCallableWith(async (user: unknown) => user)
