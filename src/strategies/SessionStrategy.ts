@@ -1,6 +1,7 @@
 import { Strategy } from './base'
 import type { DeserializeFunction } from '../Authenticator'
 import type { FastifyRequest } from 'fastify'
+import { isStorableSessionValue } from '../session-value'
 
 /**
  * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
@@ -44,7 +45,7 @@ export class SessionStrategy extends Strategy {
 
     const sessionUser = request.passport.sessionManager.getUserFromSession(request)
 
-    if (sessionUser || sessionUser === 0) {
+    if (isStorableSessionValue(sessionUser)) {
       this.deserializeUser(sessionUser, request)
         .catch((err: Error) => this.error(err))
         .then(async (user?: any) => {
