@@ -6,6 +6,7 @@ import { SecureSessionManager } from './session-managers/SecureSessionManager'
 import type { AnyStrategy } from './strategies/index'
 import type { Strategy } from './strategies/base'
 import { SessionStrategy } from './strategies/SessionStrategy'
+import { isStorableSessionValue, kNoResult, type NoResult } from './session-value'
 
 export type SerializeFunction<User = any, SerializedUser = any> = (
   user: User,
@@ -269,7 +270,8 @@ export class Authenticator {
   async serializeUser<User, StoredUser = any>(user: User, request: FastifyRequest): Promise<StoredUser> {
     const result = await this.runStack(this.serializers, user, request)
 
-    if (result) {
+    // Falsy ids like `0`, `''` and `false` are valid, so only a missing result is a failure.
+    if (result !== kNoResult && isStorableSessionValue(result)) {
       return result
     } else {
       throw new Error(`Failed to serialize user into session. Tried ${this.serializers.length} serializers.`)
@@ -294,10 +296,12 @@ export class Authenticator {
   async deserializeUser<StoredUser>(stored: StoredUser, request: FastifyRequest): Promise<StoredUser | false> {
     const result = await this.runStack(this.deserializers, stored, request)
 
-    if (result) {
-      return result
-    } else if (result === null || result === false) {
+    // `null` and `false` are the documented way for a deserializer to report that the session
+    // no longer maps to a user, which logs the session out rather than erroring.
+    if (result === null || result === false) {
       return false
+    } else if (result !== kNoResult && result !== undefined) {
+      return result
     } else {
       throw new Error(`Failed to deserialize user out of session. Tried ${this.deserializers.length} serializers.`)
     }
@@ -332,7 +336,7 @@ export class Authenticator {
   async transformAuthInfo (info: any, request: FastifyRequest) {
     const result = await this.runStack(this.infoTransformers, info, request)
     // if no transformers are registered (or they all pass), the default behavior is to use the un-transformed info as-is
-    return result || info
+    return result === kNoResult || result === undefined ? info : result
   }
 
   /**
@@ -346,7 +350,16 @@ export class Authenticator {
     return this.strategies[name]
   }
 
-  private async runStack<Result, A, B>(stack: ((...args: [A, B]) => Promise<Result>)[], ...args: [A, B]) {
+  /**
+   * Runs each function in `stack` until one of them returns, and returns that result. Functions
+   * opt out of handling the arguments by throwing `'pass'`. Returns the `kNoResult` sentinel if
+   * the stack is exhausted without any function returning, which callers must distinguish from a
+   * function returning a falsy-but-meaningful value like `0`, `''` or `false`.
+   */
+  private async runStack<Result, A, B>(
+    stack: ((...args: [A, B]) => Promise<Result>)[],
+    ...args: [A, B]
+  ): Promise<Result | NoResult> {
     for (const attempt of stack) {
       try {
         return await attempt(...args)
@@ -358,6 +371,7 @@ export class Authenticator {
         }
       }
     }
+    return kNoResult
   }
 }
 

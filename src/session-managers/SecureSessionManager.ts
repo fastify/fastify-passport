@@ -3,6 +3,7 @@ import type { AuthenticateOptions } from '../AuthenticationRoute'
 import type { SerializeFunction } from '../Authenticator'
 import type { FastifySessionObject } from '@fastify/session'
 import type { Session, SessionData } from '@fastify/secure-session'
+import { isStorableSessionValue } from '../session-value'
 
 type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
 
@@ -55,7 +56,7 @@ export class SecureSessionManager {
 
     // Handle @fastify/session to prevent token/CSRF fixation
     if (request.session.regenerate) {
-      if (this.clearSessionOnLogin && (object || object === 0)) {
+      if (this.clearSessionOnLogin && isStorableSessionValue(object)) {
         const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
           keepSessionInfoKeys.push(...Object.keys(request.session))
@@ -72,7 +73,7 @@ export class SecureSessionManager {
       // Handle @fastify/secure-session against CSRF fixation
       // TODO: This is quite hacky. The best option would be having a regenerate method
       // on secure-session as well
-    } else if (this.clearSessionOnLogin && (object || object === 0)) {
+    } else if (this.clearSessionOnLogin && isStorableSessionValue(object)) {
       const currentData: SessionData = request.session?.data() ?? {}
       for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
