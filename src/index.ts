@@ -3,7 +3,7 @@ import type { logIn } from './decorators/login'
 import type { logOut } from './decorators/logout'
 import type { isAuthenticated } from './decorators/is-authenticated'
 import type { isUnauthenticated } from './decorators/is-unauthenticated'
-import Authenticator from './Authenticator'
+import { Authenticator } from './authenticator'
 import { Strategy } from './strategies/base'
 
 const passport = new Authenticator()

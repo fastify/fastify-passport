@@ -2,10 +2,16 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { FastifyInstance } from 'fastify'
 import { FastifyRequest } from 'fastify/types/request'
-import Authenticator from '../src/Authenticator'
+import Authenticator from '../src/authenticator'
 import { getTestServer, TestStrategy } from './helpers'
 
 const emptyRequest = {} as unknown as FastifyRequest
+
+declare module '@fastify/secure-session' {
+  interface SessionData {
+    preLogin: string
+  }
+}
 
 /** Ids that are falsy but are still perfectly valid things to store in a session. */
 const falsyIds = [0, '', false]
