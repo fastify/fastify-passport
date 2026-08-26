@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { AuthenticationRoute } from '../src/authentication-route'
 
 describe('AuthenticationRoute edge cases', () => {
   test('should use failWithError option to throw error on authentication failure', async () => {
@@ -235,5 +236,33 @@ describe('AuthenticationRoute edge cases', () => {
     })
 
     assert.strictEqual(response.statusCode, 200)
+  })
+
+  test('should throw when passport is not initialized', async () => {
+    const { server, fastifyPassport } = getConfiguredTestServer()
+
+    const route = new AuthenticationRoute(
+      fastifyPassport,
+      'test',
+      {
+        authInfo: false
+      }
+    )
+
+    const request = {
+      log: {
+        debug: () => {},
+        trace: () => {}
+      }
+    } as any
+
+    const reply = {} as any
+
+    await assert.rejects(
+      () => route.handler.call(server, request, reply),
+      {
+        message: 'passport.initialize() plugin not in use'
+      }
+    )
   })
 })

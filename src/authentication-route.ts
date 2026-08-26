@@ -1,10 +1,10 @@
 import { STATUS_CODES } from 'node:http'
-import type { Authenticator } from './Authenticator'
 import type { AnyStrategy } from './strategies'
 import type { Strategy } from './strategies/base'
 import { AuthenticationError } from './errors'
 import type { FastifyReply, FastifyRequest, preValidationAsyncHookHandler } from 'fastify'
 import { types } from 'node:util'
+import type { Authenticator } from './authenticator'
 
 type FlashObject = { type?: string; message?: string }
 type FailureObject = {
