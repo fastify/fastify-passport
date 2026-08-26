@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
-import { SerializeFunction } from '../src/Authenticator'
+import { SerializeFunction } from '../src/authenticator'
 import { SessionStrategy } from '../src/strategies'
 import { FastifyRequest } from 'fastify'
 
@@ -77,5 +77,47 @@ describe('SessionStrategy', () => {
     strategy.authenticate(mockRequest)
 
     assert.ok(passCalled, 'pass should be called when no session user')
+  })
+
+  test('should call error when passport is not initialized', () => {
+    const strategy = new SessionStrategy(async (user) => user)
+
+    let receivedError: Error | undefined
+
+    strategy.error = (err) => {
+      receivedError = err
+    }
+
+    strategy.authenticate({} as FastifyRequest)
+
+    assert.ok(receivedError)
+    assert.strictEqual(
+      receivedError.message,
+      'passport.initialize() plugin not in use'
+    )
+  })
+
+  test('should call error when pauseStream is enabled', () => {
+    const strategy = new SessionStrategy(async (user) => user)
+
+    let receivedError: Error | undefined
+
+    strategy.error = (err) => {
+      receivedError = err
+    }
+
+    const request = {
+      passport: {}
+    } as FastifyRequest
+
+    strategy.authenticate(request, {
+      pauseStream: true
+    })
+
+    assert.ok(receivedError)
+    assert.strictEqual(
+      receivedError.message,
+      "fastify-passport doesn't support pauseStream option."
+    )
   })
 })

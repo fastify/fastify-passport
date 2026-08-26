@@ -13,7 +13,7 @@
     "prepublishOnly": "npm run build",
     "test": "npm run test:types && npm run build:test && npm run test:unit",
     "test:types": "npm run build && tstyche",
-    "test:unit": "borp --coverage --lines 100"
+    "test:unit": "borp --coverage --check-coverage"
   },
   "repository": {
     "type": "git",

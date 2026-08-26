@@ -2,6 +2,7 @@ import assert from 'node:assert'
 import { describe, test } from 'node:test'
 import '../src/index'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
+import { logIn } from '../src/decorators/login'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
@@ -186,6 +187,39 @@ const testSuite = (sessionPluginName: string) => {
         assert.strictEqual(retry.statusCode, 401)
       })
     })
+  })
+
+  test('logIn should throw when passport is not initialized', async () => {
+    const request = {} as any
+
+    await assert.rejects(
+      logIn.call(request, { id: 1 }, {}),
+      {
+        message: 'passport.initialize() plugin not in use'
+      }
+    )
+  })
+
+  test('logIn should reset the user property when sessionManager.logIn fails', async () => {
+    const error = new Error('session login failed')
+
+    const request = {
+      passport: {
+        userProperty: 'user',
+        sessionManager: {
+          logIn: async () => {
+            throw error
+          }
+        }
+      }
+    } as any
+
+    await assert.rejects(
+      logIn.call(request, { id: 123 }, {}),
+      (err) => err === error
+    )
+
+    assert.strictEqual(request.user, null)
   })
 }
 

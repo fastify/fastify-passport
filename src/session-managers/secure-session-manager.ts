@@ -1,8 +1,8 @@
 import type { FastifyRequest } from 'fastify'
-import type { AuthenticateOptions } from '../AuthenticationRoute'
-import type { SerializeFunction } from '../Authenticator'
+import type { AuthenticateOptions } from '../authentication-route'
 import type { FastifySessionObject } from '@fastify/session'
 import type { Session, SessionData } from '@fastify/secure-session'
+import type { SerializeFunction } from '../authenticator'
 import { isStorableSessionValue } from '../session-value'
 
 type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
@@ -18,6 +18,14 @@ function getExistingSessionData (session: Request['session']): Record<string, un
     return {}
   }
   return (data.call(session) as Record<string, unknown> | undefined) ?? {}
+}
+
+/**
+ * Session#set only accepts typed keys, but this manager uses dynamic keys.
+ * Keep the type cast in this helper.
+ */
+function setSessionValue (session: Request['session'], key: string, value: unknown): void {
+  (session as unknown as { set: (key: string, value: unknown) => void }).set(key, value)
 }
 
 /** Class for storing passport data in the session using `@fastify/secure-session` or `@fastify/session` */
@@ -66,7 +74,7 @@ export class SecureSessionManager {
         const existingData = getExistingSessionData(request.session)
         await request.session.regenerate()
         for (const [key, value] of Object.entries(existingData)) {
-          request.session.set(key, value)
+          setSessionValue(request.session, key, value)
         }
       }
 
@@ -74,19 +82,19 @@ export class SecureSessionManager {
       // TODO: This is quite hacky. The best option would be having a regenerate method
       // on secure-session as well
     } else if (this.clearSessionOnLogin && isStorableSessionValue(object)) {
-      const currentData: SessionData = request.session?.data() ?? {}
+      const currentData: Partial<SessionData> = request.session?.data() ?? {}
       for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
-        request.session.set(field, undefined)
+        setSessionValue(request.session, field, undefined)
       }
     }
-    request.session.set(this.key, object)
+    setSessionValue(request.session, this.key, object)
   }
 
   async logOut (request: Request) {
-    request.session.set(this.key, undefined)
+    setSessionValue(request.session, this.key, undefined)
     if (request.session.regenerate) {
       if (this.clearSessionOnLogin) {
         await request.session.regenerate()
@@ -95,7 +103,7 @@ export class SecureSessionManager {
         await request.session.regenerate()
         for (const [key, value] of Object.entries(existingData)) {
           if (key !== this.key) {
-            request.session.set(key, value)
+            setSessionValue(request.session, key, value)
           }
         }
       }

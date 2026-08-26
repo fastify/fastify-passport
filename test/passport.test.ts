@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
-import { AuthenticateOptions } from '../src/AuthenticationRoute'
-import Authenticator from '../src/Authenticator'
+import { AuthenticateOptions } from '../src/authentication-route'
+import Authenticator from '../src/authenticator'
 import { Strategy } from '../src/strategies'
 import { getConfiguredTestServer, getRegisteredTestServer, getTestServer, TestStrategy } from './helpers'
 
