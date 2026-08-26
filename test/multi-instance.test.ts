@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import assert from 'node:assert'
 import { beforeEach, describe, test } from 'node:test'
-import { Authenticator } from '../src/Authenticator'
+import { Authenticator } from '../src/authenticator'
 import { Strategy } from '../src/strategies'
 import { getTestServer, TestBrowserSession } from './helpers'
 

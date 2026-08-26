@@ -1,8 +1,8 @@
 import { test, describe, mock } from 'node:test'
 import assert from 'node:assert'
 import { FastifyRequest } from 'fastify'
-import { SerializeFunction } from '../src/Authenticator'
-import { SecureSessionManager } from '../src/session-managers/SecureSessionManager'
+import { SerializeFunction } from '../src/authenticator'
+import { SecureSessionManager } from '../src/session-managers/secure-session-manager'
 
 describe('SecureSessionManager', () => {
   test('should throw an Error if no parameter was passed', () => {
@@ -149,5 +149,100 @@ describe('SecureSessionManager', () => {
     await sessionManger.logIn(request, user, { keepSessionInfo: false })
     assert.strictEqual(set.mock.callCount(), 1)
     assert.deepStrictEqual(set.mock.calls[0].arguments, ['passport', { id: 'test' }])
+  })
+
+  test('should handle a session without a data function when regenerating with clearSessionOnLogin false', async () => {
+    const sessionManager = new SecureSessionManager(
+      { clearSessionOnLogin: false },
+      ((id: string) => id) as unknown as SerializeFunction
+    )
+
+    const regenerate = mock.fn(() => {})
+    const set = mock.fn()
+
+    const request = {
+      session: {
+        regenerate,
+        set
+      }
+    } as unknown as FastifyRequest
+
+    await sessionManager.logOut(request)
+
+    assert.strictEqual(regenerate.mock.callCount(), 1)
+    assert.deepStrictEqual(regenerate.mock.calls[0].arguments, [])
+    assert.strictEqual(set.mock.callCount(), 1)
+    assert.deepStrictEqual(
+      set.mock.calls[0].arguments,
+      ['passport', undefined]
+    )
+
+    mock.reset()
+  })
+
+  test('should handle session.data returning undefined when regenerating with clearSessionOnLogin false', async () => {
+    const sessionManager = new SecureSessionManager(
+      { clearSessionOnLogin: false },
+      ((id: string) => id) as unknown as SerializeFunction
+    )
+
+    const regenerate = mock.fn(() => {})
+    const set = mock.fn()
+
+    const request = {
+      session: {
+        regenerate,
+        set,
+        data: () => undefined
+      }
+    } as unknown as FastifyRequest
+
+    await sessionManager.logOut(request)
+
+    assert.strictEqual(regenerate.mock.callCount(), 1)
+    assert.strictEqual(set.mock.callCount(), 1)
+    assert.deepStrictEqual(
+      set.mock.calls[0].arguments,
+      ['passport', undefined]
+    )
+
+    mock.reset()
+  })
+
+  test('should clear existing secure-session fields while preserving ignored fields', async () => {
+    const sessionManager = new SecureSessionManager(
+      { clearSessionOnLogin: true },
+      ((id: string) => id) as unknown as SerializeFunction
+    )
+
+    const set = mock.fn()
+
+    const request = {
+      session: {
+        set,
+        data: () => ({
+          session: 'keep-me',
+          foo: 'remove-me',
+          bar: 'remove-me-too'
+        })
+      }
+    } as unknown as FastifyRequest
+
+    await sessionManager.logIn(
+      request,
+      { id: 'test' },
+      { keepSessionInfo: false }
+    )
+
+    assert.deepStrictEqual(
+      set.mock.calls.map(call => call.arguments),
+      [
+        ['foo', undefined],
+        ['bar', undefined],
+        ['passport', { id: 'test' }]
+      ]
+    )
+
+    mock.reset()
   })
 })

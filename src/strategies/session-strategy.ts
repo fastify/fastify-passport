@@ -1,7 +1,7 @@
 import { Strategy } from './base'
-import type { DeserializeFunction } from '../Authenticator'
 import type { FastifyRequest } from 'fastify'
 import { isStorableSessionValue } from '../session-value'
+import type { DeserializeFunction } from '../authenticator'
 
 /**
  * Default strategy that authenticates already-authenticated requests by retrieving their auth information from the Fastify session.
