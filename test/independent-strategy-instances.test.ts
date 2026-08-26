@@ -1,5 +1,4 @@
-import assert from 'node:assert'
-import { describe, test } from 'node:test'
+import { describe, test, TestContext } from 'node:test'
 import { Strategy } from '../src/strategies'
 import { TestThirdPartyStrategy } from './authorize.test'
 import { getConfiguredTestServer, getRegisteredTestServer, TestStrategy } from './helpers'
@@ -18,7 +17,7 @@ class WelcomeStrategy extends Strategy {
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
-    test('should allow passing a specific Strategy instance to an authenticate call', async () => {
+    test('should allow passing a specific Strategy instance to an authenticate call', async (t: TestContext) => {
       const { server, fastifyPassport } = getRegisteredTestServer(null, { clearSessionIgnoreFields: ['messages'] })
       server.get(
         '/',
@@ -46,8 +45,8 @@ const testSuite = (sessionPluginName: string) => {
         payload: { login: 'welcomeuser', password: 'test' },
         url: '/login'
       })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
+      t.assert.strictEqual(login.statusCode, 302)
+      t.assert.strictEqual(login.headers.location, '/')
 
       const response = await server.inject({
         url: '/',
@@ -57,11 +56,11 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.deepStrictEqual(response.json(), ['welcome from strategy'])
-      assert.strictEqual(response.statusCode, 200)
+      t.assert.deepStrictEqual(response.json(), ['welcome from strategy'])
+      t.assert.strictEqual(response.statusCode, 200)
     })
 
-    test('should allow passing a multiple specific Strategy instances to an authenticate call', async () => {
+    test('should allow passing a multiple specific Strategy instances to an authenticate call', async (t: TestContext) => {
       const { server, fastifyPassport } = getRegisteredTestServer()
       server.get(
         '/',
@@ -89,8 +88,8 @@ const testSuite = (sessionPluginName: string) => {
         payload: { login: 'test', password: 'test' },
         url: '/login'
       })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
+      t.assert.strictEqual(login.statusCode, 302)
+      t.assert.strictEqual(login.headers.location, '/')
 
       const response = await server.inject({
         url: '/',
@@ -100,11 +99,11 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, 'messages: undefined')
-      assert.strictEqual(response.statusCode, 200)
+      t.assert.strictEqual(response.body, 'messages: undefined')
+      t.assert.strictEqual(response.statusCode, 200)
     })
 
-    test('should allow passing a mix of Strategy instances and strategy names', async () => {
+    test('should allow passing a mix of Strategy instances and strategy names', async (t: TestContext) => {
       const { server, fastifyPassport } = getConfiguredTestServer()
       server.get(
         '/',
@@ -132,8 +131,8 @@ const testSuite = (sessionPluginName: string) => {
         payload: { login: 'test', password: 'test' },
         url: '/login'
       })
-      assert.strictEqual(login.statusCode, 302)
-      assert.strictEqual(login.headers.location, '/')
+      t.assert.strictEqual(login.statusCode, 302)
+      t.assert.strictEqual(login.headers.location, '/')
 
       const response = await server.inject({
         url: '/',
@@ -143,11 +142,11 @@ const testSuite = (sessionPluginName: string) => {
         method: 'GET'
       })
 
-      assert.strictEqual(response.body, 'messages: undefined')
-      assert.strictEqual(response.statusCode, 200)
+      t.assert.strictEqual(response.body, 'messages: undefined')
+      t.assert.strictEqual(response.statusCode, 200)
     })
 
-    test('should allow passing specific instances to an authorize call', async () => {
+    test('should allow passing specific instances to an authorize call', async (t: TestContext) => {
       const { server, fastifyPassport } = getConfiguredTestServer()
 
       server.get(
@@ -159,24 +158,24 @@ const testSuite = (sessionPluginName: string) => {
         },
         async (request) => {
           const user = request.user as any
-          assert.ifError(user)
+          t.assert.ifError(user)
           const account = request.account as any
-          assert.ok(account.id)
-          assert.strictEqual(account.name, 'test')
+          t.assert.ok(account.id)
+          t.assert.strictEqual(account.name, 'test')
 
           return 'it worked'
         }
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 200)
+      t.assert.strictEqual(response.statusCode, 200)
     })
 
-    test('Strategy instances used during one authentication shouldn\'t be registered', async () => {
+    test('Strategy instances used during one authentication shouldn\'t be registered', async (t: TestContext) => {
       const { fastifyPassport } = getRegisteredTestServer()
       // build a handler with the welcome strategy
       fastifyPassport.authenticate(new WelcomeStrategy('welcome'), { authInfo: false })
-      assert.strictEqual(fastifyPassport.strategy('welcome'), undefined)
+      t.assert.strictEqual(fastifyPassport.strategy('welcome'), undefined)
     })
   })
 }

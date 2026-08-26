@@ -1,17 +1,16 @@
-import { test, describe, mock } from 'node:test'
-import assert from 'node:assert'
+import { test, describe, mock, TestContext } from 'node:test'
 import { FastifyRequest } from 'fastify'
 import { SerializeFunction } from '../src/authenticator'
 import { SecureSessionManager } from '../src/session-managers/secure-session-manager'
 
 describe('SecureSessionManager', () => {
-  test('should throw an Error if no parameter was passed', () => {
-    assert.throws(
+  test('should throw an Error if no parameter was passed', (t: TestContext) => {
+    t.assert.throws(
       // @ts-expect-error - strictEqual-error expecting atleast a parameter
       () => new SecureSessionManager(),
-      (err) => {
-        assert(err instanceof Error)
-        assert.strictEqual(
+      (err: any) => {
+        t.assert.ok(err instanceof Error)
+        t.assert.strictEqual(
           err.message,
           'SecureSessionManager#constructor must have a valid serializeUser-function passed as a parameter'
         )
@@ -20,13 +19,13 @@ describe('SecureSessionManager', () => {
     )
   })
 
-  test('should throw an Error if no serializeUser-function was passed as second parameter', () => {
-    assert.throws(
+  test('should throw an Error if no serializeUser-function was passed as second parameter', (t: TestContext) => {
+    t.assert.throws(
       // @ts-expect-error - strictEqual-error expecting a function as second parameter
       () => new SecureSessionManager({}),
-      (err) => {
-        assert(err instanceof Error)
-        assert.strictEqual(
+      (err: any) => {
+        t.assert.ok(err instanceof Error)
+        t.assert.strictEqual(
           err.message,
           'SecureSessionManager#constructor must have a valid serializeUser-function passed as a parameter'
         )
@@ -35,13 +34,13 @@ describe('SecureSessionManager', () => {
     )
   })
 
-  test('should throw an Error if no serializeUser-function was passed as second parameter', () => {
-    assert.throws(
+  test('should throw an Error if no serializeUser-function was passed as second parameter', (t: TestContext) => {
+    t.assert.throws(
       // @ts-expect-error - strictEqual-error expecting a function as second parameter
       () => new SecureSessionManager({}),
-      (err) => {
-        assert(err instanceof Error)
-        assert.strictEqual(
+      (err: any) => {
+        t.assert.ok(err instanceof Error)
+        t.assert.strictEqual(
           err.message,
 
           'SecureSessionManager#constructor must have a valid serializeUser-function passed as a parameter'
@@ -51,31 +50,31 @@ describe('SecureSessionManager', () => {
     )
   })
 
-  test('should not throw an Error if no serializeUser-function was passed as first parameter', () => {
+  test('should not throw an Error if no serializeUser-function was passed as first parameter', (t: TestContext) => {
     const sessionManager = new SecureSessionManager(((id: string) => id) as unknown as SerializeFunction)
-    assert.strictEqual(sessionManager.key, 'passport')
+    t.assert.strictEqual(sessionManager.key, 'passport')
   })
 
-  test('should not throw an Error if no serializeUser-function was passed as second parameter', () => {
+  test('should not throw an Error if no serializeUser-function was passed as second parameter', (t: TestContext) => {
     const sessionManager = new SecureSessionManager({}, ((id: string) => id) as unknown as SerializeFunction)
-    assert.strictEqual(sessionManager.key, 'passport')
+    t.assert.strictEqual(sessionManager.key, 'passport')
   })
 
-  test('should set the key accordingly', () => {
+  test('should set the key accordingly', (t: TestContext) => {
     const sessionManager = new SecureSessionManager(
       { key: 'test' },
       ((id: string) => id) as unknown as SerializeFunction
     )
-    assert.strictEqual(sessionManager.key, 'test')
+    t.assert.strictEqual(sessionManager.key, 'test')
   })
 
-  test('should ignore non-string keys', () => {
+  test('should ignore non-string keys', (t: TestContext) => {
     // @ts-expect-error - strictEqual-error key has to be of type string
     const sessionManager = new SecureSessionManager({ key: 1 }, ((id: string) => id) as unknown as SerializeFunction)
-    assert.strictEqual(sessionManager.key, 'passport')
+    t.assert.strictEqual(sessionManager.key, 'passport')
   })
 
-  test('should only call request.session.regenerate once if a function', async () => {
+  test('should only call request.session.regenerate once if a function', async (t: TestContext) => {
     const sessionManger = new SecureSessionManager({}, ((id: string) => id) as unknown as SerializeFunction)
     const user = { id: 'test' }
     const request = {
@@ -83,10 +82,10 @@ describe('SecureSessionManager', () => {
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user)
     // @ts-expect-error - regenerate is a mock function
-    assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
+    t.assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
   })
 
-  test('should call request.session.regenerate function if clearSessionOnLogin is false', async () => {
+  test('should call request.session.regenerate function if clearSessionOnLogin is false', async (t: TestContext) => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: false },
       ((id: string) => id) as unknown as SerializeFunction
@@ -97,11 +96,11 @@ describe('SecureSessionManager', () => {
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user)
     // @ts-expect-error - regenerate is a mock function
-    assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
+    t.assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
     mock.reset()
   })
 
-  test('should call request.session.regenerate function with all properties from session if keepSessionInfo is true', async () => {
+  test('should call request.session.regenerate function with all properties from session if keepSessionInfo is true', async (t: TestContext) => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: true },
       ((id: string) => id) as unknown as SerializeFunction
@@ -112,15 +111,15 @@ describe('SecureSessionManager', () => {
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: true })
     // @ts-expect-error - regenerate is a mock function
-    assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
+    t.assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
     // @ts-expect-error - regenerate is a mock function
-    assert.deepStrictEqual(request.session.regenerate.mock.calls[0].arguments, [
+    t.assert.deepStrictEqual(request.session.regenerate.mock.calls[0].arguments, [
       ['session', 'regenerate', 'set', 'data', 'sessionValue']
     ])
     mock.reset()
   })
 
-  test('should call request.session.regenerate function with default properties from session if keepSessionInfo is false', async () => {
+  test('should call request.session.regenerate function with default properties from session if keepSessionInfo is false', async (t: TestContext) => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: true },
       ((id: string) => id) as unknown as SerializeFunction
@@ -131,12 +130,12 @@ describe('SecureSessionManager', () => {
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: false })
     // @ts-expect-error - regenerate is a mock function
-    assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
+    t.assert.strictEqual(request.session.regenerate.mock.callCount(), 1)
     // @ts-expect-error - regenerate is a mock function
-    assert.deepStrictEqual(request.session.regenerate.mock.calls[0].arguments, [['session']])
+    t.assert.deepStrictEqual(request.session.regenerate.mock.calls[0].arguments, [['session']])
   })
 
-  test('should call session.set function if no regenerate function provided and keepSessionInfo is true', async () => {
+  test('should call session.set function if no regenerate function provided and keepSessionInfo is true', async (t: TestContext) => {
     const sessionManger = new SecureSessionManager(
       { clearSessionOnLogin: true },
       ((id: string) => id) as unknown as SerializeFunction
@@ -147,11 +146,11 @@ describe('SecureSessionManager', () => {
       session: { set, data: () => {}, sessionValue: 'exist' }
     } as unknown as FastifyRequest
     await sessionManger.logIn(request, user, { keepSessionInfo: false })
-    assert.strictEqual(set.mock.callCount(), 1)
-    assert.deepStrictEqual(set.mock.calls[0].arguments, ['passport', { id: 'test' }])
+    t.assert.strictEqual(set.mock.callCount(), 1)
+    t.assert.deepStrictEqual(set.mock.calls[0].arguments, ['passport', { id: 'test' }])
   })
 
-  test('should handle a session without a data function when regenerating with clearSessionOnLogin false', async () => {
+  test('should handle a session without a data function when regenerating with clearSessionOnLogin false', async (t: TestContext) => {
     const sessionManager = new SecureSessionManager(
       { clearSessionOnLogin: false },
       ((id: string) => id) as unknown as SerializeFunction
@@ -169,10 +168,10 @@ describe('SecureSessionManager', () => {
 
     await sessionManager.logOut(request)
 
-    assert.strictEqual(regenerate.mock.callCount(), 1)
-    assert.deepStrictEqual(regenerate.mock.calls[0].arguments, [])
-    assert.strictEqual(set.mock.callCount(), 1)
-    assert.deepStrictEqual(
+    t.assert.strictEqual(regenerate.mock.callCount(), 1)
+    t.assert.deepStrictEqual(regenerate.mock.calls[0].arguments, [])
+    t.assert.strictEqual(set.mock.callCount(), 1)
+    t.assert.deepStrictEqual(
       set.mock.calls[0].arguments,
       ['passport', undefined]
     )
@@ -180,7 +179,7 @@ describe('SecureSessionManager', () => {
     mock.reset()
   })
 
-  test('should handle session.data returning undefined when regenerating with clearSessionOnLogin false', async () => {
+  test('should handle session.data returning undefined when regenerating with clearSessionOnLogin false', async (t: TestContext) => {
     const sessionManager = new SecureSessionManager(
       { clearSessionOnLogin: false },
       ((id: string) => id) as unknown as SerializeFunction
@@ -199,9 +198,9 @@ describe('SecureSessionManager', () => {
 
     await sessionManager.logOut(request)
 
-    assert.strictEqual(regenerate.mock.callCount(), 1)
-    assert.strictEqual(set.mock.callCount(), 1)
-    assert.deepStrictEqual(
+    t.assert.strictEqual(regenerate.mock.callCount(), 1)
+    t.assert.strictEqual(set.mock.callCount(), 1)
+    t.assert.deepStrictEqual(
       set.mock.calls[0].arguments,
       ['passport', undefined]
     )
@@ -209,7 +208,7 @@ describe('SecureSessionManager', () => {
     mock.reset()
   })
 
-  test('should clear existing secure-session fields while preserving ignored fields', async () => {
+  test('should clear existing secure-session fields while preserving ignored fields', async (t: TestContext) => {
     const sessionManager = new SecureSessionManager(
       { clearSessionOnLogin: true },
       ((id: string) => id) as unknown as SerializeFunction
@@ -234,7 +233,7 @@ describe('SecureSessionManager', () => {
       { keepSessionInfo: false }
     )
 
-    assert.deepStrictEqual(
+    t.assert.deepStrictEqual(
       set.mock.calls.map(call => call.arguments),
       [
         ['foo', undefined],

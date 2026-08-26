@@ -1,10 +1,9 @@
-import assert from 'node:assert'
-import { describe, test } from 'node:test'
+import { describe, test, TestContext } from 'node:test'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 import { AuthenticationRoute } from '../src/authentication-route'
 
 describe('AuthenticationRoute edge cases', () => {
-  test('should use failWithError option to throw error on authentication failure', async () => {
+  test('should use failWithError option to throw error on authentication failure', async (t: TestContext) => {
     const { server, fastifyPassport } = getConfiguredTestServer()
 
     server.post(
@@ -14,7 +13,7 @@ describe('AuthenticationRoute edge cases', () => {
           failWithError: true
         })
       },
-      async () => assert.fail('should not reach here')
+      async () => t.assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -23,10 +22,10 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 401)
+    t.assert.strictEqual(response.statusCode, 401)
   })
 
-  test('should set WWW-Authenticate header on 401 when challenge is provided', async () => {
+  test('should set WWW-Authenticate header on 401 when challenge is provided', async (t: TestContext) => {
     class ChallengeStrategy extends TestStrategy {
       authenticate () {
         this.fail('Bearer realm="Users"', 401)
@@ -38,7 +37,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('challenge') },
-      async () => assert.fail('should not reach here')
+      async () => t.assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -46,15 +45,15 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 401)
-    assert.ok(response.headers['www-authenticate'])
+    t.assert.strictEqual(response.statusCode, 401)
+    t.assert.ok(response.headers['www-authenticate'])
     // WWW-Authenticate can be an array or string
     const authHeader = response.headers['www-authenticate']
     const authValue = Array.isArray(authHeader) ? authHeader[0] : authHeader
-    assert.strictEqual(authValue, 'Bearer realm="Users"')
+    t.assert.strictEqual(authValue, 'Bearer realm="Users"')
   })
 
-  test('should handle multiple challenges in WWW-Authenticate header', async () => {
+  test('should handle multiple challenges in WWW-Authenticate header', async (t: TestContext) => {
     class FirstChallengeStrategy extends TestStrategy {
       authenticate () {
         this.fail('Basic realm="Users"')
@@ -82,11 +81,11 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 401)
-    assert.ok(response.headers['www-authenticate'])
+    t.assert.strictEqual(response.statusCode, 401)
+    t.assert.ok(response.headers['www-authenticate'])
   })
 
-  test('should handle strategy error with callback', async () => {
+  test('should handle strategy error with callback', async (t: TestContext) => {
     class ErrorStrategy extends TestStrategy {
       authenticate () {
         this.error(new Error('Strategy error'))
@@ -113,17 +112,17 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 500)
-    assert.strictEqual(response.json().error, 'Strategy error')
+    t.assert.strictEqual(response.statusCode, 500)
+    t.assert.strictEqual(response.json().error, 'Strategy error')
   })
 
-  test('should throw error for unknown strategy', async () => {
+  test('should throw error for unknown strategy', async (t: TestContext) => {
     const { server, fastifyPassport } = getConfiguredTestServer()
 
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('nonexistent') },
-      async () => assert.fail('should not reach here')
+      async () => t.assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -131,10 +130,10 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 500)
+    t.assert.strictEqual(response.statusCode, 500)
   })
 
-  test('should handle strategy instance with constructor name fallback', async () => {
+  test('should handle strategy instance with constructor name fallback', async (t: TestContext) => {
     class CustomNameStrategy extends TestStrategy {
       constructor () {
         super('custom')
@@ -157,10 +156,10 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 200)
+    t.assert.strictEqual(response.statusCode, 200)
   })
 
-  test('should handle failure with custom status code', async () => {
+  test('should handle failure with custom status code', async (t: TestContext) => {
     class CustomStatusStrategy extends TestStrategy {
       authenticate () {
         this.fail('Custom error', 403)
@@ -180,10 +179,10 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 403)
+    t.assert.strictEqual(response.statusCode, 403)
   })
 
-  test('should handle object challenge in failure', async () => {
+  test('should handle object challenge in failure', async (t: TestContext) => {
     class ObjectChallengeStrategy extends TestStrategy {
       authenticate () {
         this.fail({ type: 'error', message: 'Invalid credentials' }, 401)
@@ -195,7 +194,7 @@ describe('AuthenticationRoute edge cases', () => {
     server.post(
       '/login',
       { preValidation: fastifyPassport.authenticate('object') },
-      async () => assert.fail('should not reach here')
+      async () => t.assert.fail('should not reach here')
     )
 
     const response = await server.inject({
@@ -203,10 +202,10 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 401)
+    t.assert.strictEqual(response.statusCode, 401)
   })
 
-  test('should use constructor.name when strategy instance name property is empty', async () => {
+  test('should use constructor.name when strategy instance name property is empty', async (t: TestContext) => {
     class CustomNamedStrategy extends TestStrategy {
       constructor () {
         super('test')
@@ -235,10 +234,10 @@ describe('AuthenticationRoute edge cases', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 200)
+    t.assert.strictEqual(response.statusCode, 200)
   })
 
-  test('should throw when passport is not initialized', async () => {
+  test('should throw when passport is not initialized', async (t: TestContext) => {
     const { server, fastifyPassport } = getConfiguredTestServer()
 
     const route = new AuthenticationRoute(
@@ -258,7 +257,7 @@ describe('AuthenticationRoute edge cases', () => {
 
     const reply = {} as any
 
-    await assert.rejects(
+    await t.assert.rejects(
       () => route.handler.call(server, request, reply),
       {
         message: 'passport.initialize() plugin not in use'

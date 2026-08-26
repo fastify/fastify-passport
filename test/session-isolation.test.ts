@@ -1,5 +1,4 @@
-import { test, describe, beforeEach } from 'node:test'
-import assert from 'node:assert'
+import { test, describe, beforeEach, TestContext } from 'node:test'
 import { generateTestUser, getConfiguredTestServer, TestBrowserSession } from './helpers'
 
 function createServer () {
@@ -50,27 +49,27 @@ const testSuite = (sessionPluginName: string) => {
         userB = new TestBrowserSession(server)
         userC = new TestBrowserSession(server)
       })
-      test('should return 401 Unauthorized if not logged in', async () => {
+      test('should return 401 Unauthorized if not logged in', async (t: TestContext) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 401)
+            t.assert.strictEqual(response.statusCode, 401)
           })
         )
 
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 401)
+            t.assert.strictEqual(response.statusCode, 401)
           })
         )
       })
 
-      test('logging in one user shouldn\'t log in the others', async () => {
+      test('logging in one user shouldn\'t log in the others', async (t: TestContext) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 401)
+            t.assert.strictEqual(response.statusCode, 401)
           })
         )
 
@@ -79,26 +78,26 @@ const testSuite = (sessionPluginName: string) => {
           url: '/login',
           payload: { login: 'test', password: 'test' }
         })
-        assert.strictEqual(response.statusCode, 200)
-        assert.strictEqual(response.body, 'success')
+        t.assert.strictEqual(response.statusCode, 200)
+        t.assert.strictEqual(response.body, 'success')
 
         response = await userA.inject({ method: 'GET', url: '/protected' })
-        assert.strictEqual(response.statusCode, 200)
-        assert.strictEqual(response.body, 'hello!')
+        t.assert.strictEqual(response.statusCode, 200)
+        t.assert.strictEqual(response.body, 'hello!')
 
         await Promise.all(
           [userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 401)
+            t.assert.strictEqual(response.statusCode, 401)
           })
         )
 
         response = await userA.inject({ method: 'GET', url: '/protected' })
-        assert.strictEqual(response.statusCode, 200)
-        assert.strictEqual(response.body, 'hello!')
+        t.assert.strictEqual(response.statusCode, 200)
+        t.assert.strictEqual(response.body, 'hello!')
       })
 
-      test('logging in each user should keep their sessions independent', async () => {
+      test('logging in each user should keep their sessions independent', async (t: TestContext) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             let response = await user.inject({
@@ -106,28 +105,28 @@ const testSuite = (sessionPluginName: string) => {
               url: '/login',
               payload: { login: 'test', password: 'test' }
             })
-            assert.strictEqual(response.statusCode, 200)
-            assert.strictEqual(response.body, 'success')
+            t.assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.body, 'success')
 
             response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 200)
-            assert.strictEqual(response.body, 'hello!')
+            t.assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.body, 'hello!')
           })
         )
 
         const ids = await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/my-id' })
-            assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.statusCode, 200)
             return response.body
           })
         )
 
-        // assert.deepStrictEqual each returned ID to be unique
-        assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
+        // t.assert.deepStrictEqual each returned ID to be unique
+        t.assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
       })
 
-      test('logging out one user shouldn\'t log out the others', async () => {
+      test('logging out one user shouldn\'t log out the others', async (t: TestContext) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             let response = await user.inject({
@@ -135,12 +134,12 @@ const testSuite = (sessionPluginName: string) => {
               url: '/login',
               payload: { login: 'test', password: 'test' }
             })
-            assert.strictEqual(response.statusCode, 200)
-            assert.strictEqual(response.body, 'success')
+            t.assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.body, 'success')
 
             response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 200)
-            assert.strictEqual(response.body, 'hello!')
+            t.assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.body, 'hello!')
           })
         )
 
@@ -148,54 +147,54 @@ const testSuite = (sessionPluginName: string) => {
           url: '/logout',
           method: 'POST'
         })
-        assert.strictEqual(response.statusCode, 200)
+        t.assert.strictEqual(response.statusCode, 200)
 
         response = await userB.inject({
           url: '/protected',
           method: 'GET'
         })
-        assert.strictEqual(response.statusCode, 401)
+        t.assert.strictEqual(response.statusCode, 401)
 
         await Promise.all(
           [userA, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/protected' })
-            assert.strictEqual(response.statusCode, 200)
-            assert.strictEqual(response.body, 'hello!')
+            t.assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.body, 'hello!')
           })
         )
       })
 
-      test('force logging in users shouldn\'t change the login state of the others', async () => {
+      test('force logging in users shouldn\'t change the login state of the others', async (t: TestContext) => {
         await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'POST', url: '/force-login' })
-            assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.statusCode, 200)
           })
         )
 
         const ids = await Promise.all(
           [userA, userB, userC].map(async (user) => {
             const response = await user.inject({ method: 'GET', url: '/my-id' })
-            assert.strictEqual(response.statusCode, 200)
+            t.assert.strictEqual(response.statusCode, 200)
             return response.body
           })
         )
 
-        // assert.deepStrictEqual each returned ID to be unique
-        assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
+        // t.assert.deepStrictEqual each returned ID to be unique
+        t.assert.deepStrictEqual(Array.from(new Set(ids)).sort(), ids.sort())
       })
 
-      sessionOnlyTest('should regenerate session on login', async () => {
-        assert.strictEqual(userA.cookies['sessionId'], undefined)
+      sessionOnlyTest('should regenerate session on login', async (t: TestContext) => {
+        t.assert.strictEqual(userA.cookies['sessionId'], undefined)
         await userA.inject({ method: 'GET', url: '/protected' })
-        assert.ok(userA.cookies['sessionId'])
+        t.assert.ok(userA.cookies['sessionId'])
         const prevSessionId = userA.cookies.sessionId
         await userA.inject({
           method: 'POST',
           url: '/login',
           payload: { login: 'test', password: 'test' }
         })
-        assert.notStrictEqual(userA.cookies.sessionId, prevSessionId)
+        t.assert.notStrictEqual(userA.cookies.sessionId, prevSessionId)
       })
     })
   })

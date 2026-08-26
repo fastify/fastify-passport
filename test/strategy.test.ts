@@ -1,26 +1,25 @@
-import assert from 'node:assert'
-import { describe, test } from 'node:test'
+import { describe, test, TestContext } from 'node:test'
 import Authenticator from '../src/authenticator'
 import { Strategy } from '../src/strategies'
 import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
-    test('should be able to unuse strategy', () => {
+    test('should be able to unuse strategy', (t: TestContext) => {
       const fastifyPassport = new Authenticator()
       const testStrategy = new TestStrategy('test')
       fastifyPassport.use(testStrategy)
       fastifyPassport.unuse('test')
     })
 
-    test('should throw error if strategy has no name', () => {
+    test('should throw error if strategy has no name', (t: TestContext) => {
       const fastifyPassport = new Authenticator()
-      assert.throws(() => {
+      t.assert.throws(() => {
         fastifyPassport.use({} as Strategy)
       })
     })
 
-    test('should catch synchronous strategy errors and fail authentication', async () => {
+    test('should catch synchronous strategy errors and fail authentication', async (t: TestContext) => {
       class ErrorStrategy extends Strategy {
         authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           throw new Error('the strategy threw an error')
@@ -35,11 +34,11 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 500)
-      assert.strictEqual(response.json().message, 'the strategy threw an error')
+      t.assert.strictEqual(response.statusCode, 500)
+      t.assert.strictEqual(response.json().message, 'the strategy threw an error')
     })
 
-    test('should catch asynchronous strategy errors and fail authentication', async () => {
+    test('should catch asynchronous strategy errors and fail authentication', async (t: TestContext) => {
       class ErrorStrategy extends Strategy {
         async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           await Promise.resolve()
@@ -55,11 +54,11 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 500)
-      assert.strictEqual(response.json().message, 'the strategy threw an error')
+      t.assert.strictEqual(response.statusCode, 500)
+      t.assert.strictEqual(response.json().message, 'the strategy threw an error')
     })
 
-    test('should be able to fail with a failure flash message', async () => {
+    test('should be able to fail with a failure flash message', async (t: TestContext) => {
       class ErrorStrategy extends Strategy {
         async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           await Promise.resolve()
@@ -79,10 +78,10 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 401)
+      t.assert.strictEqual(response.statusCode, 401)
     })
 
-    test('should be able to fail without a failure flash message', async () => {
+    test('should be able to fail without a failure flash message', async (t: TestContext) => {
       class ErrorStrategy extends Strategy {
         async authenticate (_request: any, _options?: { pauseStream?: boolean }) {
           await Promise.resolve()
@@ -98,7 +97,7 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 401)
+      t.assert.strictEqual(response.statusCode, 401)
     })
   })
 }

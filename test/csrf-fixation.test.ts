@@ -1,5 +1,4 @@
 import { test, describe, beforeEach } from 'node:test'
-import assert from 'node:assert'
 import { getConfiguredTestServer, TestBrowserSession } from './helpers'
 import fastifyCsrfProtection from '@fastify/csrf-protection'
 
@@ -34,15 +33,15 @@ const testSuite = (sessionPluginName: '@fastify/session' | '@fastify/secure-sess
         user = new TestBrowserSession(server)
       })
 
-      test('should renegerate csrf token on login', async () => {
+      test('should renegerate csrf token on login', async (t) => {
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
-          assert.equal(sess.body, '')
+          t.assert.equal(sess.body, '')
         }
         await user.inject({ method: 'GET', url: '/csrf' })
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
-          assert.notEqual(sess.body, '')
+          t.assert.notEqual(sess.body, '')
         }
         await user.inject({
           method: 'POST',
@@ -51,7 +50,7 @@ const testSuite = (sessionPluginName: '@fastify/session' | '@fastify/secure-sess
         })
         {
           const sess = await user.inject({ method: 'GET', url: '/session' })
-          assert.equal(sess.body, '')
+          t.assert.equal(sess.body, '')
         }
       })
     })

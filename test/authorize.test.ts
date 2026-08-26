@@ -1,5 +1,4 @@
-import { test, describe } from 'node:test'
-import assert from 'node:assert'
+import { test, describe, TestContext } from 'node:test'
 import { Strategy } from '../src/strategies'
 import { generateTestUser, getConfiguredTestServer } from './helpers'
 
@@ -12,7 +11,7 @@ export class TestThirdPartyStrategy extends Strategy {
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     describe('.authorize', () => {
-      test('should return 401 Unauthorized if not logged in', async () => {
+      test('should return 401 Unauthorized if not logged in', async (t: TestContext) => {
         const { server, fastifyPassport } = getConfiguredTestServer()
         fastifyPassport.use(new TestThirdPartyStrategy('third-party'))
         server.get(
@@ -20,17 +19,17 @@ const testSuite = (sessionPluginName: string) => {
           { preValidation: fastifyPassport.authorize('third-party') },
           async (request) => {
             const user = request.user as any
-            assert.ifError(user)
+            t.assert.ifError(user)
             const account = request.account as any
-            assert.ok(account.id)
-            assert.strictEqual(account.name, 'test')
+            t.assert.ok(account.id)
+            t.assert.strictEqual(account.name, 'test')
 
             return 'it worked'
           }
         )
 
         const response = await server.inject({ method: 'GET', url: '/' })
-        assert.strictEqual(response.statusCode, 200)
+        t.assert.strictEqual(response.statusCode, 200)
       })
     })
   })
