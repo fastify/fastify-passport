@@ -1,0 +1,2 @@
+files:
+  - 'dist/test/**/*.test.js'
