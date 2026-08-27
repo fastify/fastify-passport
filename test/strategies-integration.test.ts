@@ -1,5 +1,5 @@
-import { test, describe } from 'node:test'
-import assert, { fail } from 'node:assert'
+import { test, describe, TestContext } from 'node:test'
+import { fail } from 'node:assert'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
@@ -9,7 +9,7 @@ import { getConfiguredTestServer, TestStrategy } from './helpers'
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
-    test('should initiate oauth with the google strategy from npm', async () => {
+    test('should initiate oauth with the google strategy from npm', async (t: TestContext) => {
       const strategy: TestStrategy = new GoogleStrategy(
         {
           clientID: '384163122467-cq6dolrp53at1a3pa8j0f4stpa5gvouh.apps.googleusercontent.com',
@@ -41,10 +41,10 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 302)
+      t.assert.strictEqual(response.statusCode, 302)
     })
 
-    test('should initiate oauth with the facebook strategy from npm', async () => {
+    test('should initiate oauth with the facebook strategy from npm', async (t: TestContext) => {
       const strategy: TestStrategy = new FacebookStrategy(
         {
           clientID: 'foobar',
@@ -76,10 +76,10 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 302)
+      t.assert.strictEqual(response.statusCode, 302)
     })
 
-    test('should initiate oauth with the github strategy from npm', async () => {
+    test('should initiate oauth with the github strategy from npm', async (t: TestContext) => {
       const strategy: TestStrategy = new GitHubStrategy(
         {
           clientID: 'foobar',
@@ -111,10 +111,10 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 302)
+      t.assert.strictEqual(response.statusCode, 302)
     })
 
-    test('should initiate oauth with the openid-client strategy from npm', async () => {
+    test('should initiate oauth with the openid-client strategy from npm', async (t: TestContext) => {
       const issuer = { issuer: 'https://as.example.com/', authorization_endpoint: 'https://as.example.com/authorize' }
       const client = {
         client_id: 'identifier',
@@ -150,7 +150,7 @@ const testSuite = (sessionPluginName: string) => {
       )
 
       const response = await server.inject({ method: 'GET', url: '/' })
-      assert.strictEqual(response.statusCode, 302)
+      t.assert.strictEqual(response.statusCode, 302)
     })
   })
 }

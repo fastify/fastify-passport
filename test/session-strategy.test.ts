@@ -1,17 +1,16 @@
-import assert from 'node:assert'
-import { describe, test } from 'node:test'
+import { describe, test, TestContext } from 'node:test'
 import { SerializeFunction } from '../src/authenticator'
 import { SessionStrategy } from '../src/strategies'
 import { FastifyRequest } from 'fastify'
 
 describe('SessionStrategy', () => {
-  test('should throw an Error if no parameter was passed', () => {
-    assert.throws(
+  test('should throw an Error if no parameter was passed', (t: TestContext) => {
+    t.assert.throws(
       // @ts-expect-error.strictEqual-error expecting atleast a parameter
       () => new SessionStrategy(),
-      (err) => {
-        assert(err instanceof Error)
-        assert.strictEqual(
+      (err: any) => {
+        t.assert.ok(err instanceof Error)
+        t.assert.strictEqual(
           err.message,
           'SessionStrategy#constructor must have a valid deserializeUser-function passed as a parameter'
         )
@@ -20,13 +19,13 @@ describe('SessionStrategy', () => {
     )
   })
 
-  test('should throw an Error if no deserializeUser-function was passed as second parameter', () => {
-    assert.throws(
+  test('should throw an Error if no deserializeUser-function was passed as second parameter', (t: TestContext) => {
+    t.assert.throws(
       // @ts-expect-error.strictEqual-error expecting a function as second parameter
       () => new SessionStrategy({}),
-      (err) => {
-        assert(err instanceof Error)
-        assert.strictEqual(
+      (err: any) => {
+        t.assert.ok(err instanceof Error)
+        t.assert.strictEqual(
           err.message,
           'SessionStrategy#constructor must have a valid deserializeUser-function passed as a parameter'
         )
@@ -35,13 +34,13 @@ describe('SessionStrategy', () => {
     )
   })
 
-  test('should throw an Error if no deserializeUser-function was passed as second parameter', () => {
-    assert.throws(
+  test('should throw an Error if no deserializeUser-function was passed as second parameter', (t: TestContext) => {
+    t.assert.throws(
       // @ts-expect-error.strictEqual-error expecting a function as second parameter
       () => new SessionStrategy({}),
-      (err) => {
-        assert(err instanceof Error)
-        assert.strictEqual(
+      (err: any) => {
+        t.assert.ok(err instanceof Error)
+        t.assert.strictEqual(
           err.message,
           'SessionStrategy#constructor must have a valid deserializeUser-function passed as a parameter'
         )
@@ -50,15 +49,15 @@ describe('SessionStrategy', () => {
     )
   })
 
-  test('should not throw an Error if no deserializeUser-function was passed as first parameter', () => {
-    assert.doesNotThrow(() => new SessionStrategy(((id: string) => id) as unknown as SerializeFunction))
+  test('should not throw an Error if no deserializeUser-function was passed as first parameter', (t: TestContext) => {
+    t.assert.doesNotThrow(() => new SessionStrategy(((id: string) => id) as unknown as SerializeFunction))
   })
 
-  test('should not throw an Error if no deserializeUser-function was passed as second parameter', () => {
-    assert.doesNotThrow(() => new SessionStrategy({}, ((id: string) => id) as unknown as SerializeFunction))
+  test('should not throw an Error if no deserializeUser-function was passed as second parameter', (t: TestContext) => {
+    t.assert.doesNotThrow(() => new SessionStrategy({}, ((id: string) => id) as unknown as SerializeFunction))
   })
 
-  test('should handle authenticate call without options parameter', () => {
+  test('should handle authenticate call without options parameter', (t: TestContext) => {
     const strategy = new SessionStrategy(async (user) => user)
     let passCalled = false
 
@@ -76,33 +75,33 @@ describe('SessionStrategy', () => {
 
     strategy.authenticate(mockRequest)
 
-    assert.ok(passCalled, 'pass should be called when no session user')
+    t.assert.ok(passCalled, 'pass should be called when no session user')
   })
 
-  test('should call error when passport is not initialized', () => {
+  test('should call error when passport is not initialized', (t: TestContext) => {
     const strategy = new SessionStrategy(async (user) => user)
 
     let receivedError: Error | undefined
 
-    strategy.error = (err) => {
+    strategy.error = (err: any) => {
       receivedError = err
     }
 
     strategy.authenticate({} as FastifyRequest)
 
-    assert.ok(receivedError)
-    assert.strictEqual(
+    t.assert.ok(receivedError)
+    t.assert.strictEqual(
       receivedError.message,
       'passport.initialize() plugin not in use'
     )
   })
 
-  test('should call error when pauseStream is enabled', () => {
+  test('should call error when pauseStream is enabled', (t: TestContext) => {
     const strategy = new SessionStrategy(async (user) => user)
 
     let receivedError: Error | undefined
 
-    strategy.error = (err) => {
+    strategy.error = (err: any) => {
       receivedError = err
     }
 
@@ -114,8 +113,8 @@ describe('SessionStrategy', () => {
       pauseStream: true
     })
 
-    assert.ok(receivedError)
-    assert.strictEqual(
+    t.assert.ok(receivedError)
+    t.assert.strictEqual(
       receivedError.message,
       "fastify-passport doesn't support pauseStream option."
     )

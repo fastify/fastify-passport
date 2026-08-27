@@ -1,5 +1,4 @@
-import { test, describe } from 'node:test'
-import assert from 'node:assert'
+import { test, describe, TestContext } from 'node:test'
 import { getRegisteredTestServer } from './helpers'
 import { Strategy } from '../src/strategies'
 
@@ -19,7 +18,7 @@ class FailingStrategy extends Strategy {
 
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
-    test('should call callback with single status for single strategy failure', async () => {
+    test('should call callback with single status for single strategy failure', async (t: TestContext) => {
       const { server, fastifyPassport } = getRegisteredTestServer()
 
       let callbackCalled = false
@@ -45,13 +44,13 @@ const testSuite = (sessionPluginName: string) => {
 
       const response = await server.inject({ method: 'GET', url: '/' })
 
-      assert.strictEqual(response.statusCode, 401)
-      assert.strictEqual(callbackCalled, true)
-      assert.strictEqual(receivedStatus, 403)
-      assert.strictEqual(receivedStatuses, undefined)
+      t.assert.strictEqual(response.statusCode, 401)
+      t.assert.strictEqual(callbackCalled, true)
+      t.assert.strictEqual(receivedStatus, 403)
+      t.assert.strictEqual(receivedStatuses, undefined)
     })
 
-    test('should call callback with array of statuses for multi-strategy failure', async () => {
+    test('should call callback with array of statuses for multi-strategy failure', async (t: TestContext) => {
       const { server, fastifyPassport } = getRegisteredTestServer()
 
       let callbackCalled = false
@@ -77,13 +76,13 @@ const testSuite = (sessionPluginName: string) => {
 
       const response = await server.inject({ method: 'GET', url: '/' })
 
-      assert.strictEqual(response.statusCode, 401)
-      assert.strictEqual(callbackCalled, true)
-      assert.strictEqual(receivedStatus, undefined)
-      assert.deepStrictEqual(receivedStatuses, [401, 403])
+      t.assert.strictEqual(response.statusCode, 401)
+      t.assert.strictEqual(callbackCalled, true)
+      t.assert.strictEqual(receivedStatus, undefined)
+      t.assert.deepStrictEqual(receivedStatuses, [401, 403])
     })
 
-    test('should call callback with array of statuses for multi-strategy with mixed status types', async () => {
+    test('should call callback with array of statuses for multi-strategy with mixed status types', async (t: TestContext) => {
       const { server, fastifyPassport } = getRegisteredTestServer()
 
       let callbackCalled = false
@@ -114,12 +113,12 @@ const testSuite = (sessionPluginName: string) => {
 
       const response = await server.inject({ method: 'GET', url: '/' })
 
-      assert.strictEqual(response.statusCode, 401)
-      assert.strictEqual(callbackCalled, true)
-      assert.deepStrictEqual(receivedStatuses, [402, undefined])
+      t.assert.strictEqual(response.statusCode, 401)
+      t.assert.strictEqual(callbackCalled, true)
+      t.assert.deepStrictEqual(receivedStatuses, [402, undefined])
     })
 
-    test('should work correctly when first strategy succeeds in multi-strategy setup', async () => {
+    test('should work correctly when first strategy succeeds in multi-strategy setup', async (t: TestContext) => {
       const { server, fastifyPassport } = getRegisteredTestServer()
 
       let callbackCalled = false
@@ -149,9 +148,9 @@ const testSuite = (sessionPluginName: string) => {
 
       const response = await server.inject({ method: 'GET', url: '/' })
 
-      assert.strictEqual(response.statusCode, 200)
-      assert.strictEqual(response.body, 'Authentication succeeded')
-      assert.strictEqual(callbackCalled, true)
+      t.assert.strictEqual(response.statusCode, 200)
+      t.assert.strictEqual(response.body, 'Authentication succeeded')
+      t.assert.strictEqual(callbackCalled, true)
     })
   })
 }

@@ -1,10 +1,9 @@
-import assert from 'node:assert'
-import { describe, test } from 'node:test'
+import { describe, test, TestContext } from 'node:test'
 import { Strategy } from '../src/strategies/base'
 import { getConfiguredTestServer } from './helpers'
 
 describe('Additional coverage tests', () => {
-  test('should use constructor name when strategy instance has no name property', async () => {
+  test('should use constructor name when strategy instance has no name property', async (t: TestContext) => {
     class CustomAuthStrategy extends Strategy {
       constructor () {
         super('custom-auth')
@@ -35,15 +34,15 @@ describe('Additional coverage tests', () => {
       url: '/login'
     })
 
-    assert.strictEqual(response.statusCode, 200)
-    assert.strictEqual(response.body, 'test')
+    t.assert.strictEqual(response.statusCode, 200)
+    t.assert.strictEqual(response.body, 'test')
   })
 
-  test('should throw error when authenticate is not overridden', () => {
+  test('should throw error when authenticate is not overridden', (t: TestContext) => {
     const strategy = new Strategy('test')
     const fakeRequest = {} as any
 
-    assert.throws(
+    t.assert.throws(
       () => {
         strategy.authenticate(fakeRequest)
       },
@@ -53,8 +52,8 @@ describe('Additional coverage tests', () => {
     )
   })
 
-  test('should set strategy name in constructor', () => {
+  test('should set strategy name in constructor', (t: TestContext) => {
     const strategy = new Strategy('custom-strategy')
-    assert.strictEqual(strategy.name, 'custom-strategy')
+    t.assert.strictEqual(strategy.name, 'custom-strategy')
   })
 })

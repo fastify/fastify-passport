@@ -1,28 +1,27 @@
-import assert from 'node:assert'
-import { describe, test } from 'node:test'
+import { describe, test, TestContext } from 'node:test'
 import { AuthenticationError } from '../src/errors'
 
 describe('AuthenticationError', () => {
-  test('should create an AuthenticationError with a message and status', () => {
+  test('should create an AuthenticationError with a message and status', (t: TestContext) => {
     const error = new AuthenticationError('Authentication failed', 403)
 
-    assert.strictEqual(error.message, 'Authentication failed')
-    assert.strictEqual(error.status, 403)
-    assert.strictEqual(error.name, 'AuthenticationError')
-    assert.ok(error instanceof Error)
+    t.assert.strictEqual(error.message, 'Authentication failed')
+    t.assert.strictEqual(error.status, 403)
+    t.assert.strictEqual(error.name, 'AuthenticationError')
+    t.assert.ok(error instanceof Error)
   })
 
-  test('should default to status 401 when status is not provided', () => {
+  test('should default to status 401 when status is not provided', (t: TestContext) => {
     const error = new AuthenticationError('Authentication failed', 0)
 
-    assert.strictEqual(error.message, 'Authentication failed')
-    assert.strictEqual(error.status, 401)
+    t.assert.strictEqual(error.message, 'Authentication failed')
+    t.assert.strictEqual(error.status, 401)
   })
 
-  test('should have a proper stack trace', () => {
+  test('should have a proper stack trace', (t: TestContext) => {
     const error = new AuthenticationError('Test error', 401)
 
-    assert.ok(error.stack)
-    assert.ok(error.stack.includes('AuthenticationError'))
+    t.assert.ok(error.stack)
+    t.assert.ok(error.stack.includes('AuthenticationError'))
   })
 })

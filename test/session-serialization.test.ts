@@ -1,5 +1,4 @@
-import { test, describe, mock } from 'node:test'
-import assert from 'node:assert'
+import { test, describe, mock, TestContext } from 'node:test'
 import { FastifyInstance } from 'fastify'
 import { FastifyRequest } from 'fastify/types/request'
 import Authenticator from '../src/authenticator'
@@ -8,7 +7,7 @@ import { getTestServer, TestDatabaseStrategy, TestStrategy } from './helpers'
 const testSuite = (sessionPluginName: string) => {
   describe(`${sessionPluginName} tests`, () => {
     describe('Authenticator session serialization', () => {
-      test('it should roundtrip a user', async () => {
+      test('it should roundtrip a user', async (t: TestContext) => {
         const fastifyPassport = new Authenticator()
 
         fastifyPassport.registerUserSerializer(async (user) => JSON.stringify(user))
@@ -16,7 +15,7 @@ const testSuite = (sessionPluginName: string) => {
 
         const user = { name: 'foobar' }
         const request = {} as unknown as FastifyRequest
-        assert.deepStrictEqual(
+        t.assert.deepStrictEqual(
           await fastifyPassport.deserializeUser(await fastifyPassport.serializeUser(user, request), request),
           user
         )
@@ -49,15 +48,15 @@ const testSuite = (sessionPluginName: string) => {
         return server
       }
 
-      const verifySuccessfulLogin = async (server: FastifyInstance) => {
+      const verifySuccessfulLogin = async (server: FastifyInstance, t: any) => {
         const loginResponse = await server.inject({
           method: 'POST',
           url: '/login',
           payload: { login: 'test', password: 'test' }
         })
 
-        assert.strictEqual(loginResponse.statusCode, 302)
-        assert.strictEqual(loginResponse.headers.location, '/')
+        t.assert.strictEqual(loginResponse.statusCode, 302)
+        t.assert.strictEqual(loginResponse.headers.location, '/')
 
         const homeResponse = await server.inject({
           url: '/',
@@ -67,11 +66,11 @@ const testSuite = (sessionPluginName: string) => {
           method: 'GET'
         })
 
-        assert.strictEqual(homeResponse.body, 'hello world!')
-        assert.strictEqual(homeResponse.statusCode, 200)
+        t.assert.strictEqual(homeResponse.body, 'hello world!')
+        t.assert.strictEqual(homeResponse.statusCode, 200)
       }
 
-      test('should allow multiple user serializers and deserializers', async () => {
+      test('should allow multiple user serializers and deserializers', async (t: TestContext) => {
         const fastifyPassport = new Authenticator()
         fastifyPassport.use('test', new TestStrategy('test'))
         fastifyPassport.registerUserSerializer(async () => {
@@ -91,10 +90,10 @@ const testSuite = (sessionPluginName: string) => {
         })
         fastifyPassport.registerUserDeserializer(async (serialized: string) => JSON.parse(serialized))
         const server = await setupSerializationTestServer(fastifyPassport)
-        await verifySuccessfulLogin(server)
+        await verifySuccessfulLogin(server, t)
       })
 
-      test('should allow user serializers/deserializers that work like a database', async () => {
+      test('should allow user serializers/deserializers that work like a database', async (t: TestContext) => {
         const fastifyPassport = new Authenticator()
         const strategy = new TestDatabaseStrategy('test', { 1: { id: '1', login: 'test', password: 'test' } })
         fastifyPassport.use('test', strategy)
@@ -102,11 +101,11 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.registerUserDeserializer(async (serialized: string) => strategy.database[serialized])
 
         const server = await setupSerializationTestServer(fastifyPassport)
-        await verifySuccessfulLogin(server)
-        await verifySuccessfulLogin(server)
+        await verifySuccessfulLogin(server, t)
+        await verifySuccessfulLogin(server, t)
       })
 
-      test('should throw if user deserializers return undefined', async () => {
+      test('should throw if user deserializers return undefined', async (t: TestContext) => {
         // jest.spyOn(console, 'error').mockImplementation(jest.fn())
         console.error = mock.fn()
         const fastifyPassport = new Authenticator()
@@ -116,7 +115,7 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.registerUserDeserializer(async (serialized: string) => strategy.database[serialized])
 
         const server = await setupSerializationTestServer(fastifyPassport)
-        await verifySuccessfulLogin(server)
+        await verifySuccessfulLogin(server, t)
 
         const loginResponse = await server.inject({
           method: 'POST',
@@ -124,8 +123,8 @@ const testSuite = (sessionPluginName: string) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        assert.strictEqual(loginResponse.statusCode, 302)
-        assert.strictEqual(loginResponse.headers.location, '/')
+        t.assert.strictEqual(loginResponse.statusCode, 302)
+        t.assert.strictEqual(loginResponse.headers.location, '/')
 
         // user id 1 is logged in now, simulate deleting them from the database while logged in
         delete strategy.database['1']
@@ -138,8 +137,8 @@ const testSuite = (sessionPluginName: string) => {
           method: 'GET'
         })
 
-        assert.strictEqual(homeResponse.statusCode, 500)
-        assert.strictEqual(
+        t.assert.strictEqual(homeResponse.statusCode, 500)
+        t.assert.strictEqual(
           JSON.parse(homeResponse.body)?.message,
           'Failed to deserialize user out of session. Tried 1 serializers.'
         )
@@ -153,14 +152,14 @@ const testSuite = (sessionPluginName: string) => {
           method: 'GET'
         })
 
-        assert.strictEqual(otherResponse.statusCode, 500)
-        assert.strictEqual(
+        t.assert.strictEqual(otherResponse.statusCode, 500)
+        t.assert.strictEqual(
           JSON.parse(otherResponse.body)?.message,
           'Failed to deserialize user out of session. Tried 1 serializers.'
         )
       })
 
-      test('should deny access if user deserializers return null for logged in sessions', async () => {
+      test('should deny access if user deserializers return null for logged in sessions', async (t: TestContext) => {
         const fastifyPassport = new Authenticator()
         const strategy = new TestDatabaseStrategy('test', { 1: { id: '1', login: 'test', password: 'test' } })
         fastifyPassport.use('test', strategy)
@@ -168,7 +167,7 @@ const testSuite = (sessionPluginName: string) => {
         fastifyPassport.registerUserDeserializer(async (serialized: string) => strategy.database[serialized] || null)
 
         const server = await setupSerializationTestServer(fastifyPassport)
-        await verifySuccessfulLogin(server)
+        await verifySuccessfulLogin(server, t)
 
         const loginResponse = await server.inject({
           method: 'POST',
@@ -176,8 +175,8 @@ const testSuite = (sessionPluginName: string) => {
           payload: { login: 'test', password: 'test' }
         })
 
-        assert.strictEqual(loginResponse.statusCode, 302)
-        assert.strictEqual(loginResponse.headers.location, '/')
+        t.assert.strictEqual(loginResponse.statusCode, 302)
+        t.assert.strictEqual(loginResponse.headers.location, '/')
 
         // user id 1 is logged in now, simulate deleting them from the database while logged in
         delete strategy.database['1']
@@ -190,7 +189,7 @@ const testSuite = (sessionPluginName: string) => {
           method: 'GET'
         })
 
-        assert.strictEqual(homeResponse.statusCode, 401)
+        t.assert.strictEqual(homeResponse.statusCode, 401)
 
         // should still be able to serve unauthenticated requests just fine
         const otherResponse = await server.inject({
@@ -201,8 +200,8 @@ const testSuite = (sessionPluginName: string) => {
           method: 'GET'
         })
 
-        assert.strictEqual(otherResponse.statusCode, 200)
-        assert.strictEqual(otherResponse.body, 'some content')
+        t.assert.strictEqual(otherResponse.statusCode, 200)
+        t.assert.strictEqual(otherResponse.body, 'some content')
       })
     })
   })
