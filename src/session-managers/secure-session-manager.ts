@@ -1,18 +1,15 @@
 import type { FastifyRequest } from 'fastify'
 import type { AuthenticateOptions } from '../authentication-route'
-import type { FastifySessionObject } from '@fastify/session'
-import type { Session, SessionData } from '@fastify/secure-session'
 import type { SerializeFunction } from '../authenticator'
+import { getSession, type PassportSession } from '../session'
 import { isStorableSessionValue } from '../session-value'
-
-type Request = FastifyRequest & { session: FastifySessionObject | Session<SessionData> }
 
 /**
  * Safely reads the current session data via the `data()` method exposed by both
  * `@fastify/session` and `@fastify/secure-session`. Falls back to an empty object
  * if the method is not present or not callable, instead of throwing at runtime.
  */
-function getExistingSessionData (session: Request['session']): Record<string, unknown> {
+function getExistingSessionData (session: PassportSession): Record<string, unknown> {
   const data = (session as unknown as { data?: unknown }).data
   if (typeof data !== 'function') {
     return {}
@@ -24,7 +21,7 @@ function getExistingSessionData (session: Request['session']): Record<string, un
  * Session#set only accepts typed keys, but this manager uses dynamic keys.
  * Keep the type cast in this helper.
  */
-function setSessionValue (session: Request['session'], key: string, value: unknown): void {
+function setSessionValue (session: PassportSession, key: string, value: unknown): void {
   (session as unknown as { set: (key: string, value: unknown) => void }).set(key, value)
 }
 
@@ -59,22 +56,29 @@ export class SecureSessionManager {
     }
   }
 
-  async logIn (request: Request, user: any, options?: AuthenticateOptions) {
+  async logIn (request: FastifyRequest, user: any, options?: AuthenticateOptions) {
     const object = await this.serializeUser(user, request)
+    // `regenerate` support is a fixed trait of the session store (not of a particular
+    // session instance), so it's safe to check it once up front. Every other read of
+    // the session below goes through `getSession(request)` freshly, though: some
+    // stores (`@fastify/session`) replace `request.session` with a new object inside
+    // `regenerate()`, so a cached reference to the old session would silently write to
+    // a discarded object once regeneration has happened.
+    const supportsRegenerate = typeof getSession(request).regenerate === 'function'
 
     // Handle @fastify/session to prevent token/CSRF fixation
-    if (request.session.regenerate) {
+    if (supportsRegenerate) {
       if (this.clearSessionOnLogin && isStorableSessionValue(object)) {
         const keepSessionInfoKeys: string[] = [...this.clearSessionIgnoreFields]
         if (options?.keepSessionInfo) {
-          keepSessionInfoKeys.push(...Object.keys(request.session))
+          keepSessionInfoKeys.push(...Object.keys(getSession(request)))
         }
-        await request.session.regenerate(keepSessionInfoKeys)
+        await getSession(request).regenerate?.(keepSessionInfoKeys)
       } else {
-        const existingData = getExistingSessionData(request.session)
-        await request.session.regenerate()
+        const existingData = getExistingSessionData(getSession(request))
+        await getSession(request).regenerate?.()
         for (const [key, value] of Object.entries(existingData)) {
-          setSessionValue(request.session, key, value)
+          setSessionValue(getSession(request), key, value)
         }
       }
 
@@ -82,35 +86,35 @@ export class SecureSessionManager {
       // TODO: This is quite hacky. The best option would be having a regenerate method
       // on secure-session as well
     } else if (this.clearSessionOnLogin && isStorableSessionValue(object)) {
-      const currentData: Partial<SessionData> = request.session?.data() ?? {}
+      const currentData = getSession(request)?.data() as Record<string, unknown> | undefined ?? {}
       for (const field of Object.keys(currentData)) {
         if (options?.keepSessionInfo || this.clearSessionIgnoreFields.includes(field)) {
           continue
         }
-        setSessionValue(request.session, field, undefined)
+        setSessionValue(getSession(request), field, undefined)
       }
     }
-    setSessionValue(request.session, this.key, object)
+    setSessionValue(getSession(request), this.key, object)
   }
 
-  async logOut (request: Request) {
-    setSessionValue(request.session, this.key, undefined)
-    if (request.session.regenerate) {
+  async logOut (request: FastifyRequest) {
+    setSessionValue(getSession(request), this.key, undefined)
+    if (typeof getSession(request).regenerate === 'function') {
       if (this.clearSessionOnLogin) {
-        await request.session.regenerate()
+        await getSession(request).regenerate?.()
       } else {
-        const existingData = getExistingSessionData(request.session)
-        await request.session.regenerate()
+        const existingData = getExistingSessionData(getSession(request))
+        await getSession(request).regenerate?.()
         for (const [key, value] of Object.entries(existingData)) {
           if (key !== this.key) {
-            setSessionValue(request.session, key, value)
+            setSessionValue(getSession(request), key, value)
           }
         }
       }
     }
   }
 
-  getUserFromSession (request: Request) {
-    return request.session.get(this.key)
+  getUserFromSession (request: FastifyRequest) {
+    return getSession(request).get(this.key)
   }
 }

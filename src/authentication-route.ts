@@ -5,6 +5,7 @@ import { AuthenticationError } from './errors'
 import type { FastifyReply, FastifyRequest, preValidationAsyncHookHandler } from 'fastify'
 import { types } from 'node:util'
 import type { Authenticator } from './authenticator'
+import { getSession } from './session'
 
 type FlashObject = { type?: string; message?: string }
 type FailureObject = {
@@ -13,17 +14,11 @@ type FailureObject = {
   type?: string
 }
 
-declare module '@fastify/secure-session' {
-  interface SessionData {
-    messages: string[]
-    returnTo: string | undefined
-  }
-}
-
 const addMessage = (request: FastifyRequest, message: string) => {
-  const existing = request.session.get('messages')
+  const session = getSession(request)
+  const existing = session.get('messages') as string[] | undefined
   const messages = existing ? [...existing, message] : [message]
-  request.session.set('messages', messages)
+  session.set('messages', messages)
 }
 
 export interface AuthenticateOptions {
@@ -167,10 +162,11 @@ export class AuthenticationRoute<StrategyOrStrategies extends string | Strategy 
             const complete = () => {
               if (this.options.successReturnToOrRedirect) {
                 let url = this.options.successReturnToOrRedirect
-                const returnTo = request.session?.get('returnTo')
+                const session = getSession(request)
+                const returnTo = session?.get('returnTo')
                 if (typeof returnTo === 'string') {
                   url = returnTo
-                  request.session.set('returnTo', undefined)
+                  session.set('returnTo', undefined)
                 }
 
                 reply.redirect(url)
