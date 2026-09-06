@@ -38,18 +38,22 @@ server.register(fastifyPassport.secureSession())
 // register an example strategy for fastifyPassport to authenticate users using
 fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
 
-// Add an authentication for a route that will use the strategy named "test" to protect the route
-server.get(
-  '/',
-  { preValidation: fastifyPassport.authenticate('test', { authInfo: false }) },
-  async () => 'hello world!'
-)
-
-// Add an authentication for a route that will use the strategy named "test" to protect the route, and redirect on success to a particular other route.
+// log users in with the strategy named "test": on success the user is stored in the session and redirected to /
 server.post(
   '/login',
   { preValidation: fastifyPassport.authenticate('test', { successRedirect: '/', authInfo: false }) },
   () => {}
+)
+
+// require a login for a route: the session hook has already populated request.user for logged-in requests
+server.get(
+  '/',
+  {
+    preValidation: async (request, reply) => {
+      if (!request.isAuthenticated()) return reply.redirect('/login')
+    }
+  },
+  async () => 'hello world!'
 )
 
 server.listen()
@@ -78,6 +82,41 @@ server.register(fastifyPassport.secureSession())
 // register an example strategy for fastifyPassport to authenticate users using
 fastifyPassport.use('test', new SomePassportStrategy()) // you'd probably use some passport strategy from npm here
 ```
+
+## Protecting routes
+
+`authenticate()` runs a strategy. It does not check whether the request already has a session, so it is the right hook for the routes that *perform* a login (the login route and the OAuth callback route), and the wrong one for the routes that merely *require* one.
+
+Once `secureSession()` is registered, every request that carries a login session already has `request.user` populated for you, before any route-level hook runs. Guard protected routes on that, with `request.isAuthenticated()`:
+
+```js
+const requireLogin = async (request, reply) => {
+  if (!request.isAuthenticated()) {
+    request.session.set('returnTo', request.url) // optional, see successReturnToOrRedirect
+    return reply.redirect('/auth/login')
+  }
+}
+
+// performs the login
+server.get('/auth/login', { preValidation: fastifyPassport.authenticate('google') }, () => {})
+server.get(
+  '/auth/callback',
+  { preValidation: fastifyPassport.authenticate('google', { successRedirect: '/' }) },
+  () => {}
+)
+
+// requires a login
+server.get('/', { preValidation: requireLogin }, async (request) => request.user)
+```
+
+Putting a redirect-based strategy (any OAuth/OIDC one: `passport-microsoft`, `passport-google-oauth20`, `passport-github2`, …) on a protected route produces an infinite redirect loop instead of an error, because the strategy has no credentials in the request and so redirects to the identity provider, the provider recognises its own session and immediately redirects back to the callback, the callback redirects to the protected route, and the protected route starts the strategy over again:
+
+```js
+// DON'T: '/' bounces to the IdP and back forever, even for a logged-in user
+server.get('/', { preValidation: fastifyPassport.authenticate('google') }, async (request) => request.user)
+```
+
+Note also that `authenticate('session')` is not a guard. The built-in session strategy *passes* when the session holds no user rather than failing, so `failureRedirect` never fires and the handler runs with `request.user` unset.
 
 ## Session cleanup on logIn
 
@@ -125,6 +164,7 @@ Options:
 
 - `session` Save login state in session, defaults to _true_
 - `successRedirect` After successful login, redirect to given URL
+- `successReturnToOrRedirect` After successful login, redirect to the URL stored in the session under `returnTo` if there is one, otherwise to the given URL. Note that the session is cleared on login by default, so `returnTo` must be preserved: add `'returnTo'` to the `Authenticator`'s `clearSessionIgnoreFields`, or pass `keepSessionInfo: true` here (see [Session cleanup on logIn](#session-cleanup-on-login))
 - `successMessage` True to store success message in
   req.session.messages, or a string to use as override
   message for success.
@@ -137,6 +177,8 @@ Options:
 - `failureFlash` True to flash failure messages or a string to use as a flash
   message for failures (overrides any from the strategy itself).
 - `assignProperty` Assign the object provided by the verify callback to given property
+- `authInfo` Pass the `info` returned by the strategy's verify callback through the registered auth info transformer and store the result at `request.authInfo`, defaults to _true_. Set to _false_ to skip this
+- `failWithError` On failed login, throw an `AuthenticationError` instead of sending the failure response, so it reaches your Fastify error handler
 - `state` Pass any provided state through to the strategy (e.g. for Google Oauth)
 - `keepSessionInfo` True to save existing session properties after authentication
 
@@ -321,6 +363,18 @@ Therefore, a deserializer can return several things:
 - if a deserializer returns `null` or `false`, `@fastify/passport` interprets that as a missing but expected user, and resets the session to log the user out
 - if a deserializer throws the string `"pass"`, `@fastify/passport` will try the next deserializer if it exists, or throw an error because the user could not be deserialized.
 
+### Request#isAuthenticated()
+
+Test if the request carries a login session, i.e. whether `request.user` was populated by `secureSession()` or by a preceding `authenticate()` call. This is what protected routes should be guarded with, see [Protecting routes](#protecting-routes).
+
+```js
+server.get('/', {
+  preValidation: async (request, reply) => {
+    if (!request.isAuthenticated()) return reply.redirect('/auth/login')
+  }
+}, async (request) => request.user)
+```
+
 ### Request#isUnauthenticated()
 
 Test if request is unauthenticated.
@@ -358,31 +412,53 @@ import { Authenticator } from '@fastify/passport'
 
 const server = fastify()
 
-// setup an Authenticator instance for users that stores the login result at `request.user`
-const userPassport = new Authenticator({ key: 'users', userProperty: 'user' })
-userPassport.use('some-strategy', new CoolOAuthStrategy('some-strategy'))
-server.register(userPassport.initialize())
-server.register(userPassport.secureSession())
+// users: their own Authenticator, hooks and routes, inside their own plugin context
+server.register(async (instance) => {
+  const userPassport = new Authenticator({ key: 'users', userProperty: 'user' })
+  userPassport.use('some-strategy', new CoolOAuthStrategy('some-strategy'))
+  instance.register(userPassport.initialize())
+  instance.register(userPassport.secureSession())
 
-// setup an Authenticator instance for users that stores the login result at `request.admin`
-const adminPassport = new Authenticator({ key: 'admin', userProperty: 'admin' })
-adminPassport.use('admin-google', new GoogleOAuth2Strategy('admin-google'))
-server.register(adminPassport.initialize())
-server.register(adminPassport.secureSession())
+  instance.get('/login', { preValidation: userPassport.authenticate('some-strategy') }, () => {})
+  instance.get(
+    '/login/callback',
+    { preValidation: userPassport.authenticate('some-strategy', { successRedirect: '/' }) },
+    () => {}
+  )
+  instance.get(
+    '/',
+    {
+      preValidation: async (request, reply) => {
+        if (!request.isAuthenticated()) return reply.redirect('/login')
+      }
+    },
+    async (request) => `hello ${JSON.stringify(request.user)}!`
+  )
+})
 
-// protect some routes with the userPassport
-server.get(
-  `/`,
-  { preValidation: userPassport.authenticate('some-strategy') },
-  async () => `hello ${JSON.serialize(request.user)}!`
-)
+// administrators: the same, in a separate context so the decorators don't collide
+server.register(async (instance) => {
+  const adminPassport = new Authenticator({ key: 'admin', userProperty: 'admin' })
+  adminPassport.use('admin-google', new GoogleOAuth2Strategy('admin-google'))
+  instance.register(adminPassport.initialize())
+  instance.register(adminPassport.secureSession())
 
-// and protect others with the adminPassport
-server.get(
-  `/admin`,
-  { preValidation: adminPassport.authenticate('admin-google') },
-  async () => `hello administrator ${JSON.serialize(request.admin)}!`
-)
+  instance.get('/admin/login', { preValidation: adminPassport.authenticate('admin-google') }, () => {})
+  instance.get(
+    '/admin/login/callback',
+    { preValidation: adminPassport.authenticate('admin-google', { successRedirect: '/admin' }) },
+    () => {}
+  )
+  instance.get(
+    '/admin',
+    {
+      preValidation: async (request, reply) => {
+        if (!request.isAuthenticated()) return reply.redirect('/admin/login')
+      }
+    },
+    async (request) => `hello administrator ${JSON.stringify(request.admin)}!`
+  )
+})
 ```
 
 **Note**: Each `Authenticator` instance's initialize plugin and session plugin must be registered separately.

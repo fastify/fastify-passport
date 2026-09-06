@@ -11,6 +11,20 @@ import { IncomingMessage } from 'node:http'
 import { FastifyRegisterOptions } from 'fastify/types/register'
 import { fastifySession, FastifySessionOptions } from '@fastify/session'
 
+/**
+ * Test-only augmentation. The library itself no longer declares `messages`/`returnTo`
+ * on `@fastify/secure-session`'s `SessionData` (see src/session.ts) so that consumers
+ * aren't forced to have both session packages' types installed. The tests exercise
+ * those two keys directly against the real `@fastify/secure-session` types, so the
+ * augmentation is declared here instead.
+ */
+declare module '@fastify/secure-session' {
+  interface SessionData {
+    messages: string[]
+    returnTo: string | undefined
+  }
+}
+
 const SecretKey = fs.readFileSync(join(__dirname, '../../test', 'secure.key'))
 
 let counter = 0
